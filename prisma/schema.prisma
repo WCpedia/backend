@@ -1,0 +1,151 @@
+// enum LocationType {
+//   Inside
+//   Outside
+// }
+
+// enum Emoji {
+//   Like
+//   Helpful
+//   Smile
+//   Sad
+// }
+
+// enum ReportType {
+//   User
+//   ToiletReview
+// }
+
+// enum Reason {
+//   InappropriateNickname
+//   InappropriateContent
+//   ContainsProfanity
+//   Harassment
+//   Spam
+//   Other
+// }
+
+enum Provider {
+  Local
+  Kakao
+  Google
+  Naver
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  nickname  String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  deletedAt DateTime? @db.Timestamp(6)
+
+  authentication Authentication?
+  // toiletReviews      ToiletReviews[]
+  // toiletReviewEmoji ToiletReviewEmoji[]
+  // reportedReports    Reports[]           @relation("ReportedUser")
+  // targetReports      Reports[]           @relation("TargetUser")
+}
+
+model Authentication {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  provider    Provider
+  password    String?
+  failedCount Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// model Places {
+//   id                    Int             @id @default(autoincrement())
+//   title                 String
+//   regionId             Int?
+//   address               String
+//   categoryId           Int
+//   thumUrl              String?
+//   telephone             String?
+//   stars                 String?
+//   naverPlaceId        String?
+//   naverStars           String?
+//   naverReviewerCounts String?
+//   isInit               Boolean         @default(false)
+//   toiletReviews        ToiletReviews[]
+//   region                Regions?        @relation(fields: [regionId], references: [id])
+//   placeCategory        PlaceCategories @relation(fields: [categoryId], references: [id])
+// }
+
+// model Regions {
+//   id                      Int      @id @default(autoincrement())
+//   administrativeDistrict String
+//   district                String?
+//   place                   Places[]
+// }
+
+// model ToiletReviews {
+//   id                  Int                 @id @default(autoincrement())
+//   placeId            Int
+//   userId             Int
+//   stars               Float
+//   createdAt          DateTime            @default(now())
+//   updatedAt          DateTime            @updatedAt
+//   isUnisex           Boolean?
+//   description         String?
+//   visitedAt          DateTime?
+//   location            LocationType?
+//   likeCount          Int                 @default(0)
+//   helpfulCount       Int                 @default(0)
+//   smileCount         Int                 @default(0)
+//   sadCount           Int                 @default(0)
+//   user                Users               @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   place               Places              @relation(fields: [placeId], references: [id])
+//   toiletReviewEmoji ToiletReviewEmoji[]
+//   report              Reports[]
+
+//   @@unique([placeId, userId])
+// }
+
+// model ToiletReviewEmoji {
+//   id               Int           @id @default(autoincrement())
+//   toiletReviewId Int
+//   userId          Int
+//   emoji            Emoji
+//   toiletReviews   ToiletReviews @relation(fields: [toiletReviewId], references: [id], onDelete: Cascade)
+//   user             Users         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+//   @@unique([toiletReviewId, userId])
+// }
+
+// model Reports {
+//   id                      Int            @id @default(autoincrement())
+//   reportType             ReportType
+//   reporterId             Int
+//   targetUserId          Int?
+//   targetToiletReviewId Int?
+//   reason                  Reason
+//   description             String?
+//   reporter                Users          @relation("ReportedUser", fields: [reporterId], references: [id])
+//   targetUser             Users?         @relation("TargetUser", fields: [targetUserId], references: [id])
+//   targetToiletReview    ToiletReviews? @relation(fields: [targetToiletReviewId], references: [id])
+
+//   @@unique([reporterId, targetUserId])
+//   @@unique([reporterId, targetToiletReviewId])
+// }
+
+// model PlaceCategories {
+//   id     Int      @id @default(autoincrement())
+//   main   String
+//   sub    String?
+//   places Places[]
+
+//   @@unique([main, sub])
+// }
