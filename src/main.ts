@@ -14,12 +14,15 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const JSON_PATH = 'api-docs-json';
   const YAML_PATH = 'api-docs-yaml';
   const configService = app.get<ProductConfigService>(ProductConfigService);
+
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   const config = new DocumentBuilder()
     .setTitle('Swagger')
@@ -44,12 +47,6 @@ async function bootstrap() {
     swaggerOptions: {
       persistAuthorization: true,
     },
-  });
-
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-    prefix: 'v',
   });
 
   app.useGlobalInterceptors(

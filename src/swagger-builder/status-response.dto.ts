@@ -1,26 +1,25 @@
-import { HttpStatus, applyDecorators } from '@nestjs/common';
+import { HttpStatus, Type, applyDecorators } from '@nestjs/common';
 import { ErrorHttpStatusCode } from '@nestjs/common/utils/http-error-by-code.util';
 import { ApiProperty, ApiResponse } from '@nestjs/swagger';
 
 export class StatusResponseDto {
-  [key: string]: unknown;
-
   static swaggerBuilder(
     status: Exclude<HttpStatus, ErrorHttpStatusCode>,
     key: string,
   ) {
     class Temp extends this {
       @ApiProperty({
-        name: 'status',
+        name: 'statusCode',
         example: `${status}`,
         enum: HttpStatus,
       })
-      private readonly status: string;
+      private readonly statusCode: string;
     }
 
     Object.defineProperty(Temp, 'name', {
-      value: `${key}StatusDto`,
+      value: `${key[0].toUpperCase()}${key.slice(1)}StatusDto`,
     });
+
     return applyDecorators(ApiResponse({ status, type: Temp }));
   }
 

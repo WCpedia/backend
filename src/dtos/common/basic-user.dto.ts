@@ -3,7 +3,7 @@ import { User } from '@prisma/client';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
-export class BasicUserDto implements Pick<User, 'id' | 'name'> {
+export class BasicUserDto implements Pick<User, 'id' | 'nickname'> {
   @ApiProperty({
     type: Number,
     description: '유저 Id',
@@ -15,7 +15,7 @@ export class BasicUserDto implements Pick<User, 'id' | 'name'> {
     description: '이름',
   })
   @Expose()
-  name: string;
+  nickname: string;
 
   constructor(user: Partial<BasicUserDto>) {
     Object.assign(this, user);
