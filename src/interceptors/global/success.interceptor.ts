@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
 @Injectable()
 export class SuccessInterceptor implements NestInterceptor {
   constructor() {}
@@ -15,6 +14,12 @@ export class SuccessInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((data) => {
+        if (data && data.statusCode) {
+          const { statusCode, ...etc } = data;
+
+          return { statusCode, data: etc };
+        }
+
         return { statusCode, data };
       }),
     );
