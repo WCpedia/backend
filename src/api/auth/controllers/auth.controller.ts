@@ -16,8 +16,9 @@ import { Response } from 'express';
 import { ProviderValidator } from '../validaters/auth-provider.validator';
 import { Provider } from '@prisma/client';
 import { ApiAuth } from './swaggers/auth.swagger';
-import { OauthSignupUserDto } from '../dtos/responses/oauth-signup-user.dto';
+import { NewUserOauthDto } from '../dtos/responses/new-user-oauth.dto';
 import { plainToInstance } from 'class-transformer';
+import { SignUpWithOAuthProviderDto } from '../dtos/requests/oauth-signup-user.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -43,7 +44,7 @@ export class AuthController {
     );
 
     if (user.userEmail) {
-      const signupUser = plainToInstance(OauthSignupUserDto, user);
+      const signupUser = plainToInstance(NewUserOauthDto, user);
 
       return {
         statusCode: HttpStatus.CREATED,
@@ -59,5 +60,16 @@ export class AuthController {
         httpOnly: true,
       });
     }
+  }
+
+  @ApiAuth.SignUpWithOAuthProvider({
+    summary: 'OAuth를 통한 가입',
+  })
+  @Post('signup/oauth')
+  async signUpWithOAuthProvider(
+    @Body() signUpWithOAuthProviderDto: SignUpWithOAuthProviderDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    console.log(signUpWithOAuthProviderDto);
   }
 }
