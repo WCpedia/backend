@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Provider } from '@prisma/client';
 
-export class OauthSignupUserDto {
+export class NewUserOauthDto {
   @ApiProperty({
     description: '가입해야 하는 유저Email',
   })
-  userEmail: string;
+  email: string;
 
   @ApiProperty({
     enum: Provider,

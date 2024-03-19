@@ -6,7 +6,7 @@ import { ApiOperator } from '@src/types/type';
 import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
 import { AuthController } from '../auth.controller';
 import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
-import { OauthSignupUserDto } from '@api/auth/dtos/responses/oauth-signup-user.dto';
+import { NewUserOauthDto } from '@api/auth/dtos/responses/new-user-oauth.dto';
 
 export const ApiAuth: ApiOperator<keyof AuthController> = {
   SignInWithOauthProvider: (
@@ -15,12 +15,27 @@ export const ApiAuth: ApiOperator<keyof AuthController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      ApiCookieAuth('refreshToken'),
-      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'RefreshTokens'),
+      StatusResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'SignInWithOauthProvider',
+      ),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.CREATED,
-        'OauthSignupUser',
-        OauthSignupUserDto,
+        'NewUserOauth',
+        NewUserOauthDto,
+      ),
+    );
+  },
+
+  SignUpWithOAuthProvider: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      StatusResponseDto.swaggerBuilder(
+        HttpStatus.CREATED,
+        'SignUpWithOAuthProvider',
       ),
     );
   },

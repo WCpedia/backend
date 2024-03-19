@@ -13,11 +13,12 @@ import { IUserAuth, IToken } from '../interface/interface';
 import { AuthService } from '../services/auth.service';
 import { AuthTokenService } from '../services/auth-token.service';
 import { Response } from 'express';
-import { ProviderValidator } from '../validaters/auth-provider.validator';
+import { ProviderValidator } from '../validators/auth-provider.validator';
 import { Provider } from '@prisma/client';
 import { ApiAuth } from './swaggers/auth.swagger';
-import { OauthSignupUserDto } from '../dtos/responses/oauth-signup-user.dto';
+import { NewUserOauthDto } from '../dtos/responses/new-user-oauth.dto';
 import { plainToInstance } from 'class-transformer';
+import { SignUpWithOAuthProviderDto } from '../dtos/requests/oauth-signup-user.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -37,13 +38,13 @@ export class AuthController {
     accessToken: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const user: IUserAuth = await this.authService.signInWithOAuth(
+    const user: IUserAuth = await this.authService.signinWithOAuth(
       provider,
       accessToken,
     );
 
-    if (user.userEmail) {
-      const signupUser = plainToInstance(OauthSignupUserDto, user);
+    if (user.email) {
+      const signupUser = plainToInstance(NewUserOauthDto, user);
 
       return {
         statusCode: HttpStatus.CREATED,
@@ -58,6 +59,19 @@ export class AuthController {
       response.cookie('refreshToken', token.refreshToken, {
         httpOnly: true,
       });
+    }
+  }
+
+  @ApiAuth.SignUpWithOAuthProvider({
+    summary: 'OAuth를 통한 가입',
+  })
+  @Post('signup/oauth')
+  async signUpWithOAuthProvider(
+    @Body() signUpWithOAuthProviderDto: SignUpWithOAuthProviderDto,
+  ) {
+    if (signUpWithOAuthProviderDto.provider === Provider.LOCAL) {
+    } else {
+      await this.authService.signUpWithOAuth(signUpWithOAuthProviderDto);
     }
   }
 }

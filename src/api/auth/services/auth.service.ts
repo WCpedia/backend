@@ -1,12 +1,14 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Provider } from '@prisma/client';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { AuthRepository } from '@api/auth/repository/auth.repository';
-import { OAUTH_KEY } from '@core/config/constants/config.constant';
+import { OAUTH_KEY, REDIS_KEY } from '@core/config/constants/config.constant';
 import axios, { AxiosResponse } from 'axios';
 import {
   IUserAuth,
@@ -14,14 +16,20 @@ import {
   IGoogleUserProfile,
   INaverUserProfile,
 } from '@api/auth/interface/interface';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { SignUpWithOAuthProviderDto } from '../dtos/requests/oauth-signup-user.dto';
+import { PrismaService } from '@core/database/prisma/services/prisma.service';
 
 @Injectable()
 export class AuthService {
   private kakaoGetUserUri: string;
   private googleGetUserUri: string;
   private naverGetUserUri: string;
+  private tempAuthTtl: number;
 
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly prismaService: PrismaService,
     private readonly configService: ProductConfigService,
     private readonly authRepository: AuthRepository,
   ) {
@@ -34,29 +42,35 @@ export class AuthService {
     this.googleGetUserUri = this.configService.get<string>(
       OAUTH_KEY.GOOGLE_GET_USER_URI,
     );
+    this.tempAuthTtl = this.configService.get<number>(REDIS_KEY.TEMP_AUTH_TTL);
   }
 
-  async signInWithOAuth(
+  async signinWithOAuth(
     provider: Provider,
     accessToken: string,
   ): Promise<IUserAuth> {
-    let userEmail: string;
+    let email: string;
     switch (provider) {
       case Provider.KAKAO:
-        userEmail = await this.getKakaoUserEmail(accessToken);
+        email = await this.getKakaoUserEmail(accessToken);
         break;
       case Provider.GOOGLE:
-        userEmail = await this.getGoogleUserEmail(accessToken);
+        email = await this.getGoogleUserEmail(accessToken);
         break;
       case Provider.NAVER:
-        userEmail = await this.getNaverUserEmail(accessToken);
+        email = await this.getNaverUserEmail(accessToken);
         break;
     }
 
-    const user = await this.authRepository.getUserWithAuth(userEmail);
+    const user = await this.authRepository.getUserWithAuth(email);
 
     if (!user) {
-      return { userEmail, provider };
+      await this.cacheManager.set(
+        `TempAuth/${email}`,
+        provider,
+        this.tempAuthTtl,
+      );
+      return { email, provider };
     }
 
     if (user.authentication.provider !== Provider[provider]) {
@@ -259,4 +273,35 @@ export class AuthService {
 
   //   return mappedSignUpType;
   // }
+
+  async signUpWithOAuth(dto: SignUpWithOAuthProviderDto) {
+    const tempAuth = await this.cacheManager.get(`TempAuth/${dto.email}`);
+    if (!tempAuth) {
+      throw new NotFoundException(`가입 정보 만료`);
+    }
+    if (tempAuth !== Provider[dto.provider]) {
+      throw new BadRequestException(`가입 정보가 일치하지 않습니다.`);
+    }
+
+    await this.createUserAuth(dto);
+  }
+
+  private async createUserAuth(dto: SignUpWithOAuthProviderDto) {
+    const { nickname, description, profileUrlKey, ...authInputDate } = dto;
+    await this.prismaService.$transaction(async (transaction) => {
+      const createdUser = await this.authRepository.createUser(
+        {
+          nickname,
+          description,
+          profileUrlKey,
+        },
+        transaction,
+      );
+
+      await this.authRepository.createAuthentication(
+        { userId: createdUser.id, ...authInputDate },
+        transaction,
+      );
+    });
+  }
 }

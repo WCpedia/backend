@@ -29,10 +29,15 @@ export const OAUTH_KEY = {
   NAVER_GET_USER_URI: 'NAVER_GET_USER_URI',
 } as const;
 
+export const REDIS_KEY = {
+  TEMP_AUTH_TTL: 'TEMP_AUTH_TTL',
+} as const;
+
 export const ENVIRONMENT_KEY = {
   NODE_ENV: 'NODE_ENV',
   PORT: 'PORT',
   ...JWT_KEY,
   ...AWS_S3_KEY,
   ...OAUTH_KEY,
+  ...REDIS_KEY,
 } as const;
