@@ -49,7 +49,7 @@ export interface IGoogleUserProfile {
 export interface IUserAuth {
   userId?: number;
   provider?: string;
-  userEmail?: string;
+  email?: string;
   role?: string;
 }
 

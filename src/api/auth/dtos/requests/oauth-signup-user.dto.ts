@@ -1,6 +1,13 @@
+import { IsNicknameNotExist } from '@api/common/validators/nickname-not-exist.validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Provider } from '@prisma/client';
-import { IsEmail, IsEnum, IsNotEmpty, ValidateIf } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  ValidateIf,
+} from 'class-validator';
 
 export class SignUpWithOAuthProviderDto {
   @ApiProperty({
@@ -8,7 +15,7 @@ export class SignUpWithOAuthProviderDto {
   })
   @IsEmail()
   @IsNotEmpty()
-  userEmail: string;
+  email: string;
 
   @ApiProperty({
     enum: Provider,
@@ -16,11 +23,12 @@ export class SignUpWithOAuthProviderDto {
   })
   @IsEnum(Provider)
   @IsNotEmpty()
-  provider: string;
+  provider: Provider;
 
   @ApiProperty({
     description: '닉네임',
   })
+  @IsNicknameNotExist()
   @IsNotEmpty()
   nickname: string;
 
@@ -30,4 +38,18 @@ export class SignUpWithOAuthProviderDto {
   @ValidateIf(({ provider }) => provider === Provider.LOCAL)
   @IsNotEmpty()
   password: string;
+
+  @ApiProperty({
+    description: '유저 소개',
+    required: false,
+  })
+  @IsOptional()
+  description: string;
+
+  @ApiProperty({
+    description: '프로필 이미지 key',
+    required: false,
+  })
+  @IsOptional()
+  profileUrlKey: string;
 }

@@ -13,7 +13,7 @@ import { IUserAuth, IToken } from '../interface/interface';
 import { AuthService } from '../services/auth.service';
 import { AuthTokenService } from '../services/auth-token.service';
 import { Response } from 'express';
-import { ProviderValidator } from '../validaters/auth-provider.validator';
+import { ProviderValidator } from '../validators/auth-provider.validator';
 import { Provider } from '@prisma/client';
 import { ApiAuth } from './swaggers/auth.swagger';
 import { NewUserOauthDto } from '../dtos/responses/new-user-oauth.dto';
@@ -38,12 +38,12 @@ export class AuthController {
     accessToken: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const user: IUserAuth = await this.authService.signInWithOAuth(
+    const user: IUserAuth = await this.authService.signinWithOAuth(
       provider,
       accessToken,
     );
 
-    if (user.userEmail) {
+    if (user.email) {
       const signupUser = plainToInstance(NewUserOauthDto, user);
 
       return {
@@ -68,8 +68,10 @@ export class AuthController {
   @Post('signup/oauth')
   async signUpWithOAuthProvider(
     @Body() signUpWithOAuthProviderDto: SignUpWithOAuthProviderDto,
-    @Res({ passthrough: true }) response: Response,
   ) {
-    console.log(signUpWithOAuthProviderDto);
+    if (signUpWithOAuthProviderDto.provider === Provider.LOCAL) {
+    } else {
+      await this.authService.signUpWithOAuth(signUpWithOAuthProviderDto);
+    }
   }
 }

@@ -5,6 +5,7 @@ const REDIS_KEY_VALIDATOR = {
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
   REDIS_PASSWORD: Joi.string().required(),
+  TEMP_AUTH_TTL: Joi.string().required(),
 };
 
 const JWT_KEY_VALIDATOR = {
