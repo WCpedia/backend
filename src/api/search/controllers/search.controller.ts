@@ -7,6 +7,6 @@ export class SearchController {
 
   @Get('places')
   async searchPlaces(@Query('value') value: string) {
-    await this.searchService.searchPlaces(value);
+    return await this.searchService.searchPlaces(value);
   }
 }

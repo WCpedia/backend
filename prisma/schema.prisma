@@ -24,8 +24,6 @@
 //   Other
 // }
 
-
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native"]
@@ -37,14 +35,14 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  role    Role     @default(USER)
-  nickname  String    @unique
-  description String?
-  profileUrlKey  String?
-  createdAt DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamp(6)
-  deletedAt DateTime? @db.Timestamp(6)
+  id            Int       @id @default(autoincrement())
+  role          Role      @default(USER)
+  nickname      String    @unique
+  description   String?
+  profileUrlKey String?
+  createdAt     DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  deletedAt     DateTime? @db.Timestamp(6)
 
   authentication Authentication?
   // toiletReviews      ToiletReviews[]
@@ -54,43 +52,73 @@ model User {
 }
 
 model Authentication {
-  id Int @id @default(autoincrement())
-  userId      Int?      @unique
-  email       String
-  provider    Provider
-  password    String?
-   createdAt DateTime  @default(now())
+  id        Int       @id @default(autoincrement())
+  userId    Int?      @unique
+  email     String
+  provider  Provider
+  password  String?
+  createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt @db.Timestamp(6)
   deletedAt DateTime? @db.Timestamp(6)
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([email, provider])
 }
 
-// model Places {
-//   id                    Int             @id @default(autoincrement())
-//   title                 String
-//   regionId             Int?
-//   address               String
-//   categoryId           Int
-//   thumUrl              String?
-//   telephone             String?
-//   stars                 String?
-//   naverPlaceId        String?
-//   naverStars           String?
-//   naverReviewerCounts String?
-//   isInit               Boolean         @default(false)
-//   toiletReviews        ToiletReviews[]
-//   region                Regions?        @relation(fields: [regionId], references: [id])
-//   placeCategory        PlaceCategories @relation(fields: [categoryId], references: [id])
-// }
+model Place {
+  id              Int           @id @default(autoincrement())
+  kakaoId         String  @unique
+  name            String
+  placeCategoryId Int
+  regionId        Int
+  detailAddress   String
+  telephone       String?
+  stars           String?
+  kakaoUrl        String?
+  x               Float
+  y               Float
 
-// model Regions {
-//   id                      Int      @id @default(autoincrement())
-//   administrativeDistrict String
-//   district                String?
-//   place                   Places[]
-// }
+  region          Region?      @relation(fields: [regionId], references: [id])
+  placeCategory   PlaceCategory @relation(fields: [placeCategoryId], references: [id])
+}
+
+model PlaceCategory {
+  id           Int  @id @default(autoincrement())
+  lastDepth    Int
+  depth1Id   Int
+  depth2Id   Int?
+  depth3Id Int?
+  depth4Id  Int?
+  depth5Id  Int?
+
+  place      Place[]
+  oneDepth   Category  @relation("OneDepth", fields: [depth1Id ], references: [id])
+  twoDepth   Category? @relation("TwoDepth", fields: [depth2Id], references: [id])
+  threeDepth Category? @relation("ThreeDepth", fields: [depth3Id], references: [id])
+  fourDepth  Category? @relation("FourDepth", fields: [depth4Id], references: [id])
+  fiveDepth  Category? @relation("FiveDepth", fields: [depth5Id], references: [id])
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  oneDepth   PlaceCategory[] @relation("OneDepth")
+  twoDepth   PlaceCategory[] @relation("TwoDepth")
+  threeDepth PlaceCategory[] @relation("ThreeDepth")
+  fourDepth  PlaceCategory[] @relation("FourDepth")
+  fiveDepth  PlaceCategory[] @relation("FiveDepth")
+}
+
+model Region {
+  id                     Int     @id @default(autoincrement())
+  administrativeDistrict String
+  district               String?
+  place                  Place[]
+
+  @@unique([administrativeDistrict, district])
+}
 
 // model ToiletReviews {
 //   id                  Int                 @id @default(autoincrement())
@@ -142,14 +170,6 @@ model Authentication {
 //   @@unique([reporterId, targetToiletReviewId])
 // }
 
-// model PlaceCategories {
-//   id     Int      @id @default(autoincrement())
-//   main   String
-//   sub    String?
-//   places Places[]
-
-//   @@unique([main, sub])
-// }
 enum Provider {
   LOCAL
   KAKAO

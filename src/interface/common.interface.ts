@@ -18,10 +18,18 @@ export interface ICursor {
   id: number;
 }
 
-export interface IRegion {
-  oneDepth: string;
-  twoDepth: string;
-  threeDepth: string;
+export interface IExtractedRegion {
+  administrativeDistrict: string;
+  district: string;
+  detailAddress: string;
+}
+
+export interface IRegionDepth {
+  depth1Id: number;
+  depth2Id?: number;
+  depth3Id?: number;
+  depth4Id?: number;
+  depth5Id?: number;
 }
 
 export interface PrismaTransaction

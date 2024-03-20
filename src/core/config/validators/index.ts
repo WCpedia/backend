@@ -34,6 +34,14 @@ const DATABASE_KEY_VALIDATOR = {
   DATABASE_URL: Joi.string().required(),
 };
 
+const OAUTH_KEY_VALIDATOR = {
+  KAKAO_GET_USER_URI: Joi.string().required(),
+  KAKAO_AUTHORIZATION_KEY: Joi.string().required(),
+  KAKAO_SEARCH_KEYWORD_URI: Joi.string().required(),
+  GOOGLE_GET_USER_URI: Joi.string().required(),
+  NAVER_GET_USER_URI: Joi.string().required(),
+};
+
 export const ENVIRONMENT_KEY_VALIDATOR: ConfigModuleOptions = {
   isGlobal: true,
   validationOptions: Joi.object({
@@ -43,5 +51,6 @@ export const ENVIRONMENT_KEY_VALIDATOR: ConfigModuleOptions = {
     ...REDIS_KEY_VALIDATOR,
     ...JWT_KEY_VALIDATOR,
     ...AWS_S3_KEY_VALIDATOR,
+    ...OAUTH_KEY_VALIDATOR,
   }),
 };
