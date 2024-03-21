@@ -40,8 +40,10 @@ export class SearchRepository {
     data: Prisma.PlaceUncheckedCreateInput,
     transaction: PrismaTransaction,
   ) {
-    return await (transaction ?? this.prismaService).place.create({
-      data,
+    return await (transaction ?? this.prismaService).place.upsert({
+      where: { kakaoId: data.kakaoId },
+      update: {},
+      create: data,
     });
   }
 

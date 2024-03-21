@@ -51,44 +51,47 @@ export class SearchService {
     return await this.createPlacesFromKakaoData(response.data.documents);
   }
 
-  async createPlacesFromKakaoData(kakaoData: IKakaoSearchDocuments[]) {
-    const promises = kakaoData.map(async (data) => {
-      return await this.createPlace(data);
-    });
-
-    return await Promise.all(promises);
-  }
-
-  async createPlace(data: IKakaoSearchDocuments) {
+  private async createPlacesFromKakaoData(kakaoData: IKakaoSearchDocuments[]) {
     return await this.prismaService.$transaction(async (transaction) => {
-      const category = await this.findOrCreateCategory(
-        data.category_name,
-        transaction,
-      );
-      const { detailAddress, ...region } = extractRegion(data.address_name);
-      const selectedRegion = await this.searchRepository.upsertRegion(
-        region,
-        transaction,
-      );
-
-      return await this.searchRepository.createPlace(
-        {
-          kakaoId: data.id,
-          name: data.place_name,
-          placeCategoryId: category.id,
-          regionId: selectedRegion.id,
-          detailAddress,
-          telephone: data.phone,
-          kakaoUrl: data.place_url,
-          x: parseFloat(data.x),
-          y: parseFloat(data.y),
-        },
-        transaction,
+      await Promise.all(
+        kakaoData.map(async (data) => {
+          return await this.createPlace(data, transaction);
+        }),
       );
     });
   }
 
-  async findOrCreateCategory(
+  private async createPlace(
+    data: IKakaoSearchDocuments,
+    transaction: PrismaTransaction,
+  ) {
+    const category = await this.findOrCreateCategory(
+      data.category_name,
+      transaction,
+    );
+    const { detailAddress, ...region } = extractRegion(data.address_name);
+    const selectedRegion = await this.searchRepository.upsertRegion(
+      region,
+      transaction,
+    );
+
+    return await this.searchRepository.createPlace(
+      {
+        kakaoId: data.id,
+        name: data.place_name,
+        placeCategoryId: category.id,
+        regionId: selectedRegion.id,
+        detailAddress,
+        telephone: data.phone,
+        kakaoUrl: data.place_url,
+        x: parseFloat(data.x),
+        y: parseFloat(data.y),
+      },
+      transaction,
+    );
+  }
+
+  private async findOrCreateCategory(
     categoryName: string,
     transaction: PrismaTransaction,
   ): Promise<PlaceCategory> {
@@ -102,7 +105,7 @@ export class SearchService {
     );
   }
 
-  async upsertCategories(
+  private async upsertCategories(
     categoryParts: string[],
     transaction: PrismaTransaction,
   ): Promise<IRegionDepth> {
@@ -111,7 +114,10 @@ export class SearchService {
     };
 
     for (const [depth, name] of categoryParts.entries()) {
-      const category = await this.searchRepository.upsertCategory(name);
+      const category = await this.searchRepository.upsertCategory(
+        name,
+        transaction,
+      );
 
       categoryIds[`depth${depth + 1}Id`] = category.id;
     }
@@ -119,7 +125,7 @@ export class SearchService {
     return categoryIds;
   }
 
-  async upsertPlaceCategory(
+  private async upsertPlaceCategory(
     placeCategory: IRegionDepth,
     lastDepth: number,
     transaction: PrismaTransaction,
