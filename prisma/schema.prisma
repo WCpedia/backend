@@ -67,7 +67,7 @@ model Authentication {
 }
 
 model Place {
-  id              Int           @id @default(autoincrement())
+  id              Int     @id @default(autoincrement())
   kakaoId         String  @unique
   name            String
   placeCategoryId Int
@@ -79,36 +79,39 @@ model Place {
   x               Float
   y               Float
 
-  region          Region?      @relation(fields: [regionId], references: [id])
-  placeCategory   PlaceCategory @relation(fields: [placeCategoryId], references: [id])
+  region        Region?       @relation(fields: [regionId], references: [id])
+  placeCategory PlaceCategory @relation(fields: [placeCategoryId], references: [id])
 }
 
 model PlaceCategory {
-  id           Int  @id @default(autoincrement())
-  lastDepth    Int
-  depth1Id   Int
-  depth2Id   Int?
-  depth3Id Int?
+  id        Int  @id @default(autoincrement())
+  fullCategoryIds String @unique
+  lastDepth Int
+  depth1Id  Int
+  depth2Id  Int?
+  depth3Id  Int?
   depth4Id  Int?
   depth5Id  Int?
 
-  place      Place[]
-  oneDepth   Category  @relation("OneDepth", fields: [depth1Id ], references: [id])
-  twoDepth   Category? @relation("TwoDepth", fields: [depth2Id], references: [id])
-  threeDepth Category? @relation("ThreeDepth", fields: [depth3Id], references: [id])
-  fourDepth  Category? @relation("FourDepth", fields: [depth4Id], references: [id])
-  fiveDepth  Category? @relation("FiveDepth", fields: [depth5Id], references: [id])
+  place  Place[]
+  depth1 Category  @relation("Depth1", fields: [depth1Id], references: [id])
+  depth2 Category? @relation("Depth2", fields: [depth2Id], references: [id])
+  depth3 Category? @relation("Depth3", fields: [depth3Id], references: [id])
+  depth4 Category? @relation("Depth4", fields: [depth4Id], references: [id])
+  depth5 Category? @relation("Depth5", fields: [depth5Id], references: [id])
+
+  
 }
 
 model Category {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  oneDepth   PlaceCategory[] @relation("OneDepth")
-  twoDepth   PlaceCategory[] @relation("TwoDepth")
-  threeDepth PlaceCategory[] @relation("ThreeDepth")
-  fourDepth  PlaceCategory[] @relation("FourDepth")
-  fiveDepth  PlaceCategory[] @relation("FiveDepth")
+  depth1 PlaceCategory[] @relation("Depth1")
+  depth2 PlaceCategory[] @relation("Depth2")
+  depth3 PlaceCategory[] @relation("Depth3")
+  depth4 PlaceCategory[] @relation("Depth4")
+  depth5 PlaceCategory[] @relation("Depth5")
 }
 
 model Region {

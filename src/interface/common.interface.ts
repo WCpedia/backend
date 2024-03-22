@@ -24,7 +24,9 @@ export interface IExtractedRegion {
   detailAddress: string;
 }
 
-export interface IRegionDepth {
+export interface IPlaceCategory {
+  fullCategoryIds: string;
+  lastDepth: number;
   depth1Id: number;
   depth2Id?: number;
   depth3Id?: number;

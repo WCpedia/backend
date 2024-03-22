@@ -1,8 +1,8 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, Region } from '@prisma/client';
 import {
-  IRegionDepth,
+  IPlaceCategory,
   PrismaTransaction,
 } from '@src/interface/common.interface';
 
@@ -10,12 +10,16 @@ import {
 export class SearchRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findPlaceCategory(
-    placeCategory: IRegionDepth,
+  async upsertPlaceCategory(
+    placeCategory: IPlaceCategory,
     transaction?: PrismaTransaction,
   ) {
-    return await (transaction ?? this.prismaService).placeCategory.findFirst({
-      where: placeCategory,
+    return await (transaction ?? this.prismaService).placeCategory.upsert({
+      where: {
+        fullCategoryIds: placeCategory.fullCategoryIds,
+      },
+      update: {},
+      create: placeCategory,
     });
   }
 
@@ -44,19 +48,27 @@ export class SearchRepository {
       where: { kakaoId: data.kakaoId },
       update: {},
       create: data,
+      include: {
+        region: true,
+        placeCategory: {
+          include: {
+            depth1: true,
+            depth2: true,
+            depth3: true,
+            depth4: true,
+            depth5: true,
+          },
+        },
+      },
     });
   }
 
-  async upsertRegion(
+  async getRegion(
     region: Prisma.RegionAdministrativeDistrictDistrictCompoundUniqueInput,
     transaction?: PrismaTransaction,
-  ) {
-    console.log(region);
-
-    return await (transaction ?? this.prismaService).region.upsert({
+  ): Promise<Region> {
+    return await (transaction ?? this.prismaService).region.findUnique({
       where: { administrativeDistrict_district: region },
-      update: {},
-      create: region,
     });
   }
 }
