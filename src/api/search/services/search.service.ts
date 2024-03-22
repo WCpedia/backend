@@ -16,6 +16,7 @@ import {
   IKakaoSearchResponse,
 } from '../interface/interface';
 import { PlaceSearchResultDto } from '../dtos/response/place-search-result.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class SearchService {
@@ -36,10 +37,10 @@ export class SearchService {
   }
 
   async searchPlaces(value: string): Promise<PlaceSearchResultDto[]> {
-    const kakaoData: IKakaoSearchDocuments[] =
-      await this.fetchKakaoSearchResponse(value);
+    const kakaoData = await this.fetchKakaoSearchResponse(value);
+    const places = await this.createPlacesFromKakaoData(kakaoData);
 
-    return await this.createPlacesFromKakaoData(kakaoData);
+    return plainToInstance(PlaceSearchResultDto, places);
   }
 
   private async fetchKakaoSearchResponse(

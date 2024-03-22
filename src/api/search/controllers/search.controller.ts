@@ -15,8 +15,6 @@ export class SearchController {
   async searchPlaces(
     @Query('value') value: string,
   ): Promise<PlaceSearchResultDto[]> {
-    const searchedResult = await this.searchService.searchPlaces(value);
-
-    return plainToInstance(PlaceSearchResultDto, searchedResult);
+    return await this.searchService.searchPlaces(value);
   }
 }
