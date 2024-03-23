@@ -81,6 +81,16 @@ model Place {
 
   region        Region?       @relation(fields: [regionId], references: [id])
   placeCategory PlaceCategory @relation(fields: [placeCategoryId], references: [id])
+  placeImage   PlaceImage[]
+}
+
+model PlaceImage {
+  id      Int    @id @default(autoincrement())
+  type    PlaceImageType @default(KAKAO)
+  placeId Int
+  url     String
+
+  place Place @relation(fields: [placeId], references: [id])
 }
 
 model PlaceCategory {
@@ -183,4 +193,9 @@ enum Provider {
 enum Role {
   ADMIN
   USER
+}
+
+enum PlaceImageType {
+  KAKAO
+  LOCAL
 }
