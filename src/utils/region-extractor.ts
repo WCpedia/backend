@@ -1,4 +1,6 @@
-import { BadRequestException } from '@nestjs/common';
+import { CustomException } from '@exceptions/http/custom.exception';
+import { MulterExceptionEnum } from '@exceptions/http/enums/global.exception.enum';
+import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { IExtractedRegion } from '@src/interface/common.interface';
 
 export function extractRegion(address: string): IExtractedRegion {
@@ -28,9 +30,9 @@ export function extractRegion(address: string): IExtractedRegion {
       detailAddress: addressParts.join(' '),
     };
   } else {
-    throw new BadRequestException(
-      '잘못된 주소형식입니다',
-      'InvalidAddressFormat',
+    throw new CustomException(
+      HttpExceptionStatusCode.BAD_REQUEST,
+      MulterExceptionEnum.InvalidAddressFormat,
     );
   }
 }

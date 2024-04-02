@@ -1,28 +1,31 @@
-// enum LocationType {
-//   Inside
-//   Outside
-// }
+enum Emoji {
+  LIKE
+  THUMBS_UP
+}
 
-// enum Emoji {
-//   Like
-//   Helpful
-//   Smile
-//   Sad
-// }
+enum Provider {
+  LOCAL
+  KAKAO
+  GOOGLE
+  NAVER
+}
 
-// enum ReportType {
-//   User
-//   ToiletReview
-// }
+enum Role {
+  ADMIN
+  USER
+}
 
-// enum Reason {
-//   InappropriateNickname
-//   InappropriateContent
-//   ContainsProfanity
-//   Harassment
-//   Spam
-//   Other
-// }
+enum PlaceImageType {
+  KAKAO
+  LOCAL
+}
+
+enum VisitTime {
+  MORNING
+  AFTERNOON
+  EVENING
+  NIGHT
+}
 
 generator client {
   provider      = "prisma-client-js"
@@ -44,11 +47,10 @@ model User {
   updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(6)
   deletedAt     DateTime? @db.Timestamp(6)
 
-  authentication Authentication?
-  // toiletReviews      ToiletReviews[]
-  // toiletReviewEmoji ToiletReviewEmoji[]
-  // reportedReports    Reports[]           @relation("ReportedUser")
-  // targetReports      Reports[]           @relation("TargetUser")
+  authentication          Authentication?
+  reviews              PlaceReview[]
+  reviewReactions      ReviewReaction[]
+  userSubmittedToiletInfo UserSubmittedToiletInfo[]
 }
 
 model Authentication {
@@ -79,13 +81,16 @@ model Place {
   x               Float
   y               Float
 
-  region        Region?       @relation(fields: [regionId], references: [id])
-  placeCategory PlaceCategory @relation(fields: [placeCategoryId], references: [id])
-  placeImage   PlaceImage[]
+  region                  Region?                   @relation(fields: [regionId], references: [id])
+  placeCategory           PlaceCategory             @relation(fields: [placeCategoryId], references: [id])
+  images              PlaceImage[]
+  reviews                  PlaceReview[]
+  publicToiletInfo        PublicToiletInfo?
+  userSubmittedToiletInfos UserSubmittedToiletInfo[]
 }
 
 model PlaceImage {
-  id      Int    @id @default(autoincrement())
+  id      Int            @id @default(autoincrement())
   type    PlaceImageType @default(KAKAO)
   placeId Int
   url     String
@@ -94,23 +99,21 @@ model PlaceImage {
 }
 
 model PlaceCategory {
-  id        Int  @id @default(autoincrement())
+  id              Int    @id @default(autoincrement())
   fullCategoryIds String @unique
-  lastDepth Int
-  depth1Id  Int
-  depth2Id  Int?
-  depth3Id  Int?
-  depth4Id  Int?
-  depth5Id  Int?
+  lastDepth       Int
+  depth1Id        Int
+  depth2Id        Int?
+  depth3Id        Int?
+  depth4Id        Int?
+  depth5Id        Int?
 
-  place  Place[]
+  places  Place[]
   depth1 Category  @relation("Depth1", fields: [depth1Id], references: [id])
   depth2 Category? @relation("Depth2", fields: [depth2Id], references: [id])
   depth3 Category? @relation("Depth3", fields: [depth3Id], references: [id])
   depth4 Category? @relation("Depth4", fields: [depth4Id], references: [id])
   depth5 Category? @relation("Depth5", fields: [depth5Id], references: [id])
-
-  
 }
 
 model Category {
@@ -133,39 +136,105 @@ model Region {
   @@unique([administrativeDistrict, district])
 }
 
-// model ToiletReviews {
-//   id                  Int                 @id @default(autoincrement())
-//   placeId            Int
-//   userId             Int
-//   stars               Float
-//   createdAt          DateTime            @default(now())
-//   updatedAt          DateTime            @updatedAt
-//   isUnisex           Boolean?
-//   description         String?
-//   visitedAt          DateTime?
-//   location            LocationType?
-//   likeCount          Int                 @default(0)
-//   helpfulCount       Int                 @default(0)
-//   smileCount         Int                 @default(0)
-//   sadCount           Int                 @default(0)
-//   user                Users               @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   place               Places              @relation(fields: [placeId], references: [id])
-//   toiletReviewEmoji ToiletReviewEmoji[]
-//   report              Reports[]
+model PublicToiletInfo {
+  id                      Int      @id @default(autoincrement())
+  placeId                 Int      @unique
+  isUnisex                Boolean? // 남여공용 여부
+  maleToiletCount         Int?     // 남성용 좌변기 개수
+  maleUrinalCount         Int?     // 남성용 소변기 개수
+  femaleToiletCount       Int?     // 여성용 좌변기 개수
+  hasHandDryer            Boolean? // 핸드 드라이어 유무
+  hasPowderRoom           Boolean? // 파우더룸 유무
+  hasBabyChangingFacility Boolean? // 기저귀 교환대 유무
+  hasSanitizer            Boolean? // 손 소독제 유무
+  indoor                  Boolean? // 실내 위치 여부
+  accessible              Boolean? // 장애인 접근성 여부
+  hasFeminineProductsBin  Boolean? // 여성 위생용품 수거함 유무
+  hasChildUrinal          Boolean? // 어린이 소변기 유무
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
-//   @@unique([placeId, userId])
-// }
+  place Place @relation(fields: [placeId], references: [id])
+}
 
-// model ToiletReviewEmoji {
-//   id               Int           @id @default(autoincrement())
-//   toiletReviewId Int
-//   userId          Int
-//   emoji            Emoji
-//   toiletReviews   ToiletReviews @relation(fields: [toiletReviewId], references: [id], onDelete: Cascade)
-//   user             Users         @relation(fields: [userId], references: [id], onDelete: Cascade)
+// 유저가 제보한 화장실 정보 
+model UserSubmittedToiletInfo {
+  id                      Int      @id @default(autoincrement())
+  placeId                 Int
+  userId                  Int
+  isUnisex                Boolean? // 남여공용 여부
+  maleToiletCount         Int?     // 남성용 좌변기 개수
+  maleUrinalCount         Int?     // 남성용 소변기 개수
+  femaleToiletCount       Int?     // 여성용 좌변기 개수
+  hasHandDryer            Boolean? // 핸드 드라이어 유무
+  hasPowderRoom           Boolean? // 파우더룸 유무
+  hasBabyChangingFacility Boolean? // 기저귀 교환대 유무
+  hasSanitizer            Boolean? // 손 소독제 유무
+  indoor                  Boolean? // 실내 위치 여부
+  accessible              Boolean? // 장애인 접근성 여부
+  hasFeminineProductsBin  Boolean? // 여성 위생용품 수거함 유무
+  hasChildUrinal          Boolean? // 어린이 소변기 유무
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
-//   @@unique([toiletReviewId, userId])
-// }
+  place Place @relation(fields: [placeId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images      UserSubmittedToiletImage[] 
+}
+
+model UserSubmittedToiletImage {
+  id        Int      @id @default(autoincrement())
+  toiletInfoId Int  
+  key  String   // 이미지 URL
+  createdAt DateTime @default(now())
+
+  userSubmittedToiletInfo UserSubmittedToiletInfo @relation(fields: [toiletInfoId], references: [id] ,onDelete: Cascade)
+}
+
+model PlaceReview {
+  id                  Int              @id @default(autoincrement())
+  placeId             Int
+  userId              Int
+  overallRating       Int              // 전반적족도 별점
+  scentRating         Int?             // 향기 
+  cleanlinessRating   Int?             // 청결도 
+  visitTime           VisitTime?       // 방문 시간대
+  description         String?          // 설명
+  likeCount           Int              @default(0)
+  thumbsUpCount       Int              @default(0)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place               Place            @relation(fields: [placeId], references: [id])
+  reviewReactions      ReviewReaction[]
+  images        ReviewImage[]  
+
+  @@unique([placeId, userId])
+}
+
+model ReviewImage {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int     
+  key       String  
+  createdAt DateTime @default(now())
+
+  review    PlaceReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([id, reviewId])
+}
+
+model ReviewReaction {
+  id          Int         @id @default(autoincrement())
+  reviewId    Int
+  userId      Int
+  emoji       Emoji
+
+  placeReview PlaceReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+}
 
 // model Reports {
 //   id                      Int            @id @default(autoincrement())
@@ -182,20 +251,3 @@ model Region {
 //   @@unique([reporterId, targetUserId])
 //   @@unique([reporterId, targetToiletReviewId])
 // }
-
-enum Provider {
-  LOCAL
-  KAKAO
-  GOOGLE
-  NAVER
-}
-
-enum Role {
-  ADMIN
-  USER
-}
-
-enum PlaceImageType {
-  KAKAO
-  LOCAL
-}

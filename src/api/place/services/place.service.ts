@@ -6,11 +6,15 @@ import { plainToInstance } from 'class-transformer';
 import { PlaceDetailDto } from '@api/place/dtos/response/place-detail.dto';
 import { OAUTH_KEY } from '@core/config/constants/config.constant';
 import axios, { AxiosResponse } from 'axios';
-import { Place, PlaceImage, Region } from '@prisma/client';
+import { Place, PlaceImage, Prisma, Region } from '@prisma/client';
 import {
   IKakaoSearchImageDocuments,
   IKakaoSearchImageResponse,
 } from '@api/place/interface/interface';
+import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
+import { CustomException } from '@exceptions/http/custom.exception';
+import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
+import { PlaceExceptionEnum } from '@exceptions/http/enums/place.exception.enum';
 
 @Injectable()
 export class PlaceService {
@@ -46,9 +50,9 @@ export class PlaceService {
   }
 
   private async ensurePlaceImages(
-    place: Place & { region: Region; placeImage: PlaceImage[] },
+    place: Place & { region: Region; images: PlaceImage[] },
   ) {
-    if (place.placeImage[0]) {
+    if (place.images[0]) {
       return;
     }
 
@@ -58,7 +62,7 @@ export class PlaceService {
     }
 
     await this.placeRepository.createPlaceImages(place.id, placeImages);
-    place.placeImage = await this.placeRepository.getPlaceImages(place.id);
+    place.images = await this.placeRepository.getPlaceImages(place.id);
   }
 
   private async fetchKakaoSearchImages(
@@ -89,6 +93,42 @@ export class PlaceService {
     } catch (error) {
       throw new InternalServerErrorException(
         `Kakao API 호출에 실패했습니다: ${error}`,
+      );
+    }
+  }
+
+  async createPlaceReview(
+    placeId: number,
+    userId: number,
+    dto: CreatePlaceReviewDto,
+    reviewImages: Express.MulterS3.File[],
+  ) {
+    await this.checkPlaceExist(placeId);
+    const selectedReview = await this.placeRepository.getPlaceReviewByUserId(
+      placeId,
+      userId,
+    );
+    if (selectedReview) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        PlaceExceptionEnum.ALREADY_REVIEWED,
+      );
+    }
+
+    await this.placeRepository.createPlaceReview(
+      placeId,
+      userId,
+      dto,
+      reviewImages,
+    );
+  }
+  private async checkPlaceExist(placeId: number) {
+    const selectedPlace = await this.placeRepository.getPlaceById(placeId);
+
+    if (!selectedPlace) {
+      throw new CustomException(
+        HttpExceptionStatusCode.NOT_FOUND,
+        PlaceExceptionEnum.PLACE_NOT_FOUND,
       );
     }
   }

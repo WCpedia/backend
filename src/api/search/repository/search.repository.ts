@@ -1,10 +1,7 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { Prisma, Region } from '@prisma/client';
-import {
-  IPlaceCategory,
-  PrismaTransaction,
-} from '@src/interface/common.interface';
+import { IPlaceCategory } from '@src/interface/common.interface';
 
 @Injectable()
 export class SearchRepository {
@@ -12,7 +9,7 @@ export class SearchRepository {
 
   async upsertPlaceCategory(
     placeCategory: IPlaceCategory,
-    transaction?: PrismaTransaction,
+    transaction?: Prisma.TransactionClient,
   ) {
     return await (transaction ?? this.prismaService).placeCategory.upsert({
       where: {
@@ -25,14 +22,14 @@ export class SearchRepository {
 
   async createPlaceCategory(
     data: Prisma.PlaceCategoryCreateInput,
-    transaction?: PrismaTransaction,
+    transaction?: Prisma.TransactionClient,
   ) {
     return await (transaction ?? this.prismaService).placeCategory.create({
       data,
     });
   }
 
-  async upsertCategory(name: string, transaction?: PrismaTransaction) {
+  async upsertCategory(name: string, transaction?: Prisma.TransactionClient) {
     return await (transaction ?? this.prismaService).category.upsert({
       where: { name },
       update: {},
@@ -42,7 +39,7 @@ export class SearchRepository {
 
   async createPlace(
     data: Prisma.PlaceUncheckedCreateInput,
-    transaction: PrismaTransaction,
+    transaction: Prisma.TransactionClient,
   ) {
     return await (transaction ?? this.prismaService).place.upsert({
       where: { kakaoId: data.kakaoId },
@@ -65,7 +62,7 @@ export class SearchRepository {
 
   async getRegion(
     region: Prisma.RegionAdministrativeDistrictDistrictCompoundUniqueInput,
-    transaction?: PrismaTransaction,
+    transaction?: Prisma.TransactionClient,
   ): Promise<Region> {
     return await (transaction ?? this.prismaService).region.findUnique({
       where: { administrativeDistrict_district: region },
