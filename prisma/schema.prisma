@@ -38,18 +38,17 @@ datasource db {
 }
 
 model User {
-  id            Int       @id @default(autoincrement())
-  role          Role      @default(USER)
-  nickname      String    @unique
-  description   String?
-  profileUrlKey String?
-  createdAt     DateTime  @default(now()) @db.Timestamp(6)
-  updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(6)
-  deletedAt     DateTime? @db.Timestamp(6)
-
+  id                      Int                       @id @default(autoincrement())
+  role                    Role                      @default(USER)
+  nickname                String                    @unique
+  description             String?
+  profileUrlKey           String?
+  createdAt               DateTime                  @default(now()) @db.Timestamp(6)
+  updatedAt               DateTime                  @default(now()) @updatedAt @db.Timestamp(6)
+  deletedAt               DateTime?                 @db.Timestamp(6)
   authentication          Authentication?
-  reviews              PlaceReview[]
-  reviewReactions      ReviewReaction[]
+  reviews                 PlaceReview[]
+  reviewReactions         ReviewReaction[]
   userSubmittedToiletInfo UserSubmittedToiletInfo[]
 }
 
@@ -62,30 +61,33 @@ model Authentication {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt @db.Timestamp(6)
   deletedAt DateTime? @db.Timestamp(6)
-
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([email, provider])
 }
 
 model Place {
-  id              Int     @id @default(autoincrement())
-  kakaoId         String  @unique
-  name            String
-  placeCategoryId Int
-  regionId        Int
-  detailAddress   String
-  telephone       String?
-  stars           String?
-  kakaoUrl        String?
-  x               Float
-  y               Float
-
-  region                  Region?                   @relation(fields: [regionId], references: [id])
-  placeCategory           PlaceCategory             @relation(fields: [placeCategoryId], references: [id])
-  images              PlaceImage[]
+  id                       Int                       @id @default(autoincrement())
+  kakaoId                  String                    @unique
+  name                     String
+  placeCategoryId          Int
+  regionId                 Int
+  detailAddress            String
+  telephone                String?
+  overallRating            Float?                    
+  scentRating              Float?                    
+  cleanlinessRating        Float?        
+  overallRatingCount       Int?
+  scentRatingCount         Int?
+  cleanlinessRatingCount   Int?            
+  kakaoUrl                 String?
+  x                        Float
+  y                        Float
+  region                   Region?                   @relation(fields: [regionId], references: [id])
+  placeCategory            PlaceCategory             @relation(fields: [placeCategoryId], references: [id])
+  images                   PlaceImage[]
   reviews                  PlaceReview[]
-  publicToiletInfo        PublicToiletInfo?
+  publicToiletInfo         PublicToiletInfo?
   userSubmittedToiletInfos UserSubmittedToiletInfo[]
 }
 
@@ -94,32 +96,29 @@ model PlaceImage {
   type    PlaceImageType @default(KAKAO)
   placeId Int
   url     String
-
-  place Place @relation(fields: [placeId], references: [id])
+  place   Place          @relation(fields: [placeId], references: [id])
 }
 
 model PlaceCategory {
-  id              Int    @id @default(autoincrement())
-  fullCategoryIds String @unique
+  id              Int       @id @default(autoincrement())
+  fullCategoryIds String    @unique
   lastDepth       Int
   depth1Id        Int
   depth2Id        Int?
   depth3Id        Int?
   depth4Id        Int?
   depth5Id        Int?
-
-  places  Place[]
-  depth1 Category  @relation("Depth1", fields: [depth1Id], references: [id])
-  depth2 Category? @relation("Depth2", fields: [depth2Id], references: [id])
-  depth3 Category? @relation("Depth3", fields: [depth3Id], references: [id])
-  depth4 Category? @relation("Depth4", fields: [depth4Id], references: [id])
-  depth5 Category? @relation("Depth5", fields: [depth5Id], references: [id])
+  places          Place[]
+  depth1          Category  @relation("Depth1", fields: [depth1Id], references: [id])
+  depth2          Category? @relation("Depth2", fields: [depth2Id], references: [id])
+  depth3          Category? @relation("Depth3", fields: [depth3Id], references: [id])
+  depth4          Category? @relation("Depth4", fields: [depth4Id], references: [id])
+  depth5          Category? @relation("Depth5", fields: [depth5Id], references: [id])
 }
 
 model Category {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-
+  id     Int             @id @default(autoincrement())
+  name   String          @unique
   depth1 PlaceCategory[] @relation("Depth1")
   depth2 PlaceCategory[] @relation("Depth2")
   depth3 PlaceCategory[] @relation("Depth3")
@@ -140,9 +139,9 @@ model PublicToiletInfo {
   id                      Int      @id @default(autoincrement())
   placeId                 Int      @unique
   isUnisex                Boolean? // 남여공용 여부
-  maleToiletCount         Int?     // 남성용 좌변기 개수
-  maleUrinalCount         Int?     // 남성용 소변기 개수
-  femaleToiletCount       Int?     // 여성용 좌변기 개수
+  maleToiletCount         Int? // 남성용 좌변기 개수
+  maleUrinalCount         Int? // 남성용 소변기 개수
+  femaleToiletCount       Int? // 여성용 좌변기 개수
   hasHandDryer            Boolean? // 핸드 드라이어 유무
   hasPowderRoom           Boolean? // 파우더룸 유무
   hasBabyChangingFacility Boolean? // 기저귀 교환대 유무
@@ -153,19 +152,18 @@ model PublicToiletInfo {
   hasChildUrinal          Boolean? // 어린이 소변기 유무
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
-
-  place Place @relation(fields: [placeId], references: [id])
+  place                   Place    @relation(fields: [placeId], references: [id])
 }
 
 // 유저가 제보한 화장실 정보 
 model UserSubmittedToiletInfo {
-  id                      Int      @id @default(autoincrement())
+  id                      Int                        @id @default(autoincrement())
   placeId                 Int
   userId                  Int
   isUnisex                Boolean? // 남여공용 여부
-  maleToiletCount         Int?     // 남성용 좌변기 개수
-  maleUrinalCount         Int?     // 남성용 소변기 개수
-  femaleToiletCount       Int?     // 여성용 좌변기 개수
+  maleToiletCount         Int? // 남성용 좌변기 개수
+  maleUrinalCount         Int? // 남성용 소변기 개수
+  femaleToiletCount       Int? // 여성용 좌변기 개수
   hasHandDryer            Boolean? // 핸드 드라이어 유무
   hasPowderRoom           Boolean? // 파우더룸 유무
   hasBabyChangingFacility Boolean? // 기저귀 교환대 유무
@@ -174,51 +172,47 @@ model UserSubmittedToiletInfo {
   accessible              Boolean? // 장애인 접근성 여부
   hasFeminineProductsBin  Boolean? // 여성 위생용품 수거함 유무
   hasChildUrinal          Boolean? // 어린이 소변기 유무
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-
-  place Place @relation(fields: [placeId], references: [id])
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  images      UserSubmittedToiletImage[] 
+  createdAt               DateTime                   @default(now())
+  updatedAt               DateTime                   @updatedAt
+  place                   Place                      @relation(fields: [placeId], references: [id])
+  user                    User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images                  UserSubmittedToiletImage[]
 }
 
 model UserSubmittedToiletImage {
-  id        Int      @id @default(autoincrement())
-  toiletInfoId Int  
-  key  String   // 이미지 URL
-  createdAt DateTime @default(now())
-
-  userSubmittedToiletInfo UserSubmittedToiletInfo @relation(fields: [toiletInfoId], references: [id] ,onDelete: Cascade)
+  id                      Int                     @id @default(autoincrement())
+  toiletInfoId            Int
+  key                     String // 이미지 URL
+  createdAt               DateTime                @default(now())
+  userSubmittedToiletInfo UserSubmittedToiletInfo @relation(fields: [toiletInfoId], references: [id], onDelete: Cascade)
 }
 
 model PlaceReview {
-  id                  Int              @id @default(autoincrement())
-  placeId             Int
-  userId              Int
-  overallRating       Int              // 전반적족도 별점
-  scentRating         Int?             // 향기 
-  cleanlinessRating   Int?             // 청결도 
-  visitTime           VisitTime?       // 방문 시간대
-  description         String?          // 설명
-  likeCount           Int              @default(0)
-  thumbsUpCount       Int              @default(0)
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-
-  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  place               Place            @relation(fields: [placeId], references: [id])
-  reviewReactions      ReviewReaction[]
-  images        ReviewImage[]  
+  id                Int              @id @default(autoincrement())
+  placeId           Int
+  userId            Int
+  overallRating     Int // 전반적 만족도 별점
+  scentRating       Int? // 향기 
+  cleanlinessRating Int? // 청결도 
+  visitTime         VisitTime? // 방문 시간대
+  description       String? // 설명
+  likeCount         Int              @default(0)
+  thumbsUpCount     Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place             Place            @relation(fields: [placeId], references: [id])
+  reviewReactions   ReviewReaction[]
+  images            ReviewImage[]
 
   @@unique([placeId, userId])
 }
 
 model ReviewImage {
-  id        Int      @id @default(autoincrement())
-  reviewId  Int     
-  key       String  
-  createdAt DateTime @default(now())
-
+  id        Int         @id @default(autoincrement())
+  reviewId  Int
+  key       String
+  createdAt DateTime    @default(now())
   review    PlaceReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
   @@unique([id, reviewId])
@@ -229,7 +223,6 @@ model ReviewReaction {
   reviewId    Int
   userId      Int
   emoji       Emoji
-
   placeReview PlaceReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 

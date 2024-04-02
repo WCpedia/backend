@@ -10,6 +10,7 @@ import { Place, PlaceImage, Prisma, Region } from '@prisma/client';
 import {
   IKakaoSearchImageDocuments,
   IKakaoSearchImageResponse,
+  IPlaceUpdateRatingInput,
 } from '@api/place/interface/interface';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 import { CustomException } from '@exceptions/http/custom.exception';
@@ -103,7 +104,7 @@ export class PlaceService {
     dto: CreatePlaceReviewDto,
     reviewImages: Express.MulterS3.File[],
   ) {
-    await this.checkPlaceExist(placeId);
+    const selectedPlace = await this.checkPlaceExist(placeId);
     const selectedReview = await this.placeRepository.getPlaceReviewByUserId(
       placeId,
       userId,
@@ -115,21 +116,77 @@ export class PlaceService {
       );
     }
 
-    await this.placeRepository.createPlaceReview(
-      placeId,
-      userId,
-      dto,
-      reviewImages,
+    await this.prismaService.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await this.placeRepository.createPlaceReview(
+          placeId,
+          userId,
+          dto,
+          reviewImages,
+          transaction,
+        );
+        await this.updatePlaceRating(selectedPlace, dto, transaction);
+      },
     );
   }
-  private async checkPlaceExist(placeId: number) {
-    const selectedPlace = await this.placeRepository.getPlaceById(placeId);
 
+  private async checkPlaceExist(placeId: number): Promise<Place> {
+    const selectedPlace = await this.placeRepository.getPlaceById(placeId);
     if (!selectedPlace) {
       throw new CustomException(
         HttpExceptionStatusCode.NOT_FOUND,
         PlaceExceptionEnum.PLACE_NOT_FOUND,
       );
     }
+    return selectedPlace;
+  }
+
+  private async updatePlaceRating(
+    place: Place,
+    dto: CreatePlaceReviewDto,
+    transaction: Prisma.TransactionClient,
+  ): Promise<void> {
+    const ratingsToUpdate = [
+      'overallRating',
+      'scentRating',
+      'cleanlinessRating',
+    ] as const;
+
+    const updateData = ratingsToUpdate.reduce((acc, ratingType) => {
+      const { updatedRating, updatedCount } = this.calculateNewRatingAndCount(
+        place[ratingType],
+        place[`${ratingType}Count`],
+        dto[ratingType],
+      );
+      acc[ratingType] = updatedRating;
+      acc[`${ratingType}Count`] = updatedCount;
+      return acc;
+    }, {} as IPlaceUpdateRatingInput);
+
+    await this.placeRepository.updatePlaceRating(
+      place.id,
+      updateData,
+      transaction,
+    );
+  }
+
+  private calculateNewRatingAndCount(
+    currentRating: number | null,
+    currentCount: number | null,
+    newRating: number | undefined,
+  ): { updatedRating: number | null; updatedCount: number | null } {
+    if (newRating === undefined) {
+      return { updatedRating: currentRating, updatedCount: currentCount };
+    }
+    const updatedCount = (currentCount ?? 0) + 1;
+    const updatedRating =
+      currentRating === null
+        ? newRating
+        : Math.round(
+            ((currentRating * (updatedCount - 1) + newRating) / updatedCount) *
+              100,
+          ) / 100;
+
+    return { updatedRating, updatedCount };
   }
 }
