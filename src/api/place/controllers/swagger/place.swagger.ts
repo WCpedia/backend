@@ -9,6 +9,7 @@ import { MultipartFormDataRequestDto } from '@src/swagger-builder/multipart-form
 import { CreatePlaceReviewDto } from '@api/place/dtos/request/create-place-review.dto';
 import { ExceptionResponseDto } from '@src/swagger-builder/exeption-response.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
+import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
 
 export const ApiPlace: ApiOperator<keyof PlaceController> = {
   GetPlace: (
@@ -38,6 +39,7 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
         CreatePlaceReviewDto,
         { required: false, isArray: true },
       ),
+      StatusResponseDto.swaggerBuilder(HttpStatus.CREATED, 'CreatePlaceReview'),
     );
   },
 };

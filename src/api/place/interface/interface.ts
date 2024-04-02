@@ -16,3 +16,12 @@ export interface IKakaoSearchImageDocuments {
   image_url: string;
   thumbnail_url: string;
 }
+
+export interface IPlaceUpdateRatingInput {
+  overallRating: number;
+  scentRating: number;
+  cleanlinessRating: number;
+  overallRatingCount: number;
+  scentRatingCount: number;
+  cleanlinessRatingCount: number;
+}

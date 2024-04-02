@@ -50,8 +50,8 @@ export class PlaceController {
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @UploadedFiles() reviewImages: Express.MulterS3.File[],
     @Body() createPlaceReviewDto: CreatePlaceReviewDto,
-  ) {
-    return await this.placeService.createPlaceReview(
+  ): Promise<void> {
+    await this.placeService.createPlaceReview(
       placeId,
       authorizedUser.userId,
       createPlaceReviewDto,

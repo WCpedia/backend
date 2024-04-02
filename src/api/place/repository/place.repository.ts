@@ -1,6 +1,9 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { IKakaoSearchImageDocuments } from '@api/place/interface/interface';
+import {
+  IKakaoSearchImageDocuments,
+  IPlaceUpdateRatingInput,
+} from '@api/place/interface/interface';
 import { PlaceReview, Prisma } from '@prisma/client';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 
@@ -56,13 +59,9 @@ export class PlaceRepository {
     userId: number,
     dto: CreatePlaceReviewDto,
     reviewImages?: Express.MulterS3.File[],
+    transaction?: Prisma.TransactionClient,
   ): Promise<void> {
-    const reviewData: any = {
-      placeId,
-      userId,
-      ...dto,
-    };
-    console.log(reviewImages);
+    const reviewData: any = { placeId, userId, ...dto };
 
     if (reviewImages && reviewImages.length > 0) {
       reviewData.images = {
@@ -74,7 +73,7 @@ export class PlaceRepository {
       };
     }
 
-    await this.prismaService.placeReview.create({
+    await (transaction ?? this.prismaService).placeReview.create({
       data: reviewData,
     });
   }
@@ -82,6 +81,17 @@ export class PlaceRepository {
   async getPlaceById(placeId: number) {
     return await this.prismaService.place.findUnique({
       where: { id: placeId },
+    });
+  }
+
+  async updatePlaceRating(
+    placeId: number,
+    data: IPlaceUpdateRatingInput,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).place.update({
+      where: { id: placeId },
+      data,
     });
   }
 }

@@ -38,12 +38,6 @@ export class PlaceDetailDto implements Place {
   telephone: string;
 
   @ApiProperty({
-    description: '별점',
-  })
-  @Expose()
-  stars: string;
-
-  @ApiProperty({
     description: '카카오 URL',
   })
   @Expose()
@@ -82,6 +76,48 @@ export class PlaceDetailDto implements Place {
   @Type(() => PlaceCategoryWithDepthDto)
   @Expose()
   placeCategory: PlaceCategoryWithDepthDto;
+
+  @ApiProperty({
+    type: Number,
+    description: '전반적 만족도 별점',
+  })
+  @Expose()
+  overallRating: number;
+
+  @ApiProperty({
+    type: Number,
+    description: '향기 별점',
+  })
+  @Expose()
+  scentRating: number;
+
+  @ApiProperty({
+    type: Number,
+    description: '청결도 별점',
+  })
+  @Expose()
+  cleanlinessRating: number;
+
+  @ApiProperty({
+    type: Number,
+    description: '전반적인 만족도 별점 수',
+  })
+  @Expose()
+  overallRatingCount: number;
+
+  @ApiProperty({
+    type: Number,
+    description: '향기 별점 수',
+  })
+  @Expose()
+  scentRatingCount: number;
+
+  @ApiProperty({
+    type: Number,
+    description: '청결도 별점 수',
+  })
+  @Expose()
+  cleanlinessRatingCount: number;
 
   placeCategoryId: number;
   regionId: number;

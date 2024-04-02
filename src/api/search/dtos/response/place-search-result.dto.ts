@@ -47,10 +47,27 @@ export class PlaceSearchResultDto implements Place {
   @Expose()
   placeCategory: PlaceCategoryWithDepthDto;
 
-  stars: string;
+  @ApiProperty({
+    type: Number,
+    description: '전반적인 만족도 별점',
+  })
+  @Expose()
+  overallRating: number;
+
+  @ApiProperty({
+    type: Number,
+    description: '전반적인 만족도 별점 수',
+  })
+  @Expose()
+  overallRatingCount: number;
+
   kakaoUrl: string;
   x: number;
   y: number;
   placeCategoryId: number;
   regionId: number;
+  scentRating: number;
+  cleanlinessRating: number;
+  scentRatingCount: number;
+  cleanlinessRatingCount: number;
 }

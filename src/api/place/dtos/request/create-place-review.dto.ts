@@ -17,7 +17,7 @@ export class CreatePlaceReviewDto {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
-  @Max(5)
+  @Max(10)
   overallRating: number;
 
   @ApiProperty({
@@ -27,7 +27,7 @@ export class CreatePlaceReviewDto {
   @IsOptional()
   @IsNumber()
   @Min(1)
-  @Max(5)
+  @Max(10)
   scentRating?: number;
 
   @ApiProperty({
@@ -37,7 +37,7 @@ export class CreatePlaceReviewDto {
   @IsOptional()
   @IsNumber()
   @Min(1)
-  @Max(5)
+  @Max(10)
   cleanlinessRating?: number;
 
   @ApiProperty({
