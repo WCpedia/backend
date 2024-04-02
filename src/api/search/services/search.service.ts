@@ -9,7 +9,6 @@ import { Place, PlaceCategory, Prisma, Region } from '@prisma/client';
 import {
   IExtractedRegion,
   IPlaceCategory,
-  PrismaTransaction,
 } from '@src/interface/common.interface';
 import {
   IKakaoSearchDocuments,
@@ -69,36 +68,38 @@ export class SearchService {
   }
 
   private async createPlacesFromKakaoData(kakaoData: IKakaoSearchDocuments[]) {
-    return this.prismaService.$transaction((transaction) => {
-      return Promise.all(
-        kakaoData.map((data) => {
-          const categoryPromise = this.upsertPlaceCategory(
-            data.category_name,
-            transaction,
-          );
-          const regionPromise = this.getPlaceRegion(data.address_name);
+    return this.prismaService.$transaction(
+      (transaction: Prisma.TransactionClient) => {
+        return Promise.all(
+          kakaoData.map((data) => {
+            const categoryPromise = this.upsertPlaceCategory(
+              data.category_name,
+              transaction,
+            );
+            const regionPromise = this.getPlaceRegion(data.address_name);
 
-          return Promise.all([categoryPromise, regionPromise]).then(
-            ([category, selectedRegion]) => {
-              return this.searchRepository.createPlace(
-                {
-                  kakaoId: data.id,
-                  name: data.place_name,
-                  placeCategoryId: category.id,
-                  regionId: selectedRegion.id,
-                  detailAddress: selectedRegion.detailAddress,
-                  telephone: data.phone,
-                  kakaoUrl: data.place_url,
-                  x: parseFloat(data.x),
-                  y: parseFloat(data.y),
-                },
-                transaction,
-              );
-            },
-          );
-        }),
-      );
-    });
+            return Promise.all([categoryPromise, regionPromise]).then(
+              ([category, selectedRegion]) => {
+                return this.searchRepository.createPlace(
+                  {
+                    kakaoId: data.id,
+                    name: data.place_name,
+                    placeCategoryId: category.id,
+                    regionId: selectedRegion.id,
+                    detailAddress: selectedRegion.detailAddress,
+                    telephone: data.phone,
+                    kakaoUrl: data.place_url,
+                    x: parseFloat(data.x),
+                    y: parseFloat(data.y),
+                  },
+                  transaction,
+                );
+              },
+            );
+          }),
+        );
+      },
+    );
   }
 
   private async getPlaceRegion(address: string): Promise<
@@ -114,7 +115,7 @@ export class SearchService {
 
   private async upsertPlaceCategory(
     categoryName: string,
-    transaction: PrismaTransaction,
+    transaction: Prisma.TransactionClient,
   ): Promise<PlaceCategory> {
     const placeCategory: IPlaceCategory = await this.generatePlaceCategory(
       categoryName,
@@ -129,7 +130,7 @@ export class SearchService {
 
   private async generatePlaceCategory(
     category: string,
-    transaction: PrismaTransaction,
+    transaction: Prisma.TransactionClient,
   ): Promise<IPlaceCategory> {
     const categoryParts = category.split(' > ');
     const categoryIds = [];

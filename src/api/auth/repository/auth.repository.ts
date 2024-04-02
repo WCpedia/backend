@@ -1,7 +1,6 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { Authentication, Prisma, Provider, User } from '@prisma/client';
-import { PrismaTransaction } from '@src/interface/common.interface';
+import { Authentication, Prisma, User } from '@prisma/client';
 
 @Injectable()
 export class AuthRepository {
@@ -24,7 +23,7 @@ export class AuthRepository {
 
   async createUser(
     userInputDate: Prisma.UserCreateInput,
-    transaction?: PrismaTransaction,
+    transaction?: Prisma.TransactionClient,
   ): Promise<User> {
     return await (transaction ?? this.prismaService).user.create({
       data: userInputDate,
@@ -33,7 +32,7 @@ export class AuthRepository {
 
   async createAuthentication(
     authInputData: Prisma.AuthenticationUncheckedCreateInput,
-    transaction?: PrismaTransaction,
+    transaction?: Prisma.TransactionClient,
   ): Promise<void> {
     await (transaction ?? this.prismaService).authentication.create({
       data: authInputData,

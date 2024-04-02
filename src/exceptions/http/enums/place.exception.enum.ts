@@ -1,0 +1,4 @@
+export enum PlaceExceptionEnum {
+  ALREADY_REVIEWED = 'ALREADY_REVIEWED',
+  PLACE_NOT_FOUND = 'PLACE_NOT_FOUND',
+}

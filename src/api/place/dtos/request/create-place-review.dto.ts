@@ -47,7 +47,7 @@ export class CreatePlaceReviewDto {
   })
   @IsOptional()
   @IsString()
-  visitTime?: string;
+  visitTime?: VisitTime;
 
   @ApiProperty({
     description: '설명',

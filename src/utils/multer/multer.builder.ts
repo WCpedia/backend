@@ -17,7 +17,7 @@ export class MulterBuilder {
   protected bucketRegion: string;
   protected bucketName: string;
   protected storage: multer.StorageEngine;
-  protected limits: { fileSize: number };
+  protected limits: { fileSize: number; files: number };
   protected fileFilter: (
     req: Request,
     file: Express.Multer.File,
@@ -54,7 +54,7 @@ export class MulterBuilder {
     return this;
   }
 
-  setLimits(limits: { fileSize: number }): this {
+  setLimits(limits: { fileSize: number; files: number }): this {
     this.limits = limits;
     return this;
   }

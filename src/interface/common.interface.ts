@@ -34,12 +34,6 @@ export interface IPlaceCategory {
   depth5Id?: number;
 }
 
-export interface PrismaTransaction
-  extends Omit<
-    PrismaService,
-    '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
-  > {}
-
 export interface IUploadFileParams {
   maxCount: number;
   path: string;
