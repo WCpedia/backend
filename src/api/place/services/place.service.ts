@@ -46,9 +46,9 @@ export class PlaceService {
   }
 
   private async ensurePlaceImages(
-    place: Place & { region: Region; placeImage: PlaceImage[] },
+    place: Place & { region: Region; images: PlaceImage[] },
   ) {
-    if (place.placeImage[0]) {
+    if (place.images[0]) {
       return;
     }
 
@@ -58,7 +58,7 @@ export class PlaceService {
     }
 
     await this.placeRepository.createPlaceImages(place.id, placeImages);
-    place.placeImage = await this.placeRepository.getPlaceImages(place.id);
+    place.images = await this.placeRepository.getPlaceImages(place.id);
   }
 
   private async fetchKakaoSearchImages(
