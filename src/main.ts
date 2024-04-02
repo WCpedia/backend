@@ -1,9 +1,8 @@
 import { ENVIRONMENT_KEY } from '@core/config/constants/config.constant';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { HttpExceptionFilter } from '@exceptions/http/filters/http-exception.filter';
-import { SuccessInterceptor } from '@interceptors/global/success.interceptor';
+import { SuccessInterceptor } from '@interceptors/success.interceptor';
 import {
-  VersioningType,
   ClassSerializerInterceptor,
   ValidationPipe,
   Logger,
@@ -15,6 +14,8 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { useContainer } from 'class-validator';
+import { UnauthorizedExceptionFilter } from '@exceptions/http/filters/unauthorized-exception.filter';
+import { CustomExceptionFilter } from '@exceptions/http/filters/custom-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -74,7 +75,11 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(
+    new HttpExceptionFilter(),
+    new UnauthorizedExceptionFilter(),
+    new CustomExceptionFilter(),
+  );
 
   app.disable('x-powered-by');
   app.use(cookieParser());

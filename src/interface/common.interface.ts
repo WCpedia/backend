@@ -39,3 +39,8 @@ export interface PrismaTransaction
     PrismaService,
     '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
   > {}
+
+export interface IUploadFileParams {
+  maxCount: number;
+  path: string;
+}

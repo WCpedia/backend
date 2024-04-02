@@ -13,7 +13,7 @@
     "paths": {
       "@api/*": ["./src/api/*"],
       "@dtos/*": ["./src/dtos/*"],
-      "@enums/*": ["./src/enums/*"],
+      "@enums/*": ["src/constants/enums/*"],
       "@exceptions/*": ["./src/exceptions/*"],
       "@interceptors/*": ["./src/interceptors/*"],
       "@core/*": ["./src/core/*"],
