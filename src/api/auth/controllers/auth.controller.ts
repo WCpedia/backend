@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   Res,
+  UploadedFile,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { IUserAuth, IToken } from '../interface/interface';
@@ -19,6 +20,11 @@ import { ApiAuth } from './swaggers/auth.swagger';
 import { NewUserOauthDto } from '../dtos/responses/new-user-oauth.dto';
 import { plainToInstance } from 'class-transformer';
 import { SignUpWithOAuthProviderDto } from '../dtos/requests/oauth-signup-user.dto';
+import { UploadImages } from '@src/utils/image-upload-interceptor';
+import {
+  UploadFileLimit,
+  FilePath,
+} from '@src/constants/consts/upload-file.const';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -65,13 +71,21 @@ export class AuthController {
   @ApiAuth.SignUpWithOAuthProvider({
     summary: 'OAuth를 통한 가입',
   })
+  @UploadImages({
+    maxCount: UploadFileLimit.SINGLE,
+    path: FilePath.USER,
+  })
   @Post('signup/oauth')
   async signUpWithOAuthProvider(
+    @UploadedFile() profileImage: Express.MulterS3.File,
     @Body() signUpWithOAuthProviderDto: SignUpWithOAuthProviderDto,
   ) {
     if (signUpWithOAuthProviderDto.provider === Provider.LOCAL) {
     } else {
-      await this.authService.signUpWithOAuth(signUpWithOAuthProviderDto);
+      await this.authService.signUpWithOAuth(
+        signUpWithOAuthProviderDto,
+        profileImage,
+      );
     }
   }
 }

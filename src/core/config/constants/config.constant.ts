@@ -35,7 +35,9 @@ export const OAUTH_KEY = {
 } as const;
 
 export const REDIS_KEY = {
-  TEMP_AUTH_TTL: 'TEMP_AUTH_TTL',
+  REDIS_URL: 'REDIS_URL',
+  REDIS_PORT: 'REDIS_PORT',
+  REDIS_TEMP_AUTH_TTL: 'REDIS_TEMP_AUTH_TTL',
 } as const;
 
 export const ENVIRONMENT_KEY = {

@@ -25,7 +25,6 @@ export class RefreshTokenStrategy extends PassportStrategy(
           return request?.cookies?.refreshToken;
         },
       ]),
-      passReqToCallback: true,
     });
   }
 

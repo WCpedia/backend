@@ -34,6 +34,7 @@ export class SignUpWithOAuthProviderDto {
 
   @ApiProperty({
     description: '비밀번호',
+    required: false,
   })
   @ValidateIf(({ provider }) => provider === Provider.LOCAL)
   @IsNotEmpty()
@@ -45,11 +46,4 @@ export class SignUpWithOAuthProviderDto {
   })
   @IsOptional()
   description: string;
-
-  @ApiProperty({
-    description: '프로필 이미지 key',
-    required: false,
-  })
-  @IsOptional()
-  profileImageKey: string;
 }

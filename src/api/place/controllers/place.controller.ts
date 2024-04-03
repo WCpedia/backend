@@ -15,7 +15,10 @@ import { PlaceDetailDto } from '@api/place/dtos/response/place-detail.dto';
 import { UploadImages } from '@src/utils/image-upload-interceptor';
 import { ApiTags } from '@nestjs/swagger';
 import { DOMAIN_NAME } from '@src/constants/enums/domain-name.enum';
-import { UploadFileLimit } from '@src/constants/consts/upload-file.const';
+import {
+  FilePath,
+  UploadFileLimit,
+} from '@src/constants/consts/upload-file.const';
 import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.decorator';
 import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
 import { IAuthorizedUser } from '@api/auth/interface/interface';
@@ -47,7 +50,7 @@ export class PlaceController {
   @Post(':placeId/review')
   @UploadImages({
     maxCount: UploadFileLimit.REVIEW_IMAGES,
-    path: 'place',
+    path: FilePath.REVIEW,
   })
   @UseGuards(AccessTokenGuard)
   async createPlaceReview(

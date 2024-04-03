@@ -6,7 +6,6 @@ import {
   OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import {
@@ -15,7 +14,8 @@ import {
   IUserAuth,
   IAuthorizedUser,
 } from '../interface/interface';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { JWT_KEY } from '@core/config/constants/config.constant';
 
@@ -62,11 +62,9 @@ export class AuthTokenService {
     });
 
     const targetId = payload.userId;
-    await this.cacheManager.set(
-      `Refresh/${targetId}`,
-      refreshToken,
-      this.jwtRefreshTokenTtl,
-    );
+    await this.cacheManager.set(`Refresh/${targetId}`, refreshToken, {
+      ttl: this.jwtRefreshTokenTtl,
+    });
 
     return { accessToken, refreshToken };
   }
