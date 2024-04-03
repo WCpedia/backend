@@ -7,6 +7,8 @@ import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
 import { AuthController } from '../auth.controller';
 import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
 import { NewUserOauthDto } from '@api/auth/dtos/responses/new-user-oauth.dto';
+import { MultipartFormDataRequestDto } from '@src/swagger-builder/multipart-form-data-request.dto';
+import { SignUpWithOAuthProviderDto } from '@api/auth/dtos/requests/oauth-signup-user.dto';
 
 export const ApiAuth: ApiOperator<keyof AuthController> = {
   SignInWithOauthProvider: (
@@ -33,9 +35,11 @@ export const ApiAuth: ApiOperator<keyof AuthController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      StatusResponseDto.swaggerBuilder(
-        HttpStatus.CREATED,
+      MultipartFormDataRequestDto.swaggerBuilder(
         'SignUpWithOAuthProvider',
+        'image',
+        SignUpWithOAuthProviderDto,
+        { required: false },
       ),
     );
   },

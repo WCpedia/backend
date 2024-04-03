@@ -2,9 +2,9 @@ import { ConfigModuleOptions } from '@nestjs/config';
 import * as Joi from 'joi';
 
 const REDIS_KEY_VALIDATOR = {
-  REDIS_HOST: Joi.string().required(),
+  REDIS_URL: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
-  REDIS_PASSWORD: Joi.string().required(),
+  REDIS_TEMP_AUTH_TTL: Joi.number().required(),
 };
 
 const JWT_KEY_VALIDATOR = {

@@ -16,7 +16,8 @@ import {
   IGoogleUserProfile,
   INaverUserProfile,
 } from '@api/auth/interface/interface';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { SignUpWithOAuthProviderDto } from '../dtos/requests/oauth-signup-user.dto';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 
@@ -25,7 +26,7 @@ export class AuthService {
   private kakaoGetUserUri: string;
   private googleGetUserUri: string;
   private naverGetUserUri: string;
-  private tempAuthTtl: number;
+  private redisTempAuthTtl: number;
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -42,7 +43,9 @@ export class AuthService {
     this.googleGetUserUri = this.configService.get<string>(
       OAUTH_KEY.GOOGLE_GET_USER_URI,
     );
-    this.tempAuthTtl = this.configService.get<number>(REDIS_KEY.TEMP_AUTH_TTL);
+    this.redisTempAuthTtl = this.configService.get<number>(
+      REDIS_KEY.REDIS_TEMP_AUTH_TTL,
+    );
   }
 
   async signinWithOAuth(
@@ -65,11 +68,10 @@ export class AuthService {
     const user = await this.authRepository.getUserWithAuth(email);
 
     if (!user) {
-      await this.cacheManager.set(
-        `TempAuth/${email}`,
-        provider,
-        this.tempAuthTtl,
-      );
+      await this.cacheManager.set(`TempAuth/${email}`, provider, {
+        ttl: this.redisTempAuthTtl,
+      });
+
       return { email, provider };
     }
 
@@ -274,7 +276,10 @@ export class AuthService {
   //   return mappedSignUpType;
   // }
 
-  async signUpWithOAuth(dto: SignUpWithOAuthProviderDto) {
+  async signUpWithOAuth(
+    dto: SignUpWithOAuthProviderDto,
+    profileImage: Express.MulterS3.File,
+  ) {
     const tempAuth = await this.cacheManager.get(`TempAuth/${dto.email}`);
     if (!tempAuth) {
       throw new NotFoundException(`가입 정보 만료`);
@@ -283,17 +288,20 @@ export class AuthService {
       throw new BadRequestException(`가입 정보가 일치하지 않습니다.`);
     }
 
-    await this.createUserAuth(dto);
+    await this.createUserAuth(dto, profileImage);
   }
 
-  private async createUserAuth(dto: SignUpWithOAuthProviderDto) {
-    const { nickname, description, profileImageKey, ...authInputDate } = dto;
+  private async createUserAuth(
+    dto: SignUpWithOAuthProviderDto,
+    profileImage: Express.MulterS3.File,
+  ) {
+    const { nickname, description, ...authInputDate } = dto;
     await this.prismaService.$transaction(async (transaction) => {
       const createdUser = await this.authRepository.createUser(
         {
           nickname,
           description,
-          profileImageKey,
+          profileImageKey: profileImage?.key,
         },
         transaction,
       );
