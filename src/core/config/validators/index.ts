@@ -39,7 +39,7 @@ const OAUTH_KEY_VALIDATOR = {
 
 export const ENVIRONMENT_KEY_VALIDATOR: ConfigModuleOptions = {
   isGlobal: true,
-  validationSchema: Joi.object({
+  validationOptions: Joi.object({
     PORT: Joi.number().required(),
     ...DATABASE_KEY_VALIDATOR,
     ...REDIS_KEY_VALIDATOR,
