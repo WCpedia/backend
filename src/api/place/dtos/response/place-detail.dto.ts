@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Place, Region } from '@prisma/client';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { PlaceImageDto } from './place-image.dto';
+import { RegionDto } from '@api/common/dto/region.dto';
 
 @Exclude()
 export class PlaceDetailDto implements Place {
@@ -64,8 +65,10 @@ export class PlaceDetailDto implements Place {
   placeImage: PlaceImageDto[];
 
   @ApiProperty({
+    type: RegionDto,
     description: '지역 정보',
   })
+  @Type(() => RegionDto)
   @Expose()
   region: Region;
 
