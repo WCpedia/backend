@@ -22,6 +22,9 @@ import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
+import { AllowGuestGuard } from '@api/common/guards/allow-guest.guard';
+import { PlaceReviewWithDetailsDto } from '../dtos/response/place-review.dto';
+import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
 
 @ApiTags('place')
 @Controller(DOMAIN_NAME.PLACE)
@@ -29,11 +32,13 @@ export class PlaceController {
   constructor(private readonly placeService: PlaceService) {}
 
   @ApiPlace.GetPlace({
-    summary: '장소 조회',
+    summary: '가게 조회',
   })
-  @Get(':kakaoId')
-  async getPlace(@Param('kakaoId') kakaoId: string): Promise<PlaceDetailDto> {
-    return await this.placeService.getPlaceByKakaoId(kakaoId);
+  @Get(':placeId')
+  async getPlace(
+    @Param('placeId', ParseIntPipe) placeId: number,
+  ): Promise<PlaceDetailDto> {
+    return await this.placeService.getPlaceByPlaceId(placeId);
   }
 
   @ApiPlace.CreatePlaceReview({
@@ -56,6 +61,36 @@ export class PlaceController {
       authorizedUser.userId,
       createPlaceReviewDto,
       reviewImages,
+    );
+  }
+
+  @ApiPlace.GetPlaceReviews({
+    summary: '가게 리뷰 조회',
+  })
+  @UseGuards(AllowGuestGuard)
+  @Get(':placeId/reviews')
+  async getPlaceReviews(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Param('placeId', ParseIntPipe) placeId: number,
+  ): Promise<PlaceReviewWithDetailsDto[]> {
+    return await this.placeService.getPlaceReviewsByPlaceId(
+      placeId,
+      authorizedUser?.userId,
+    );
+  }
+
+  @ApiPlace.GetMyPlaceReview({
+    summary: '내가 작성한 가게 리뷰 조회',
+  })
+  @UseGuards(AccessTokenGuard)
+  @Get(':placeId/my-review')
+  async getMyPlaceReview(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Param('placeId', ParseIntPipe) placeId: number,
+  ): Promise<MyPlaceReviewDto> {
+    return await this.placeService.getMyPlaceReview(
+      placeId,
+      authorizedUser.userId,
     );
   }
 }

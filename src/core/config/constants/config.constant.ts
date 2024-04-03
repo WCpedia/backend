@@ -21,6 +21,7 @@ export const AWS_S3_KEY = {
   S3_SECRET_KEY: 'S3_SECRET_KEY',
   S3_BUCKET_REGION: 'S3_BUCKET_REGION',
   S3_BUCKET_NAME: 'S3_BUCKET_NAME',
+  S3_BUCKET_URL: 'S3_BUCKET_URL',
 } as const;
 
 export const OAUTH_KEY = {

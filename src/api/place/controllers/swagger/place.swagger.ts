@@ -10,6 +10,8 @@ import { CreatePlaceReviewDto } from '@api/place/dtos/request/create-place-revie
 import { ExceptionResponseDto } from '@src/swagger-builder/exeption-response.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
+import { PlaceReviewWithDetailsDto } from '@api/place/dtos/response/place-review.dto';
+import { MyPlaceReviewDto } from '@api/place/dtos/response/my-place-review.dto';
 
 export const ApiPlace: ApiOperator<keyof PlaceController> = {
   GetPlace: (
@@ -40,6 +42,37 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
         { required: false, isArray: true },
       ),
       StatusResponseDto.swaggerBuilder(HttpStatus.CREATED, 'CreatePlaceReview'),
+    );
+  },
+
+  GetPlaceReviews: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      CommonResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'GetPlaceReviews',
+        PlaceReviewWithDetailsDto,
+        { isArray: true },
+      ),
+    );
+  },
+
+  GetMyPlaceReview: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      CommonResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'GetMyPlaceReview',
+        MyPlaceReviewDto,
+      ),
     );
   },
 };

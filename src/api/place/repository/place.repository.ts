@@ -11,9 +11,9 @@ import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 export class PlaceRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getPlaceByKakaoId(kakaoId: string) {
+  async getPlaceWithDetailsById(id: number) {
     return await this.prismaService.place.findFirst({
-      where: { kakaoId },
+      where: { id },
       include: {
         region: true,
         placeCategory: {
@@ -92,6 +92,29 @@ export class PlaceRepository {
     return await (transaction ?? this.prismaService).place.update({
       where: { id: placeId },
       data,
+    });
+  }
+
+  async getPlaceReviewWithDetailsByPlaceId(placeId: number, userId?: number) {
+    return await this.prismaService.placeReview.findMany({
+      where: { placeId, NOT: { userId } },
+      include: {
+        reviewReactions: {
+          where: { userId },
+        },
+        images: true,
+        user: true,
+      },
+    });
+  }
+
+  async getPlaceReviewWithDetailsByUserId(placeId: number, userId: number) {
+    return await this.prismaService.placeReview.findUnique({
+      where: { placeId_userId: { placeId, userId } },
+      include: {
+        images: true,
+        user: true,
+      },
     });
   }
 }
