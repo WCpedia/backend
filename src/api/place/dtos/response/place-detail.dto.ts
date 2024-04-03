@@ -58,11 +58,11 @@ export class PlaceDetailDto implements Place {
 
   @ApiProperty({
     type: [PlaceImageDto],
-    description: '대표 이미지',
+    description: '가게 이미지',
   })
   @Type(() => PlaceImageDto)
   @Expose()
-  placeImage: PlaceImageDto[];
+  images: PlaceImageDto[];
 
   @ApiProperty({
     type: RegionDto,
