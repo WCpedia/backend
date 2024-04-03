@@ -16,6 +16,8 @@ import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { PlaceExceptionEnum } from '@exceptions/http/enums/place.exception.enum';
+import { PlaceReviewWithDetailsDto } from '../dtos/response/place-review.dto';
+import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
 
 @Injectable()
 export class PlaceService {
@@ -39,8 +41,9 @@ export class PlaceService {
     );
   }
 
-  async getPlaceByKakaoId(kakaoId: string): Promise<PlaceDetailDto> {
-    const selectedPlace = await this.placeRepository.getPlaceByKakaoId(kakaoId);
+  async getPlaceByPlaceId(placeId: number): Promise<PlaceDetailDto> {
+    const selectedPlace =
+      await this.placeRepository.getPlaceWithDetailsById(placeId);
     if (!selectedPlace) {
       return;
     }
@@ -188,5 +191,30 @@ export class PlaceService {
           ) / 100;
 
     return { updatedRating, updatedCount };
+  }
+
+  async getPlaceReviewsByPlaceId(
+    placeId: number,
+    userId?: number,
+  ): Promise<PlaceReviewWithDetailsDto[]> {
+    const reviews =
+      await this.placeRepository.getPlaceReviewWithDetailsByPlaceId(
+        placeId,
+        userId,
+      );
+
+    return plainToInstance(PlaceReviewWithDetailsDto, reviews);
+  }
+
+  async getMyPlaceReview(
+    placeId: number,
+    userId: number,
+  ): Promise<MyPlaceReviewDto> {
+    const review = await this.placeRepository.getPlaceReviewWithDetailsByUserId(
+      placeId,
+      userId,
+    );
+
+    return plainToInstance(MyPlaceReviewDto, review);
   }
 }

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
+import { IsOptional } from 'class-validator';
 
 @Exclude()
 export class BaseReturnDto {
@@ -8,6 +9,7 @@ export class BaseReturnDto {
     description: '생성일',
   })
   @Expose()
+  @IsOptional()
   createdAt: Date;
 
   @ApiProperty({
@@ -15,5 +17,6 @@ export class BaseReturnDto {
     description: '수정일',
   })
   @Expose()
+  @IsOptional()
   updatedAt: Date;
 }

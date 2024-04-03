@@ -287,13 +287,13 @@ export class AuthService {
   }
 
   private async createUserAuth(dto: SignUpWithOAuthProviderDto) {
-    const { nickname, description, profileUrlKey, ...authInputDate } = dto;
+    const { nickname, description, profileImageKey, ...authInputDate } = dto;
     await this.prismaService.$transaction(async (transaction) => {
       const createdUser = await this.authRepository.createUser(
         {
           nickname,
           description,
-          profileUrlKey,
+          profileImageKey,
         },
         transaction,
       );

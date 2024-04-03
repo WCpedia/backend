@@ -51,5 +51,5 @@ export class SignUpWithOAuthProviderDto {
     required: false,
   })
   @IsOptional()
-  profileUrlKey: string;
+  profileImageKey: string;
 }
