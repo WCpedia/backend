@@ -6,10 +6,19 @@ import { plainToInstance } from 'class-transformer';
 import { PlaceDetailDto } from '@api/place/dtos/response/place-detail.dto';
 import { OAUTH_KEY } from '@core/config/constants/config.constant';
 import axios, { AxiosResponse } from 'axios';
-import { Place, PlaceImage, Prisma, Region } from '@prisma/client';
+import {
+  Category,
+  MenuInfo,
+  Place,
+  PlaceCategory,
+  PlaceImage,
+  Prisma,
+  Region,
+} from '@prisma/client';
 import {
   IKakaoSearchImageDocuments,
   IKakaoSearchImageResponse,
+  IKakaoPlaceMenuInfo,
   IPlaceUpdateRatingInput,
 } from '@api/place/interface/interface';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
@@ -24,6 +33,7 @@ export class PlaceService {
   private kakaoSearchImageUri: string;
   private kakaoAuthKey: string;
   private kakaoSearchImageMaxSize: number;
+  private kakaoMenuUri: string;
 
   constructor(
     private readonly placeRepository: PlaceRepository,
@@ -39,66 +49,116 @@ export class PlaceService {
     this.kakaoSearchImageMaxSize = this.configService.get<number>(
       OAUTH_KEY.KAKAO_SEARCH_IMAGE_MAX_SIZE,
     );
+    this.kakaoMenuUri = this.configService.get<string>(
+      OAUTH_KEY.KAKAO_MENU_URI,
+    );
   }
 
   async getPlaceByPlaceId(placeId: number): Promise<PlaceDetailDto> {
     const selectedPlace =
       await this.placeRepository.getPlaceWithDetailsById(placeId);
     if (!selectedPlace) {
-      return;
+      throw new InternalServerErrorException('장소를 찾을 수 없습니다.');
     }
 
-    await this.ensurePlaceImages(selectedPlace);
+    if (!selectedPlace.isInitial) {
+      await this.prismaService.$transaction(
+        async (transaction: Prisma.TransactionClient) => {
+          await this.ensurePlaceImages(transaction, selectedPlace);
+          await this.ensureMenuInfo(transaction, selectedPlace);
+          await this.placeRepository.updatePlaceIsInitial(placeId, transaction);
+        },
+      );
+    }
 
     return plainToInstance(PlaceDetailDto, selectedPlace);
   }
 
   private async ensurePlaceImages(
+    transaction: Prisma.TransactionClient,
     place: Place & { region: Region; images: PlaceImage[] },
   ) {
-    if (place.images[0]) {
-      return;
-    }
-
     const placeImages = await this.fetchKakaoSearchImages(place);
-    if (!placeImages[0]) {
+    if (placeImages.length === 0) {
       return;
     }
 
-    await this.placeRepository.createPlaceImages(place.id, placeImages);
-    place.images = await this.placeRepository.getPlaceImages(place.id);
+    await this.placeRepository.createPlaceImages(
+      place.id,
+      placeImages,
+      transaction,
+    );
+    place.images = await this.placeRepository.getPlaceImages(
+      place.id,
+      transaction,
+    );
   }
 
   private async fetchKakaoSearchImages(
     place: Place & { region: Region },
   ): Promise<IKakaoSearchImageDocuments[]> {
-    try {
-      const queries = [
-        `${place.detailAddress} ${place.name}`,
-        `${place.region.administrativeDistrict} ${place.region.district} ${place.name}`,
-        place.name,
-      ];
+    const queries = [
+      `${place.detailAddress} ${place.name}`,
+      `${place.region.administrativeDistrict} ${place.region.district} ${place.name}`,
+      place.name,
+    ];
 
-      for (const query of queries) {
-        const response: AxiosResponse<IKakaoSearchImageResponse> =
-          await axios.get(this.kakaoSearchImageUri, {
-            headers: {
-              Authorization: this.kakaoAuthKey,
-              'Content-type': 'application/x-www-form-urlencoded',
-            },
-            params: { query, size: this.kakaoSearchImageMaxSize },
-          });
-
-        if (response.data.documents[0]) {
-          return response.data.documents;
-        }
-      }
-      return [];
-    } catch (error) {
-      throw new InternalServerErrorException(
-        `Kakao API 호출에 실패했습니다: ${error}`,
+    for (const query of queries) {
+      const response = await axios.get<IKakaoSearchImageResponse>(
+        this.kakaoSearchImageUri,
+        {
+          headers: {
+            Authorization: this.kakaoAuthKey,
+            'Content-type': 'application/x-www-form-urlencoded',
+          },
+          params: { query, size: this.kakaoSearchImageMaxSize },
+        },
       );
+
+      if (response.data.documents.length > 0) {
+        return response.data.documents;
+      }
     }
+    return [];
+  }
+
+  private async ensureMenuInfo(
+    transaction: Prisma.TransactionClient,
+    place: Place & {
+      placeCategory: PlaceCategory & { depth1: Category };
+      menuInfo: MenuInfo[];
+    },
+  ) {
+    const menuList = await this.fetchKakaoMenuInfo(place.kakaoId);
+    if (menuList.length === 0) {
+      return;
+    }
+
+    await this.placeRepository.createPlaceMenuInfo(
+      place.id,
+      menuList,
+      transaction,
+    );
+
+    place.menuInfo = await this.placeRepository.getPlaceMenuInfo(
+      place.id,
+      transaction,
+    );
+  }
+
+  async fetchKakaoMenuInfo(kakaoId: string) {
+    const response = await axios.get<IKakaoPlaceMenuInfo>(
+      `${this.kakaoMenuUri}/${kakaoId}`,
+      {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded',
+        },
+      },
+    );
+
+    return response.data.menuInfo.menuList.length
+      ? response.data.menuInfo.menuList
+      : [];
   }
 
   async createPlaceReview(

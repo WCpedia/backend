@@ -4,6 +4,7 @@ import { Place, Region } from '@prisma/client';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { PlaceImageDto } from './place-image.dto';
 import { RegionDto } from '@api/common/dto/region.dto';
+import { MenuInfoDto } from './menu-info.dto';
 
 @Exclude()
 export class PlaceDetailDto implements Place {
@@ -122,6 +123,15 @@ export class PlaceDetailDto implements Place {
   @Expose()
   cleanlinessRatingCount: number;
 
+  @ApiProperty({
+    type: [MenuInfoDto],
+    description: '메뉴 정보',
+  })
+  @Type(() => MenuInfoDto)
+  @Expose()
+  menuInfo: MenuInfoDto[];
+
+  isInitial: boolean;
   placeCategoryId: number;
   regionId: number;
 }

@@ -1,10 +1,12 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import {
+  IKakaoPlaceMenuInfo,
   IKakaoSearchImageDocuments,
+  IMenuItem,
   IPlaceUpdateRatingInput,
 } from '@api/place/interface/interface';
-import { PlaceReview, Prisma } from '@prisma/client';
+import { MenuInfo, PlaceReview, Prisma } from '@prisma/client';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 
 @Injectable()
@@ -26,6 +28,7 @@ export class PlaceRepository {
           },
         },
         images: true,
+        menuInfo: true,
       },
     });
   }
@@ -33,8 +36,9 @@ export class PlaceRepository {
   async createPlaceImages(
     placeId: number,
     placeImages: IKakaoSearchImageDocuments[],
+    transaction?: Prisma.TransactionClient,
   ): Promise<Prisma.BatchPayload> {
-    return await this.prismaService.placeImage.createMany({
+    return await (transaction ?? this.prismaService).placeImage.createMany({
       data: placeImages.map((placeImage) => ({
         placeId,
         url: placeImage.image_url,
@@ -42,8 +46,11 @@ export class PlaceRepository {
     });
   }
 
-  async getPlaceImages(placeId: number) {
-    return await this.prismaService.placeImage.findMany({
+  async getPlaceImages(
+    placeId: number,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).placeImage.findMany({
       where: { placeId },
     });
   }
@@ -114,6 +121,53 @@ export class PlaceRepository {
       include: {
         images: true,
         user: true,
+      },
+    });
+  }
+
+  async createPlaceMenuInfo(
+    placeId: number,
+    menuList: IMenuItem[],
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).menuInfo.createMany({
+      data: menuList.map((menuItem) => ({
+        placeId,
+        menu: menuItem.menu,
+        price: menuItem.price,
+      })),
+    });
+  }
+
+  async getPlaceMenuInfo(
+    placeId: number,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).menuInfo.findMany({
+      where: { placeId },
+    });
+  }
+
+  async updatePlaceIsInitial(
+    placeId: number,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).place.update({
+      where: { id: placeId },
+      data: { isInitial: true },
+      include: {
+        region: true,
+        placeCategory: {
+          include: {
+            depth1: true,
+            depth2: true,
+            depth3: true,
+            depth4: true,
+            depth5: true,
+          },
+        },
+        images: true,
+        menuInfo: true,
       },
     });
   }

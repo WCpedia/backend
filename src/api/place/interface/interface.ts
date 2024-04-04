@@ -6,6 +6,24 @@ export interface IKakaoSearchImageResponse {
     total_count: number;
   };
 }
+export interface IKakaoPlaceMenuInfo {
+  menuInfo: {
+    moreyn: string;
+    menuList: IMenuItem[];
+    productyn: string;
+    menuboardphotourl: string;
+    menuboardphotocount: number;
+    timeexp: string;
+  };
+}
+
+export interface IMenuItem {
+  price: string;
+  recommend: boolean;
+  menu: string;
+  desc: string;
+  img: string;
+}
 
 export interface IKakaoSearchImageDocuments {
   collection: string;

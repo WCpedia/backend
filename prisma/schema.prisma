@@ -74,21 +74,23 @@ model Place {
   regionId                 Int
   detailAddress            String
   telephone                String?
-  overallRating            Float?                    
-  scentRating              Float?                    
-  cleanlinessRating        Float?        
+  overallRating            Float?
+  scentRating              Float?
+  cleanlinessRating        Float?
   overallRatingCount       Int?
   scentRatingCount         Int?
-  cleanlinessRatingCount   Int?            
+  cleanlinessRatingCount   Int?
   kakaoUrl                 String?
   x                        Float
   y                        Float
+  isInitial                Boolean                   @default(false)
   region                   Region?                   @relation(fields: [regionId], references: [id])
   placeCategory            PlaceCategory             @relation(fields: [placeCategoryId], references: [id])
   images                   PlaceImage[]
   reviews                  PlaceReview[]
   publicToiletInfo         PublicToiletInfo?
   userSubmittedToiletInfos UserSubmittedToiletInfo[]
+  menuInfo                 MenuInfo[]
 }
 
 model PlaceImage {
@@ -97,6 +99,14 @@ model PlaceImage {
   placeId Int
   url     String
   place   Place          @relation(fields: [placeId], references: [id])
+}
+
+model MenuInfo {
+  id      Int    @id @default(autoincrement())
+  placeId Int
+  menu    String
+  price   String?
+  place   Place  @relation(fields: [placeId], references: [id])
 }
 
 model PlaceCategory {

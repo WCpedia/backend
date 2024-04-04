@@ -70,4 +70,5 @@ export class PlaceSearchResultDto implements Place {
   cleanlinessRating: number;
   scentRatingCount: number;
   cleanlinessRatingCount: number;
+  isInitial: boolean;
 }
