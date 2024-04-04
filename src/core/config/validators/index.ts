@@ -32,6 +32,7 @@ const OAUTH_KEY_VALIDATOR = {
   KAKAO_AUTHORIZATION_KEY: Joi.string().required(),
   KAKAO_SEARCH_KEYWORD_URI: Joi.string().required(),
   KAKAO_SEARCH_IMAGE_URI: Joi.string().required(),
+  KAKAO_MENU_URI: Joi.string().required(),
   KAKAO_SEARCH_IMAGE_MAX_SIZE: Joi.number().required(),
   GOOGLE_GET_USER_URI: Joi.string().required(),
   NAVER_GET_USER_URI: Joi.string().required(),
