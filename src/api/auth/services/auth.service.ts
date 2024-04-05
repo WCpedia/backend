@@ -20,6 +20,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { SignUpWithOAuthProviderDto } from '../dtos/requests/oauth-signup-user.dto';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
+import { CustomException } from '@exceptions/http/custom.exception';
+import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 
 @Injectable()
 export class AuthService {
@@ -76,9 +78,9 @@ export class AuthService {
     }
 
     if (user.authentication.provider !== Provider[provider]) {
-      throw new BadRequestException(
-        `다른 방식으로 가입된 이메일 입니다.`,
-        'DifferentSignUpMethod',
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        'DifferentSignUpProvider',
       );
     }
 
@@ -100,8 +102,8 @@ export class AuthService {
 
       return response.data.kakao_account.email;
     } catch (error) {
-      throw new InternalServerErrorException(
-        'OAuth 서버 요청 오류입니다.',
+      throw new CustomException(
+        HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
         'OAuthServerError',
       );
     }
@@ -115,8 +117,8 @@ export class AuthService {
 
       return response.data.email;
     } catch (error) {
-      throw new InternalServerErrorException(
-        'OAuth 서버 요청 오류입니다.',
+      throw new CustomException(
+        HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
         'OAuthServerError',
       );
     }
@@ -133,8 +135,8 @@ export class AuthService {
 
       return response.data.response.email;
     } catch (error) {
-      throw new InternalServerErrorException(
-        'OAuth 서버 요청 오류입니다.',
+      throw new CustomException(
+        HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
         'OAuthServerError',
       );
     }
@@ -282,10 +284,16 @@ export class AuthService {
   ) {
     const tempAuth = await this.cacheManager.get(`TempAuth/${dto.email}`);
     if (!tempAuth) {
-      throw new NotFoundException(`가입 정보 만료`);
+      throw new CustomException(
+        HttpExceptionStatusCode.NOT_FOUND,
+        'TempAuthNotFound',
+      );
     }
     if (tempAuth !== Provider[dto.provider]) {
-      throw new BadRequestException(`가입 정보가 일치하지 않습니다.`);
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        'InvalidSignUpInformation',
+      );
     }
 
     await this.createUserAuth(dto, profileImage);

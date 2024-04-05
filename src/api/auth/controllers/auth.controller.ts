@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -69,13 +70,13 @@ export class AuthController {
   }
 
   @ApiAuth.SignUpWithOAuthProvider({
-    summary: 'OAuth를 통한 가입',
+    summary: '회원가입',
   })
   @UploadImages({
     maxCount: UploadFileLimit.SINGLE,
     path: FilePath.USER,
   })
-  @Post('signup/oauth')
+  @Post('signup')
   async signUpWithOAuthProvider(
     @UploadedFile() profileImage: Express.MulterS3.File,
     @Body() signUpWithOAuthProviderDto: SignUpWithOAuthProviderDto,
