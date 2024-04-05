@@ -41,6 +41,7 @@
     "@types/uuid": "^9.0.7",
     "aws-sdk": "^2.1515.0",
     "axios": "^1.6.2",
+    "badwords-ko": "1.0.4",
     "bcrypt": "^5.1.1",
     "cache-manager": "^4.1.0",
     "cache-manager-redis-store": "^3.0.1",
