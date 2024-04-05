@@ -1,4 +1,5 @@
 import { IsNicknameNotExist } from '@api/common/validators/nickname-not-exist.validator';
+import { IsUsableNickname } from '@api/user/validators/nickname.validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Provider } from '@prisma/client';
 import {
@@ -29,6 +30,7 @@ export class SignUpWithOAuthProviderDto {
     description: '닉네임',
   })
   @IsNicknameNotExist()
+  @IsUsableNickname()
   @IsNotEmpty()
   nickname: string;
 

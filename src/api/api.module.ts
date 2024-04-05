@@ -4,9 +4,10 @@ import { AuthModule } from './auth/auth.module';
 import { NicknameNotExistValidator } from './common/validators/nickname-not-exist.validator';
 import { SearchModule } from './search/search.module';
 import { PlaceModule } from './place/place.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   providers: [NicknameNotExistValidator],
-  imports: [CoreModule, AuthModule, SearchModule, PlaceModule],
+  imports: [CoreModule, AuthModule, SearchModule, PlaceModule, UserModule],
 })
 export class ApiModule {}
