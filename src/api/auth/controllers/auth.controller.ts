@@ -81,12 +81,12 @@ export class AuthController {
     @UploadedFile() profileImage: Express.MulterS3.File,
     @Body() signUpWithOAuthProviderDto: SignUpWithOAuthProviderDto,
   ) {
-    // if (signUpWithOAuthProviderDto.provider === Provider.LOCAL) {
-    // } else {
-    //   await this.authService.signUpWithOAuth(
-    //     signUpWithOAuthProviderDto,
-    //     profileImage,
-    //   );
-    // }
+    if (signUpWithOAuthProviderDto.provider === Provider.LOCAL) {
+    } else {
+      await this.authService.signUpWithOAuth(
+        signUpWithOAuthProviderDto,
+        profileImage,
+      );
+    }
   }
 }
