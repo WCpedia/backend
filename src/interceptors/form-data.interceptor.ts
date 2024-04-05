@@ -20,6 +20,7 @@ export class FormDataJsonInterceptor implements NestInterceptor {
       const request = context.switchToHttp().getRequest<Request>();
 
       const body = JSON.parse(request.body.data);
+
       request.body = body;
     } catch (err) {
       throw new CustomException(

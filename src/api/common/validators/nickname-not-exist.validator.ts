@@ -1,4 +1,6 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
+import { CustomException } from '@exceptions/http/custom.exception';
+import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 import {
   ValidatorConstraint,
@@ -19,7 +21,10 @@ export class NicknameNotExistValidator
     });
 
     if (selectedUser) {
-      throw new BadRequestException(`이미 존재하는 닉네임입니다.`);
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        'NicknameDuplicated',
+      );
     }
   }
   //파이프
