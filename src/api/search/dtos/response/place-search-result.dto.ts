@@ -49,26 +49,26 @@ export class PlaceSearchResultDto implements Place {
 
   @ApiProperty({
     type: Number,
-    description: '전반적인 만족도 별점',
+    description: '접근성 별점',
   })
   @Expose()
-  overallRating: number;
+  accessibilityRating: number;
 
   @ApiProperty({
     type: Number,
-    description: '전반적인 만족도 별점 수',
+    description: '리뷰 수',
   })
   @Expose()
-  overallRatingCount: number;
+  reviewCount: number;
 
   kakaoUrl: string;
   x: number;
   y: number;
   placeCategoryId: number;
   regionId: number;
-  scentRating: number;
+  facilityRating: number;
   cleanlinessRating: number;
-  scentRatingCount: number;
+  facilityRatingCount: number;
   cleanlinessRatingCount: number;
   isInitial: boolean;
 }

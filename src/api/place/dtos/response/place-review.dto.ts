@@ -24,21 +24,21 @@ export class PlaceReviewWithDetailsDto
 
   @ApiProperty({
     type: Number,
-    description: '전반적 만족도',
+    description: '접근성',
   })
   @Expose()
-  overallRating: number;
+  accessibilityRating: number;
 
   @ApiProperty({
     type: Number,
-    description: '향기 만족도',
+    description: '시설',
   })
   @Expose()
-  scentRating: number;
+  facilityRating: number;
 
   @ApiProperty({
     type: Number,
-    description: '청결도 만족도',
+    description: '청결',
   })
   @Expose()
   cleanlinessRating: number;

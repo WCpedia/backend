@@ -5,6 +5,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { PlaceImageDto } from './place-image.dto';
 import { RegionDto } from '@api/common/dto/region.dto';
 import { MenuInfoDto } from './menu-info.dto';
+import { PlaceReviewWithDetailsDto } from './place-review.dto';
 
 @Exclude()
 export class PlaceDetailDto implements Place {
@@ -83,17 +84,17 @@ export class PlaceDetailDto implements Place {
 
   @ApiProperty({
     type: Number,
-    description: '전반적 만족도 별점',
+    description: '접근성 별점',
   })
   @Expose()
-  overallRating: number;
+  accessibilityRating: number;
 
   @ApiProperty({
     type: Number,
-    description: '향기 별점',
+    description: '시설 별점',
   })
   @Expose()
-  scentRating: number;
+  facilityRating: number;
 
   @ApiProperty({
     type: Number,
@@ -104,24 +105,10 @@ export class PlaceDetailDto implements Place {
 
   @ApiProperty({
     type: Number,
-    description: '전반적인 만족도 별점 수',
+    description: '별점 수',
   })
   @Expose()
-  overallRatingCount: number;
-
-  @ApiProperty({
-    type: Number,
-    description: '향기 별점 수',
-  })
-  @Expose()
-  scentRatingCount: number;
-
-  @ApiProperty({
-    type: Number,
-    description: '청결도 별점 수',
-  })
-  @Expose()
-  cleanlinessRatingCount: number;
+  reviewCount: number;
 
   @ApiProperty({
     type: [MenuInfoDto],
@@ -130,6 +117,21 @@ export class PlaceDetailDto implements Place {
   @Type(() => MenuInfoDto)
   @Expose()
   menuInfo: MenuInfoDto[];
+
+  @ApiProperty({
+    type: Number,
+    description: '리뷰 총 개수',
+  })
+  @Expose()
+  totalReviewCount: number;
+
+  @ApiProperty({
+    type: [PlaceReviewWithDetailsDto],
+    description: '리뷰 목록',
+  })
+  @Type(() => PlaceReviewWithDetailsDto)
+  @Expose()
+  reviews: PlaceReviewWithDetailsDto[];
 
   isInitial: boolean;
   placeCategoryId: number;

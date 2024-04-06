@@ -1,3 +1,4 @@
+import { ReviewLength } from '@api/common/constants/const';
 import { ApiProperty } from '@nestjs/swagger';
 import { VisitTime } from '@prisma/client';
 import {
@@ -11,34 +12,31 @@ import {
 
 export class CreatePlaceReviewDto {
   @ApiProperty({
-    description: '전반적 만족도 별점',
-    required: true,
+    description: '접근성 별점',
   })
   @IsNotEmpty()
   @IsNumber()
-  @Min(1)
-  @Max(10)
-  overallRating: number;
+  @Min(ReviewLength.RATING.MIN)
+  @Max(ReviewLength.RATING.MAX)
+  accessibilityRating: number;
 
   @ApiProperty({
-    description: '향기 별점',
-    required: false,
+    description: '시설 별점',
   })
   @IsOptional()
   @IsNumber()
-  @Min(1)
-  @Max(10)
-  scentRating?: number;
+  @Min(ReviewLength.RATING.MIN)
+  @Max(ReviewLength.RATING.MAX)
+  facilityRating: number;
 
   @ApiProperty({
     description: '청결도 별점',
-    required: false,
   })
   @IsOptional()
   @IsNumber()
-  @Min(1)
-  @Max(10)
-  cleanlinessRating?: number;
+  @Min(ReviewLength.RATING.MIN)
+  @Max(ReviewLength.RATING.MAX)
+  cleanlinessRating: number;
 
   @ApiProperty({
     description: '방문 시간대',
