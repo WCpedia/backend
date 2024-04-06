@@ -30,6 +30,13 @@ export class PlaceRepository {
         },
         images: true,
         menuInfo: true,
+        reviews: {
+          take: 5,
+          include: {
+            user: true,
+            images: true,
+          },
+        },
       },
     });
   }

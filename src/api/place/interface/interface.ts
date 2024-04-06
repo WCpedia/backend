@@ -36,10 +36,8 @@ export interface IKakaoSearchImageDocuments {
 }
 
 export interface IPlaceUpdateRatingInput {
-  overallRating: number;
-  scentRating: number;
+  accessibilityRating: number;
+  facilityRating: number;
   cleanlinessRating: number;
-  overallRatingCount: number;
-  scentRatingCount: number;
-  cleanlinessRatingCount: number;
+  reviewCount: number;
 }

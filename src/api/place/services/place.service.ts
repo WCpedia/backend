@@ -61,8 +61,12 @@ export class PlaceService {
     const selectedPlace =
       await this.placeRepository.getPlaceWithDetailsById(placeId);
     if (!selectedPlace) {
-      throw new InternalServerErrorException('장소를 찾을 수 없습니다.');
+      throw new CustomException(
+        HttpExceptionStatusCode.NOT_FOUND,
+        PlaceExceptionEnum.PLACE_NOT_FOUND,
+      );
     }
+    const totalReviewCount = await this.placeRepository.countReview(placeId);
 
     if (!selectedPlace.isInitial) {
       await this.prismaService.$transaction(
@@ -74,7 +78,10 @@ export class PlaceService {
       );
     }
 
-    return plainToInstance(PlaceDetailDto, selectedPlace);
+    return plainToInstance(PlaceDetailDto, {
+      ...selectedPlace,
+      totalReviewCount,
+    });
   }
 
   private async ensurePlaceImages(
@@ -213,47 +220,33 @@ export class PlaceService {
     transaction: Prisma.TransactionClient,
   ): Promise<void> {
     const ratingsToUpdate = [
-      'overallRating',
-      'scentRating',
+      'accessibilityRating',
+      'facilityRating',
       'cleanlinessRating',
     ] as const;
 
+    const updatedCount = place.reviewCount + 1;
     const updateData = ratingsToUpdate.reduce((acc, ratingType) => {
-      const { updatedRating, updatedCount } = this.calculateNewRatingAndCount(
-        place[ratingType],
-        place[`${ratingType}Count`],
-        dto[ratingType],
-      );
+      const newRating = dto[ratingType];
+      const currentRating = place[ratingType];
+      const updatedRating =
+        currentRating === null
+          ? newRating
+          : Math.round(
+              ((currentRating * place.reviewCount + newRating) / updatedCount) *
+                100,
+            ) / 100;
+
       acc[ratingType] = updatedRating;
-      acc[`${ratingType}Count`] = updatedCount;
       return acc;
     }, {} as IPlaceUpdateRatingInput);
 
+    updateData.reviewCount = updatedCount;
     await this.placeRepository.updatePlaceRating(
       place.id,
       updateData,
       transaction,
     );
-  }
-
-  private calculateNewRatingAndCount(
-    currentRating: number | null,
-    currentCount: number | null,
-    newRating: number | undefined,
-  ): { updatedRating: number | null; updatedCount: number | null } {
-    if (newRating === undefined) {
-      return { updatedRating: currentRating, updatedCount: currentCount };
-    }
-    const updatedCount = (currentCount ?? 0) + 1;
-    const updatedRating =
-      currentRating === null
-        ? newRating
-        : Math.round(
-            ((currentRating * (updatedCount - 1) + newRating) / updatedCount) *
-              100,
-          ) / 100;
-
-    return { updatedRating, updatedCount };
   }
 
   async getPlaceReviewsByPlaceId(

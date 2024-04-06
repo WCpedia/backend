@@ -74,12 +74,10 @@ model Place {
   regionId                 Int
   detailAddress            String
   telephone                String?
-  overallRating            Float?
-  scentRating              Float?
+  facilityRating           Float?
+  accessibilityRating      Float?
   cleanlinessRating        Float?
-  overallRatingCount       Int?
-  scentRatingCount         Int?
-  cleanlinessRatingCount   Int?
+  reviewCount              Int                       @default(0)
   kakaoUrl                 String?
   x                        Float
   y                        Float
@@ -102,11 +100,11 @@ model PlaceImage {
 }
 
 model MenuInfo {
-  id      Int    @id @default(autoincrement())
+  id      Int     @id @default(autoincrement())
   placeId Int
   menu    String
   price   String?
-  place   Place  @relation(fields: [placeId], references: [id])
+  place   Place   @relation(fields: [placeId], references: [id])
 }
 
 model PlaceCategory {
@@ -198,22 +196,22 @@ model UserSubmittedToiletImage {
 }
 
 model PlaceReview {
-  id                Int              @id @default(autoincrement())
-  placeId           Int
-  userId            Int
-  overallRating     Int // 전반적 만족도 별점
-  scentRating       Int? // 향기 
-  cleanlinessRating Int? // 청결도 
-  visitTime         VisitTime? // 방문 시간대
-  description       String? // 설명
-  likeCount         Int              @default(0)
-  thumbsUpCount     Int              @default(0)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  place             Place            @relation(fields: [placeId], references: [id])
-  reviewReactions   ReviewReaction[]
-  images            ReviewImage[]
+  id                  Int              @id @default(autoincrement())
+  placeId             Int
+  userId              Int
+  accessibilityRating Int // 접근성 
+  facilityRating      Int // 시설 
+  cleanlinessRating   Int // 청결도 
+  visitTime           VisitTime? // 방문 시간대
+  description         String? // 설명
+  likeCount           Int              @default(0)
+  thumbsUpCount       Int              @default(0)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place               Place            @relation(fields: [placeId], references: [id])
+  reviewReactions     ReviewReaction[]
+  images              ReviewImage[]
 
   @@unique([placeId, userId])
 }
