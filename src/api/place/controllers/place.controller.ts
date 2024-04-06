@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   UploadedFile,
   UploadedFiles,
   UseGuards,
@@ -28,6 +29,8 @@ import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-e
 import { AllowGuestGuard } from '@api/common/guards/allow-guest.guard';
 import { PlaceReviewWithDetailsDto } from '../dtos/response/place-review.dto';
 import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
+import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
+import { PaginatedResponse } from '@api/common/interfaces/interface';
 
 @ApiTags('place')
 @Controller(DOMAIN_NAME.PLACE)
@@ -75,9 +78,11 @@ export class PlaceController {
   async getPlaceReviews(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Param('placeId', ParseIntPipe) placeId: number,
-  ): Promise<PlaceReviewWithDetailsDto[]> {
+    @Query() getPlaceReviewDto: GetPlaceReviewDto,
+  ): Promise<PaginatedResponse<PlaceReviewWithDetailsDto, 'reviews'>> {
     return await this.placeService.getPlaceReviewsByPlaceId(
       placeId,
+      getPlaceReviewDto,
       authorizedUser?.userId,
     );
   }

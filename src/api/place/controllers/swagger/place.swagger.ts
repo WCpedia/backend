@@ -12,6 +12,7 @@ import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
 import { PlaceReviewWithDetailsDto } from '@api/place/dtos/response/place-review.dto';
 import { MyPlaceReviewDto } from '@api/place/dtos/response/my-place-review.dto';
+import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
 
 export const ApiPlace: ApiOperator<keyof PlaceController> = {
   GetPlace: (
@@ -52,11 +53,10 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
       TokenConfigDto.swaggerBuilder('accessToken'),
-      CommonResponseDto.swaggerBuilder(
+      PaginationResponseDto.swaggerBuilder(
         HttpStatus.OK,
-        'GetPlaceReviews',
+        'reviews',
         PlaceReviewWithDetailsDto,
-        { isArray: true },
       ),
     );
   },
