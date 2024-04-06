@@ -27,6 +27,9 @@ import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-e
 import { PlaceExceptionEnum } from '@exceptions/http/enums/place.exception.enum';
 import { PlaceReviewWithDetailsDto } from '../dtos/response/place-review.dto';
 import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
+import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
+import { PaginatedResponse } from '@api/common/interfaces/interface';
+import { generatePaginationParams } from '@src/utils/pagination-params-generator';
 
 @Injectable()
 export class PlaceService {
@@ -255,15 +258,26 @@ export class PlaceService {
 
   async getPlaceReviewsByPlaceId(
     placeId: number,
+    { take, lastItemId }: GetPlaceReviewDto,
     userId?: number,
-  ): Promise<PlaceReviewWithDetailsDto[]> {
+  ): Promise<PaginatedResponse<PlaceReviewWithDetailsDto, 'reviews'>> {
+    const totalItemCount = await this.placeRepository.countReview(placeId);
+    if (!totalItemCount) {
+      return { totalItemCount, reviews: [] };
+    }
+    const paginationParams = generatePaginationParams({ take, lastItemId });
+
     const reviews =
       await this.placeRepository.getPlaceReviewWithDetailsByPlaceId(
         placeId,
+        paginationParams,
         userId,
       );
 
-    return plainToInstance(PlaceReviewWithDetailsDto, reviews);
+    return {
+      totalItemCount,
+      reviews: plainToInstance(PlaceReviewWithDetailsDto, reviews),
+    };
   }
 
   async getMyPlaceReview(

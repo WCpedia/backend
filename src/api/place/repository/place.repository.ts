@@ -8,6 +8,7 @@ import {
 } from '@api/place/interface/interface';
 import { MenuInfo, PlaceReview, Prisma } from '@prisma/client';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
+import { IPaginationParams } from '@src/interface/common.interface';
 
 @Injectable()
 export class PlaceRepository {
@@ -102,7 +103,11 @@ export class PlaceRepository {
     });
   }
 
-  async getPlaceReviewWithDetailsByPlaceId(placeId: number, userId?: number) {
+  async getPlaceReviewWithDetailsByPlaceId(
+    placeId: number,
+    paginationParams: IPaginationParams,
+    userId?: number,
+  ) {
     return await this.prismaService.placeReview.findMany({
       where: { placeId, NOT: { userId } },
       include: {
@@ -112,6 +117,7 @@ export class PlaceRepository {
         images: true,
         user: true,
       },
+      ...paginationParams,
     });
   }
 
@@ -170,5 +176,9 @@ export class PlaceRepository {
         menuInfo: true,
       },
     });
+  }
+
+  async countReview(placeId: number): Promise<number> {
+    return await this.prismaService.placeReview.count({ where: { placeId } });
   }
 }
