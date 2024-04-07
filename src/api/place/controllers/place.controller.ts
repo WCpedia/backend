@@ -41,10 +41,15 @@ export class PlaceController {
     summary: '가게 조회',
   })
   @Get(':placeId')
+  @UseGuards(AccessTokenGuard)
   async getPlace(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Param('placeId', ParseIntPipe) placeId: number,
   ): Promise<PlaceDetailDto> {
-    return await this.placeService.getPlaceByPlaceId(placeId);
+    return await this.placeService.getPlaceByPlaceId(
+      placeId,
+      authorizedUser.userId,
+    );
   }
 
   @ApiPlace.CreatePlaceReview({

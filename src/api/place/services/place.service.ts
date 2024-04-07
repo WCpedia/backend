@@ -57,9 +57,16 @@ export class PlaceService {
     );
   }
 
-  async getPlaceByPlaceId(placeId: number): Promise<PlaceDetailDto> {
-    const selectedPlace =
-      await this.placeRepository.getPlaceWithDetailsById(placeId);
+  async getPlaceByPlaceId(
+    placeId: number,
+    userId: number,
+  ): Promise<PlaceDetailDto> {
+    let myReview = null;
+
+    const selectedPlace = await this.placeRepository.getPlaceWithDetailsById(
+      placeId,
+      userId,
+    );
     if (!selectedPlace) {
       throw new CustomException(
         HttpExceptionStatusCode.NOT_FOUND,
@@ -78,9 +85,23 @@ export class PlaceService {
       );
     }
 
+    if (totalReviewCount) {
+      myReview = await this.placeRepository.getPlaceReviewByUserId(
+        placeId,
+        userId,
+      );
+
+      return plainToInstance(PlaceDetailDto, {
+        ...selectedPlace,
+        totalReviewCount,
+        myReview,
+      });
+    }
+
     return plainToInstance(PlaceDetailDto, {
       ...selectedPlace,
       totalReviewCount,
+      myReview,
     });
   }
 
