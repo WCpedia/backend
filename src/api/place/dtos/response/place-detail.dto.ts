@@ -126,6 +126,14 @@ export class PlaceDetailDto implements Place {
   totalReviewCount: number;
 
   @ApiProperty({
+    type: PlaceReviewWithDetailsDto,
+    description: '내가 작성한 리뷰',
+  })
+  @Type(() => PlaceReviewWithDetailsDto)
+  @Expose()
+  myReview: PlaceReviewWithDetailsDto;
+
+  @ApiProperty({
     type: [PlaceReviewWithDetailsDto],
     description: '리뷰 목록',
   })

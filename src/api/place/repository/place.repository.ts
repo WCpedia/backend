@@ -14,7 +14,7 @@ import { IPaginationParams } from '@src/interface/common.interface';
 export class PlaceRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getPlaceWithDetailsById(id: number) {
+  async getPlaceWithDetailsById(id: number, userId: number) {
     return await this.prismaService.place.findFirst({
       where: { id },
       include: {
@@ -36,6 +36,7 @@ export class PlaceRepository {
             user: true,
             images: true,
           },
+          where: { NOT: { userId } },
         },
       },
     });
