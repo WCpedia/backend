@@ -37,6 +37,7 @@ export class PlaceRepository {
             images: true,
           },
           where: { NOT: { userId } },
+          orderBy: { createdAt: 'desc' },
         },
       },
     });
@@ -67,6 +68,10 @@ export class PlaceRepository {
   async getPlaceReviewByUserId(placeId: number, userId: number) {
     return await this.prismaService.placeReview.findUnique({
       where: { placeId_userId: { placeId, userId } },
+      include: {
+        user: true,
+        images: true,
+      },
     });
   }
 
@@ -125,6 +130,7 @@ export class PlaceRepository {
         images: true,
         user: true,
       },
+      orderBy: { createdAt: 'desc' },
       ...paginationParams,
     });
   }
