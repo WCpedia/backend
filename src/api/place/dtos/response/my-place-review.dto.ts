@@ -1,8 +1,8 @@
 import { OmitType } from '@nestjs/swagger';
-import { PlaceReviewWithDetailsDto } from './place-review.dto';
+import { ReviewWithDetailsDto } from '../../../common/dto/review-with-details.dto';
 import { Exclude } from 'class-transformer';
 
 @Exclude()
-export class MyPlaceReviewDto extends OmitType(PlaceReviewWithDetailsDto, [
+export class MyPlaceReviewDto extends OmitType(ReviewWithDetailsDto, [
   'reviewReactions',
 ] as const) {}

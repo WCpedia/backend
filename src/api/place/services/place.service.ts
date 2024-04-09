@@ -25,7 +25,7 @@ import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { PlaceExceptionEnum } from '@exceptions/http/enums/place.exception.enum';
-import { PlaceReviewWithDetailsDto } from '../dtos/response/place-review.dto';
+import { ReviewWithDetailsDto } from '../../common/dto/review-with-details.dto';
 import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
 import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
@@ -91,12 +91,6 @@ export class PlaceService {
         placeId,
         userId,
       );
-
-      return plainToInstance(PlaceDetailDto, {
-        ...selectedPlace,
-        totalReviewCount,
-        myReview,
-      });
     }
 
     return plainToInstance(PlaceDetailDto, {
@@ -275,7 +269,7 @@ export class PlaceService {
     placeId: number,
     { take, lastItemId }: GetPlaceReviewDto,
     userId?: number,
-  ): Promise<PaginatedResponse<PlaceReviewWithDetailsDto, 'reviews'>> {
+  ): Promise<PaginatedResponse<ReviewWithDetailsDto, 'reviews'>> {
     const totalItemCount = await this.placeRepository.countReview(placeId);
     if (!totalItemCount) {
       return { totalItemCount, reviews: [] };
@@ -291,7 +285,7 @@ export class PlaceService {
 
     return {
       totalItemCount,
-      reviews: plainToInstance(PlaceReviewWithDetailsDto, reviews),
+      reviews: plainToInstance(ReviewWithDetailsDto, reviews),
     };
   }
 

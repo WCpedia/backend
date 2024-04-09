@@ -3,13 +3,10 @@ import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { PlaceReview, VisitTime } from '@prisma/client';
 import { Exclude, Expose, Type } from 'class-transformer';
-import { ReviewImageDto } from '../../../common/dto/review-image.dto';
+import { ReviewImageDto } from './review-image.dto';
 import { ReviewReactionDto } from '@api/common/dto/reveiw-reaction.dto';
 @Exclude()
-export class PlaceReviewWithDetailsDto
-  extends BaseReturnDto
-  implements PlaceReview
-{
+export class ReviewWithDetailsDto extends BaseReturnDto implements PlaceReview {
   @ApiProperty({
     type: Number,
   })

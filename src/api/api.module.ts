@@ -6,6 +6,7 @@ import { SearchModule } from './search/search.module';
 import { PlaceModule } from './place/place.module';
 import { UserModule } from './user/user.module';
 import { MyModule } from './my/my.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   providers: [NicknameNotExistValidator],
@@ -16,6 +17,7 @@ import { MyModule } from './my/my.module';
     PlaceModule,
     UserModule,
     MyModule,
+    ReviewModule,
   ],
 })
 export class ApiModule {}

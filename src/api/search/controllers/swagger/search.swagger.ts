@@ -4,7 +4,7 @@ import { OperationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.i
 import { HttpStatus, applyDecorators } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
-import { PlaceSearchResultDto } from '@api/search/dtos/response/place-search-result.dto';
+import { BasicPlaceDto } from '@api/common/dto/basic-place.dto';
 
 export const ApiSearch: ApiOperator<keyof SearchController> = {
   SearchPlaces: (
@@ -16,7 +16,7 @@ export const ApiSearch: ApiOperator<keyof SearchController> = {
       CommonResponseDto.swaggerBuilder(
         HttpStatus.CREATED,
         'SearchPlaces',
-        PlaceSearchResultDto,
+        BasicPlaceDto,
         { isArray: true },
       ),
     );

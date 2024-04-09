@@ -27,7 +27,7 @@ import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { AllowGuestGuard } from '@api/common/guards/allow-guest.guard';
-import { PlaceReviewWithDetailsDto } from '../dtos/response/place-review.dto';
+import { ReviewWithDetailsDto } from '../../common/dto/review-with-details.dto';
 import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
 import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
@@ -85,7 +85,7 @@ export class PlaceController {
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Param('placeId', ParseIntPipe) placeId: number,
     @Query() getPlaceReviewDto: GetPlaceReviewDto,
-  ): Promise<PaginatedResponse<PlaceReviewWithDetailsDto, 'reviews'>> {
+  ): Promise<PaginatedResponse<ReviewWithDetailsDto, 'reviews'>> {
     return await this.placeService.getPlaceReviewsByPlaceId(
       placeId,
       getPlaceReviewDto,

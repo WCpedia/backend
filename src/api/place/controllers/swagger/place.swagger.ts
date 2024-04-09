@@ -10,7 +10,7 @@ import { CreatePlaceReviewDto } from '@api/place/dtos/request/create-place-revie
 import { ExceptionResponseDto } from '@src/swagger-builder/exeption-response.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
-import { PlaceReviewWithDetailsDto } from '@api/place/dtos/response/place-review.dto';
+import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
 import { MyPlaceReviewDto } from '@api/place/dtos/response/my-place-review.dto';
 import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
 import { ReportFacilityDto } from '@api/place/dtos/request/report-facility.dto';
@@ -57,7 +57,7 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
       PaginationResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'reviews',
-        PlaceReviewWithDetailsDto,
+        ReviewWithDetailsDto,
       ),
     );
   },

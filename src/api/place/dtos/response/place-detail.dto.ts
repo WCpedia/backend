@@ -5,7 +5,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { PlaceImageDto } from './place-image.dto';
 import { RegionDto } from '@api/common/dto/region.dto';
 import { MenuInfoDto } from './menu-info.dto';
-import { PlaceReviewWithDetailsDto } from './place-review.dto';
+import { ReviewWithDetailsDto } from '../../../common/dto/review-with-details.dto';
 import { PublicToiletInfoDto } from './public-toilet-info.dto';
 
 @Exclude()
@@ -127,20 +127,20 @@ export class PlaceDetailDto implements Place {
   totalReviewCount: number;
 
   @ApiProperty({
-    type: PlaceReviewWithDetailsDto,
+    type: ReviewWithDetailsDto,
     description: '내가 작성한 리뷰',
   })
-  @Type(() => PlaceReviewWithDetailsDto)
+  @Type(() => ReviewWithDetailsDto)
   @Expose()
-  myReview: PlaceReviewWithDetailsDto;
+  myReview: ReviewWithDetailsDto;
 
   @ApiProperty({
-    type: [PlaceReviewWithDetailsDto],
+    type: [ReviewWithDetailsDto],
     description: '리뷰 목록',
   })
-  @Type(() => PlaceReviewWithDetailsDto)
+  @Type(() => ReviewWithDetailsDto)
   @Expose()
-  reviews: PlaceReviewWithDetailsDto[];
+  reviews: ReviewWithDetailsDto[];
 
   @ApiProperty({
     type: PublicToiletInfoDto,
