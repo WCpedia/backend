@@ -40,6 +40,7 @@ export class PlaceRepository {
           where: { NOT: { userId } },
           orderBy: { createdAt: 'desc' },
         },
+        publicToiletInfo: true,
       },
     });
   }
