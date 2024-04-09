@@ -6,6 +6,7 @@ import { PlaceImageDto } from './place-image.dto';
 import { RegionDto } from '@api/common/dto/region.dto';
 import { MenuInfoDto } from './menu-info.dto';
 import { PlaceReviewWithDetailsDto } from './place-review.dto';
+import { PublicToiletInfoDto } from './public-toilet-info.dto';
 
 @Exclude()
 export class PlaceDetailDto implements Place {
@@ -140,6 +141,14 @@ export class PlaceDetailDto implements Place {
   @Type(() => PlaceReviewWithDetailsDto)
   @Expose()
   reviews: PlaceReviewWithDetailsDto[];
+
+  @ApiProperty({
+    type: PublicToiletInfoDto,
+    description: '시설 정보',
+  })
+  @Type(() => PublicToiletInfoDto)
+  @Expose()
+  publicToiletInfo: PublicToiletInfoDto;
 
   isInitial: boolean;
   placeCategoryId: number;

@@ -39,7 +39,7 @@ export class PlaceController {
   constructor(private readonly placeService: PlaceService) {}
 
   @ApiPlace.GetPlace({
-    summary: '가게 조회',
+    summary: '가게 상세 조회',
   })
   @Get(':placeId')
   @UseGuards(AccessTokenGuard)
