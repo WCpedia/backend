@@ -4,7 +4,7 @@ import { Place, Region } from '@prisma/client';
 import { Exclude, Expose, Type } from 'class-transformer';
 
 @Exclude()
-export class PlaceSearchResultDto implements Place {
+export class BasicPlaceDto implements Place {
   @ApiProperty({
     type: Number,
     description: '장소ID',
@@ -49,6 +49,13 @@ export class PlaceSearchResultDto implements Place {
 
   @ApiProperty({
     type: Number,
+    description: '리뷰 수',
+  })
+  @Expose()
+  reviewCount: number;
+
+  @ApiProperty({
+    type: Number,
     description: '접근성 별점',
   })
   @Expose()
@@ -56,19 +63,22 @@ export class PlaceSearchResultDto implements Place {
 
   @ApiProperty({
     type: Number,
-    description: '리뷰 수',
+    description: '청결도 별점',
   })
   @Expose()
-  reviewCount: number;
+  cleanlinessRating: number;
+
+  @ApiProperty({
+    type: Number,
+    description: '시설 별점',
+  })
+  @Expose()
+  facilityRating: number;
 
   kakaoUrl: string;
   x: number;
   y: number;
   placeCategoryId: number;
   regionId: number;
-  facilityRating: number;
-  cleanlinessRating: number;
-  facilityRatingCount: number;
-  cleanlinessRatingCount: number;
   isInitial: boolean;
 }

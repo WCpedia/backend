@@ -1,22 +1,22 @@
 import { ApiOperator } from '@src/types/type';
-import { SearchController } from '../search.controller';
+import { ReviewController } from '../review.controller';
 import { OperationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
 import { HttpStatus, applyDecorators } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
 import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
-import { BasicPlaceDto } from '@api/common/dto/basic-place.dto';
+import { ApiOperation } from '@nestjs/swagger';
 
-export const ApiSearch: ApiOperator<keyof SearchController> = {
-  SearchPlaces: (
+export const ApiReview: ApiOperator<keyof ReviewController> = {
+  GetLatestReviews: (
     apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
       Partial<OperationObject>,
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
       CommonResponseDto.swaggerBuilder(
-        HttpStatus.CREATED,
-        'SearchPlaces',
-        BasicPlaceDto,
+        HttpStatus.OK,
+        'GetLatestReviews',
+        ReviewWithPlaceDto,
         { isArray: true },
       ),
     );

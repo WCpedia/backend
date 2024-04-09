@@ -14,7 +14,7 @@ import {
   IKakaoSearchDocuments,
   IKakaoSearchResponse,
 } from '../interface/interface';
-import { PlaceSearchResultDto } from '../dtos/response/place-search-result.dto';
+import { BasicPlaceDto } from '../../common/dto/basic-place.dto';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
@@ -35,11 +35,11 @@ export class SearchService {
     );
   }
 
-  async searchPlaces(value: string): Promise<PlaceSearchResultDto[]> {
+  async searchPlaces(value: string): Promise<BasicPlaceDto[]> {
     const kakaoData = await this.fetchKakaoSearchResponse(value);
     const places = await this.createPlacesFromKakaoData(kakaoData);
 
-    return plainToInstance(PlaceSearchResultDto, places);
+    return plainToInstance(BasicPlaceDto, places);
   }
 
   private async fetchKakaoSearchResponse(
