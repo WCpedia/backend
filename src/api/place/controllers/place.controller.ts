@@ -31,6 +31,7 @@ import { PlaceReviewWithDetailsDto } from '../dtos/response/place-review.dto';
 import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
 import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
+import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
 
 @ApiTags('place')
 @Controller(DOMAIN_NAME.PLACE)
@@ -104,6 +105,27 @@ export class PlaceController {
     return await this.placeService.getMyPlaceReview(
       placeId,
       authorizedUser.userId,
+    );
+  }
+
+  @ApiPlace.ReportFacility({ summary: '시설 제보' })
+  @Post(':placeId/facility-report')
+  @UseGuards(AccessTokenGuard)
+  @UploadImages({
+    maxCount: UploadFileLimit.REPORT_FACILITY_IMAGES,
+    path: FilePath.REVIEW,
+  })
+  async reportFacility(
+    @Param('placeId', ParseIntPipe) placeId: number,
+    @UploadedFiles() reportImages: Express.MulterS3.File[],
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Body() reportFacilityDto: ReportFacilityDto,
+  ): Promise<void> {
+    await this.placeService.reportFacility(
+      placeId,
+      authorizedUser.userId,
+      reportFacilityDto,
+      reportImages,
     );
   }
 }
