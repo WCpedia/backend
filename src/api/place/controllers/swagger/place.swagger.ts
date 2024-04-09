@@ -13,6 +13,7 @@ import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
 import { PlaceReviewWithDetailsDto } from '@api/place/dtos/response/place-review.dto';
 import { MyPlaceReviewDto } from '@api/place/dtos/response/my-place-review.dto';
 import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
+import { ReportFacilityDto } from '@api/place/dtos/request/report-facility.dto';
 
 export const ApiPlace: ApiOperator<keyof PlaceController> = {
   GetPlace: (
@@ -73,6 +74,23 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
         'GetMyPlaceReview',
         MyPlaceReviewDto,
       ),
+    );
+  },
+
+  ReportFacility: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      MultipartFormDataRequestDto.swaggerBuilder(
+        'ReportFacility',
+        'images',
+        ReportFacilityDto,
+        { required: false, isArray: true },
+      ),
+      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'ReportFacility'),
     );
   },
 };

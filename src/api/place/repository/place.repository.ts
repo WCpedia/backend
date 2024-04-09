@@ -9,6 +9,7 @@ import {
 import { MenuInfo, PlaceReview, Prisma } from '@prisma/client';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 import { IPaginationParams } from '@src/interface/common.interface';
+import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
 
 @Injectable()
 export class PlaceRepository {
@@ -194,5 +195,31 @@ export class PlaceRepository {
 
   async countReview(placeId: number): Promise<number> {
     return await this.prismaService.placeReview.count({ where: { placeId } });
+  }
+
+  async createPlaceReport(
+    placeId: number,
+    userId: number,
+    dto: ReportFacilityDto,
+    reportImages: Express.MulterS3.File[],
+  ) {
+    const data: Prisma.UserSubmittedToiletInfoUncheckedCreateInput = {
+      placeId,
+      userId,
+      ...dto,
+    };
+    if (reportImages && reportImages.length > 0) {
+      data.images = {
+        createMany: {
+          data: reportImages.map((reportImage) => ({
+            key: reportImage.key,
+          })),
+        },
+      };
+    }
+
+    return await this.prismaService.userSubmittedToiletInfo.create({
+      data,
+    });
   }
 }

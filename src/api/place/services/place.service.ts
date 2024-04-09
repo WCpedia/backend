@@ -30,6 +30,7 @@ import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
 import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { generatePaginationParams } from '@src/utils/pagination-params-generator';
+import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
 
 @Injectable()
 export class PlaceService {
@@ -304,5 +305,21 @@ export class PlaceService {
     );
 
     return plainToInstance(MyPlaceReviewDto, review);
+  }
+
+  async reportFacility(
+    placeId: number,
+    userId: number,
+    dto: ReportFacilityDto,
+    reportImages: Express.MulterS3.File[],
+  ): Promise<void> {
+    await this.checkPlaceExist(placeId);
+
+    await this.placeRepository.createPlaceReport(
+      placeId,
+      userId,
+      dto,
+      reportImages,
+    );
   }
 }
