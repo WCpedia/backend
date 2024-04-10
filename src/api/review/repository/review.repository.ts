@@ -14,6 +14,7 @@ export class ReviewRepository {
         user: true,
         place: {
           include: {
+            region: true,
             placeCategory: {
               include: {
                 depth1: true,
