@@ -42,14 +42,14 @@ export class PlaceController {
     summary: '가게 상세 조회',
   })
   @Get(':placeId')
-  @UseGuards(AccessTokenGuard)
+  @UseGuards(AllowGuestGuard)
   async getPlace(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Param('placeId', ParseIntPipe) placeId: number,
   ): Promise<PlaceDetailDto> {
     return await this.placeService.getPlaceByPlaceId(
       placeId,
-      authorizedUser.userId,
+      authorizedUser?.userId,
     );
   }
 
