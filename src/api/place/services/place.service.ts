@@ -60,7 +60,7 @@ export class PlaceService {
 
   async getPlaceByPlaceId(
     placeId: number,
-    userId: number,
+    userId?: number,
   ): Promise<PlaceDetailDto> {
     let myReview = null;
 
@@ -86,7 +86,7 @@ export class PlaceService {
       );
     }
 
-    if (totalReviewCount) {
+    if (totalReviewCount && userId) {
       myReview = await this.placeRepository.getPlaceReviewByUserId(
         placeId,
         userId,

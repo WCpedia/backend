@@ -9,7 +9,8 @@ export class AllowGuestGuard extends AuthGuard('accessToken') {
 
   canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
+    const cookie = request.cookies?.accessToken;
 
-    return request?.cookie?.accessToken ? super.canActivate(context) : true;
+    return cookie ? super.canActivate(context) : true;
   }
 }
