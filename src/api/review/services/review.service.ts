@@ -6,11 +6,14 @@ import { ProductConfigService } from '@core/config/services/config.service';
 import { REDIS_KEY } from '@core/config/constants/config.constant';
 import { ReviewWithPlaceDto } from '../dtos/response/review-with-place.dto';
 import { plainToInstance } from 'class-transformer';
+import { TopReviewersDto } from '../dtos/response/top-reviewers.dto';
 
 @Injectable()
 export class ReviewService {
   private redisLatestReviewsTtl: number;
   private redisLatestReviewsKey: string;
+  private redisTopReviewersKey: string;
+  private redisTopReviewersTtl: number;
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -26,6 +29,12 @@ export class ReviewService {
     );
     this.redisLatestReviewsKey = this.configService.get<string>(
       REDIS_KEY.REDIS_LATEST_REVIEW_KEY,
+    );
+    this.redisTopReviewersKey = this.configService.get<string>(
+      REDIS_KEY.REDIS_TOP_REVIEWERS_KEY,
+    );
+    this.redisTopReviewersTtl = this.configService.get<number>(
+      REDIS_KEY.REDIS_TOP_REVIEWERS_TTL,
     );
   }
 
@@ -51,5 +60,13 @@ export class ReviewService {
     await this.cacheManager.set(this.redisLatestReviewsKey, reviews, {
       ttl: this.redisLatestReviewsTtl,
     });
+  }
+
+  async getTopReviewers(): Promise<TopReviewersDto[]> {
+    const topReviewers: TopReviewersDto[] | null = await this.cacheManager.get(
+      this.redisTopReviewersKey,
+    );
+
+    return plainToInstance(TopReviewersDto, topReviewers);
   }
 }

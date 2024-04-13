@@ -7,6 +7,8 @@ const REDIS_KEY_VALIDATOR = {
   REDIS_TEMP_AUTH_TTL: Joi.number().required(),
   REDIS_LATEST_REVIEW_TTL: Joi.number().required(),
   REDIS_LATEST_REVIEW_KEY: Joi.string().required(),
+  REDIS_TOP_REVIEWERS_TTL: Joi.number().required(),
+  REDIS_TOP_REVIEWERS_KEY: Joi.string().required(),
 };
 
 const JWT_KEY_VALIDATOR = {
