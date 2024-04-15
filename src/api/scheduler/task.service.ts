@@ -5,11 +5,17 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { REDIS_KEY } from '@core/config/constants/config.constant';
+import { plainToInstance } from 'class-transformer';
+import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
+import { TopReviewerWithCount } from './type/type';
+import { TopReviewerDto } from './dtos/top-reviewer.dto';
 
 @Injectable()
 export class TaskService {
   private readonly topReviewersKey: string;
   private readonly topReviewersTtl: number;
+  private readonly latestReviewsKey: string;
+  private readonly latestReviewsTtl: number;
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -22,50 +28,80 @@ export class TaskService {
     this.topReviewersTtl = this.configService.get<number>(
       REDIS_KEY.REDIS_TOP_REVIEWERS_TTL,
     );
+    this.latestReviewsKey = this.configService.get<string>(
+      REDIS_KEY.REDIS_LATEST_REVIEW_KEY,
+    );
+    this.latestReviewsTtl = this.configService.get<number>(
+      REDIS_KEY.REDIS_LATEST_REVIEW_TTL,
+    );
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async cacheTopReviewers() {
-    try {
-      const startTime = Date.now();
+    await this.cacheData(
+      this.getTopReviewers.bind(this),
+      this.topReviewersKey,
+      this.topReviewersTtl,
+      'Top reviewers',
+      (topReviewers) => plainToInstance(TopReviewerDto, topReviewers),
+    );
+  }
 
-      const topReviewers = await this.taskRepository.getTopReviewers();
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async cacheLatestReviews() {
+    await this.cacheData(
+      this.taskRepository.getLatestReviews.bind(this.taskRepository),
+      this.latestReviewsKey,
+      this.latestReviewsTtl,
+      'Latest reviews',
+      (reviews) => plainToInstance(ReviewWithPlaceDto, reviews),
+    );
+  }
 
-      //TODO추후 제거
-      if (!topReviewers.length) {
-        return;
-      }
+  private async getTopReviewers(): Promise<TopReviewerDto[]> {
+    const topReviewers: TopReviewerWithCount[] =
+      await this.taskRepository.getTopReviewers();
 
-      const userIds = topReviewers.map((review) => review.userId);
-      const userProfiles = await this.taskRepository.getUserProfiles(userIds);
+    const userIds = topReviewers.map((review) => review.userId);
 
-      const topReviewersWithProfiles = topReviewers.map((reviewer) => {
-        const userProfile = userProfiles.find(
-          (profile) => profile.id === reviewer.userId,
-        );
-        return {
-          userId: reviewer.userId,
-          reviewCount: reviewer._count.userId,
-          nickname: userProfile ? userProfile.nickname : 'Unknown',
-          profileImageKey: userProfile
-            ? userProfile.profileImageKey
-            : 'defaultKey',
-        };
-      });
+    const userProfiles = await this.taskRepository.getUserProfiles(userIds);
+    const profilesMap = new Map(
+      userProfiles.map((profile) => [profile.id, profile]),
+    );
 
-      await this.cacheManager.set(
-        this.topReviewersKey,
-        topReviewersWithProfiles,
-      );
+    return topReviewers.map(({ userId, _count }) => ({
+      weeklyReviewCount: _count.userId,
+      url: null,
+      ...profilesMap.get(userId),
+    }));
+  }
 
-      const endTime = Date.now();
-      const duration = endTime - startTime;
-      Logger.log(`Top reviewers cached in ${duration}ms`, 'CacheTopReviewers');
-    } catch (error) {
+  private async cacheData(
+    fetchData: () => Promise<any[]>,
+    cacheKey: string,
+    ttl: number,
+    logTitle: string,
+    transformData: (data: any[]) => any,
+  ) {
+    const startTime = Date.now();
+
+    const data = await fetchData();
+    if (!data) {
       Logger.error(
-        `Error caching top reviewers: ${error}`,
-        'CacheTopReviewers',
+        `Data Empty: ${logTitle}`,
+        `Cache${logTitle.replace(/\s/g, '')}`,
       );
+      return;
     }
+
+    const transformedData = transformData(data);
+    await this.cacheManager.set(cacheKey, transformedData, { ttl });
+
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    Logger.log(
+      `${logTitle} cached in ${duration}ms`,
+      `Cache${logTitle.replace(/\s/g, '')}`,
+    );
   }
 }
