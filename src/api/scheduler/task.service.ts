@@ -35,28 +35,8 @@ export class TaskService {
       REDIS_KEY.REDIS_LATEST_REVIEW_TTL,
     );
   }
-  private async cacheData(
-    fetchData: () => Promise<any[]>,
-    cacheKey: string,
-    ttl: number,
-    logTitle: string,
-    transformData: (data: any[]) => any,
-  ) {
-    const startTime = Date.now();
 
-    const data = await fetchData();
-    const transformedData = transformData(data);
-    await this.cacheManager.set(cacheKey, transformedData, { ttl });
-
-    const endTime = Date.now();
-    const duration = endTime - startTime;
-    Logger.log(
-      `${logTitle} cached in ${duration}ms`,
-      `Cache${logTitle.replace(/\s/g, '')}`,
-    );
-  }
-
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async cacheTopReviewers() {
     await this.cacheData(
       this.getTopReviewers.bind(this),
@@ -64,6 +44,17 @@ export class TaskService {
       this.topReviewersTtl,
       'Top reviewers',
       (topReviewers) => plainToInstance(TopReviewerDto, topReviewers),
+    );
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async cacheLatestReviews() {
+    await this.cacheData(
+      this.taskRepository.getLatestReviews.bind(this.taskRepository),
+      this.latestReviewsKey,
+      this.latestReviewsTtl,
+      'Latest reviews',
+      (reviews) => plainToInstance(ReviewWithPlaceDto, reviews),
     );
   }
 
@@ -79,20 +70,38 @@ export class TaskService {
     );
 
     return topReviewers.map(({ userId, _count }) => ({
-      reviewCount: _count.userId,
+      weeklyReviewCount: _count.userId,
       url: null,
       ...profilesMap.get(userId),
     }));
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  async cacheLatestReviews() {
-    await this.cacheData(
-      this.taskRepository.getLatestReviews.bind(this.taskRepository),
-      this.latestReviewsKey,
-      this.latestReviewsTtl,
-      'Latest reviews',
-      (reviews) => plainToInstance(ReviewWithPlaceDto, reviews),
+  private async cacheData(
+    fetchData: () => Promise<any[]>,
+    cacheKey: string,
+    ttl: number,
+    logTitle: string,
+    transformData: (data: any[]) => any,
+  ) {
+    const startTime = Date.now();
+
+    const data = await fetchData();
+    if (!data) {
+      Logger.error(
+        `Data Empty: ${logTitle}`,
+        `Cache${logTitle.replace(/\s/g, '')}`,
+      );
+      return;
+    }
+
+    const transformedData = transformData(data);
+    await this.cacheManager.set(cacheKey, transformedData, { ttl });
+
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    Logger.log(
+      `${logTitle} cached in ${duration}ms`,
+      `Cache${logTitle.replace(/\s/g, '')}`,
     );
   }
 }
