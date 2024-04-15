@@ -41,6 +41,36 @@ export class TaskRepository {
       },
     });
   }
+
+  async getLatestReviews() {
+    return this.prismaService.placeReview.findMany({
+      take: 7,
+      where: {
+        images: { some: { id: { not: undefined } } },
+        deletedAt: null,
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        images: true,
+        user: true,
+        place: {
+          include: {
+            region: true,
+            placeCategory: {
+              include: {
+                depth1: true,
+                depth2: true,
+                depth3: true,
+                depth4: true,
+                depth5: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   // async findTopReviewers() {
   //   // 현재 날짜
   //   const now = new Date();

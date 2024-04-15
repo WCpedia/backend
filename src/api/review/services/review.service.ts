@@ -39,34 +39,10 @@ export class ReviewService {
   }
 
   async getLatestReviews(): Promise<ReviewWithPlaceDto[]> {
-    let cachedReviews = await this.getCachedReviews();
-    if (!cachedReviews) {
-      const reviews = await this.reviewRepository.getLatestReviews();
-      cachedReviews = plainToInstance(ReviewWithPlaceDto, reviews);
-
-      await this.cacheReviews(cachedReviews);
-    }
-
-    return cachedReviews;
-  }
-
-  private async getCachedReviews(): Promise<ReviewWithPlaceDto[] | null> {
-    return this.cacheManager.get<ReviewWithPlaceDto[]>(
-      this.redisLatestReviewsKey,
-    );
-  }
-
-  private async cacheReviews(reviews: ReviewWithPlaceDto[]): Promise<void> {
-    await this.cacheManager.set(this.redisLatestReviewsKey, reviews, {
-      ttl: this.redisLatestReviewsTtl,
-    });
+    return await this.cacheManager.get(this.redisLatestReviewsKey);
   }
 
   async getTopReviewers(): Promise<TopReviewersDto[]> {
-    const topReviewers: TopReviewersDto[] | null = await this.cacheManager.get(
-      this.redisTopReviewersKey,
-    );
-
-    return plainToInstance(TopReviewersDto, topReviewers);
+    return await this.cacheManager.get(this.redisTopReviewersKey);
   }
 }

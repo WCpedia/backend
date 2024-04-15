@@ -6,16 +6,10 @@ import { Exclude, Expose, Transform } from 'class-transformer';
 export class TopReviewersDto {
   @ApiProperty({
     type: Number,
+    description: '유저 id',
   })
   @Expose()
-  userId: number;
-
-  @ApiProperty({
-    type: Number,
-    description: '리뷰 작성 횟수',
-  })
-  @Expose()
-  reviewCount: number;
+  id: number;
 
   @ApiProperty({
     type: String,
@@ -32,6 +26,20 @@ export class TopReviewersDto {
     toClassOnly: true,
   })
   url?: string;
+
+  @ApiProperty({
+    type: Number,
+    description: '리뷰 작성 횟수',
+  })
+  @Expose()
+  totalReviewCount: number;
+
+  @ApiProperty({
+    type: Number,
+    description: '리뷰 평균 평점',
+  })
+  @Expose()
+  ratingAverage: number;
 
   profileImageKey: string;
 }
