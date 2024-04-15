@@ -126,7 +126,7 @@ export class PlaceRepository {
     return await this.prismaService.placeReview.findMany({
       where: { placeId, NOT: { userId } },
       include: {
-        reviewReactions: {
+        helpfulReviews: {
           where: { userId },
         },
         images: true,

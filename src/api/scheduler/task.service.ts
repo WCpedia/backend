@@ -56,7 +56,6 @@ export class TaskService {
       await this.cacheManager.set(
         this.topReviewersKey,
         topReviewersWithProfiles,
-        { ttl: this.topReviewersTtl },
       );
 
       const endTime = Date.now();

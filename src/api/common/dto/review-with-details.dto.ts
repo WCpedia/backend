@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PlaceReview, VisitTime } from '@prisma/client';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ReviewImageDto } from './review-image.dto';
-import { ReviewReactionDto } from '@api/common/dto/reveiw-reaction.dto';
+import { HelpfulReviewDto } from '@api/common/dto/reveiw-reaction.dto';
 @Exclude()
 export class ReviewWithDetailsDto extends BaseReturnDto implements PlaceReview {
   @ApiProperty({
@@ -56,17 +56,9 @@ export class ReviewWithDetailsDto extends BaseReturnDto implements PlaceReview {
 
   @ApiProperty({
     type: Number,
-    description: 'like 수',
   })
   @Expose()
-  likeCount: number;
-
-  @ApiProperty({
-    type: Number,
-    description: 'thumbsUp 수',
-  })
-  @Expose()
-  thumbsUpCount: number;
+  helpfulCount: number;
 
   @ApiProperty({
     type: BasicUserDto,
@@ -89,8 +81,9 @@ export class ReviewWithDetailsDto extends BaseReturnDto implements PlaceReview {
     isArray: true,
   })
   @Expose()
-  @Type(() => ReviewReactionDto)
-  reviewReactions: ReviewReactionDto[];
+  @Type(() => HelpfulReviewDto)
+  reviewReactions: HelpfulReviewDto[];
 
   userId: number;
+  deletedAt: Date;
 }

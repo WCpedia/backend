@@ -6,6 +6,7 @@ import { ApiOperator } from '@src/types/type';
 import { MyController } from '../my.controller';
 import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
+import { DetailUserProfileDto } from '@api/my/repository/response/DetailUserProfile.dts';
 
 export const ApiMy: ApiOperator<keyof MyController> = {
   GetMyBasicProfile: (
@@ -19,6 +20,21 @@ export const ApiMy: ApiOperator<keyof MyController> = {
         HttpStatus.OK,
         'GetMyBasicProfile',
         BasicUserDto,
+      ),
+    );
+  },
+
+  GetMyProfile: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      CommonResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'GetMyProfile',
+        DetailUserProfileDto,
       ),
     );
   },
