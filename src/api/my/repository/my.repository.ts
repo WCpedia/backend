@@ -10,4 +10,10 @@ export class MyRepository {
       where: { id },
     });
   }
+
+  async getHelpfulReviewCount(userId: number) {
+    return this.prismaService.helpfulReview.count({
+      where: { userId, placeReview: { deletedAt: null } },
+    });
+  }
 }

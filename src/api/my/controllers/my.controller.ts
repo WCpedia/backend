@@ -21,4 +21,10 @@ export class MyController {
   ): Promise<BasicUserDto> {
     return this.myService.getMyBasicProfile(authorizedUser.userId);
   }
+
+  @ApiMy.GetMyProfile({ summary: '내 프로필 상세 조회' })
+  @Get('/profile')
+  async getMyProfile(@GetAuthorizedUser() authorizedUser: IAuthorizedUser) {
+    return this.myService.getMyProfile(authorizedUser.userId);
+  }
 }

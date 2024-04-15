@@ -46,9 +46,11 @@ model User {
   createdAt               DateTime                  @default(now()) @db.Timestamp(6)
   updatedAt               DateTime                  @default(now()) @updatedAt @db.Timestamp(6)
   deletedAt               DateTime?                 @db.Timestamp(6)
+  totalReviewCount        Int                       @default(0)
+  totalRating             Float                     @default(0)
   authentication          Authentication?
   reviews                 PlaceReview[]
-  reviewReactions         ReviewReaction[]
+  helpfulReviews         HelpfulReview[]
   userSubmittedToiletInfo UserSubmittedToiletInfo[]
 }
 
@@ -204,13 +206,13 @@ model PlaceReview {
   cleanlinessRating   Int // 청결도 
   visitTime           VisitTime? // 방문 시간대
   description         String? // 설명
-  likeCount           Int              @default(0)
-  thumbsUpCount       Int              @default(0)
+  helpfulCount        Int              @default(0)
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
+  deletedAt           DateTime?
   user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   place               Place            @relation(fields: [placeId], references: [id])
-  reviewReactions     ReviewReaction[]
+  helpfulReviews     HelpfulReview[]
   images              ReviewImage[]
 
   @@unique([placeId, userId])
@@ -226,11 +228,10 @@ model ReviewImage {
   @@unique([id, reviewId])
 }
 
-model ReviewReaction {
+model HelpfulReview {
   id          Int         @id @default(autoincrement())
   reviewId    Int
   userId      Int
-  emoji       Emoji
   placeReview PlaceReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
