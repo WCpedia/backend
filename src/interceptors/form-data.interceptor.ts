@@ -25,7 +25,7 @@ export class FormDataJsonInterceptor implements NestInterceptor {
     } catch (err) {
       throw new CustomException(
         HttpExceptionStatusCode.BAD_REQUEST,
-        MulterExceptionEnum.MultipartDataIsNotInJsonFormat,
+        MulterExceptionEnum.MULTIPART_DATA_IS_NOT_IN_JSON_FORMAT,
       );
     }
 

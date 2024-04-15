@@ -12,14 +12,17 @@ import {
   Place,
   PlaceCategory,
   PlaceImage,
+  PlaceReview,
   Prisma,
   Region,
+  User,
 } from '@prisma/client';
 import {
   IKakaoSearchImageDocuments,
   IKakaoSearchImageResponse,
   IKakaoPlaceMenuInfo,
   IPlaceUpdateRatingInput,
+  ICalculatedRating,
 } from '@api/place/interface/interface';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 import { CustomException } from '@exceptions/http/custom.exception';
@@ -31,6 +34,9 @@ import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { generatePaginationParams } from '@src/utils/pagination-params-generator';
 import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
+import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
+import { RatingTypes } from '../constants/const/const';
+import { UserExceptionEnum } from '@exceptions/http/enums/user.exception.enum';
 
 @Injectable()
 export class PlaceService {
@@ -192,18 +198,16 @@ export class PlaceService {
     userId: number,
     dto: CreatePlaceReviewDto,
     reviewImages: Express.MulterS3.File[],
-  ) {
-    const selectedPlace = await this.checkPlaceExist(placeId);
-    const selectedReview = await this.placeRepository.getPlaceReviewByUserId(
-      placeId,
-      userId,
+  ): Promise<void> {
+    const selectedPlace = await this.getPlaceById(placeId);
+    await this.checkReviewNotExist(placeId, userId);
+    const userprofile = await this.getUserProfile(userId);
+
+    const { userRatingAverage, ...calculatedRating } = this.calculateRating(
+      selectedPlace,
+      userprofile,
+      dto,
     );
-    if (selectedReview) {
-      throw new CustomException(
-        HttpExceptionStatusCode.BAD_REQUEST,
-        PlaceExceptionEnum.ALREADY_REVIEWED,
-      );
-    }
 
     await this.prismaService.$transaction(
       async (transaction: Prisma.TransactionClient) => {
@@ -214,12 +218,37 @@ export class PlaceService {
           reviewImages,
           transaction,
         );
-        await this.updatePlaceRating(selectedPlace, dto, transaction);
+        await this.placeRepository.updatePlaceRating(
+          placeId,
+          calculatedRating,
+          transaction,
+        );
+        await this.placeRepository.updateUserRating(
+          userId,
+          userRatingAverage,
+          transaction,
+        );
       },
     );
   }
 
-  private async checkPlaceExist(placeId: number): Promise<Place> {
+  private async checkReviewNotExist(
+    placeId: number,
+    userId: number,
+  ): Promise<void> {
+    const selectedReview = await this.placeRepository.getPlaceReviewByUserId(
+      placeId,
+      userId,
+    );
+    if (selectedReview) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        ReviewExceptionEnum.ALREADY_REVIEWED,
+      );
+    }
+  }
+
+  private async getPlaceById(placeId: number): Promise<Place> {
     const selectedPlace = await this.placeRepository.getPlaceById(placeId);
     if (!selectedPlace) {
       throw new CustomException(
@@ -227,42 +256,20 @@ export class PlaceService {
         PlaceExceptionEnum.PLACE_NOT_FOUND,
       );
     }
+
     return selectedPlace;
   }
 
-  private async updatePlaceRating(
-    place: Place,
-    dto: CreatePlaceReviewDto,
-    transaction: Prisma.TransactionClient,
-  ): Promise<void> {
-    const ratingsToUpdate = [
-      'accessibilityRating',
-      'facilityRating',
-      'cleanlinessRating',
-    ] as const;
+  private async getUserProfile(userId: number) {
+    const userProfile = await this.placeRepository.getUserById(userId);
+    if (!userProfile) {
+      throw new CustomException(
+        HttpExceptionStatusCode.NOT_FOUND,
+        UserExceptionEnum.USER_NOT_FOUND,
+      );
+    }
 
-    const updatedCount = place.reviewCount + 1;
-    const updateData = ratingsToUpdate.reduce((acc, ratingType) => {
-      const newRating = dto[ratingType];
-      const currentRating = place[ratingType];
-      const updatedRating =
-        currentRating === null
-          ? newRating
-          : Math.round(
-              ((currentRating * place.reviewCount + newRating) / updatedCount) *
-                100,
-            ) / 100;
-
-      acc[ratingType] = updatedRating;
-      return acc;
-    }, {} as IPlaceUpdateRatingInput);
-
-    updateData.reviewCount = updatedCount;
-    await this.placeRepository.updatePlaceRating(
-      place.id,
-      updateData,
-      transaction,
-    );
+    return userProfile;
   }
 
   async getPlaceReviewsByPlaceId(
@@ -289,6 +296,40 @@ export class PlaceService {
     };
   }
 
+  private calculateRating(
+    place: Place,
+    userprofile: User,
+    dto: CreatePlaceReviewDto,
+  ): ICalculatedRating {
+    const updatedCount = place.reviewCount + 1;
+    let totalNewRating = 0;
+
+    const updateData = RatingTypes.reduce((acc, ratingType) => {
+      const newRating = dto[ratingType];
+      totalNewRating += newRating;
+      const currentRating = place[ratingType];
+      const updatedRating =
+        currentRating === null
+          ? newRating
+          : (currentRating * place.reviewCount + newRating) / updatedCount;
+
+      acc[ratingType] = Math.round(updatedRating * 100) / 100;
+      return acc;
+    }, {} as ICalculatedRating);
+
+    // 모든 평가 항목에 대한 계산이 완료된 후 userRatingAverage를 계산
+    updateData.userRatingAverage =
+      Math.round(
+        ((userprofile.ratingAverage * userprofile.totalReviewCount +
+          totalNewRating / RatingTypes.length) /
+          (userprofile.totalReviewCount + 1)) *
+          100,
+      ) / 100;
+    updateData.reviewCount = updatedCount;
+
+    return updateData;
+  }
+
   async getMyPlaceReview(
     placeId: number,
     userId: number,
@@ -307,7 +348,7 @@ export class PlaceService {
     dto: ReportFacilityDto,
     reportImages: Express.MulterS3.File[],
   ): Promise<void> {
-    await this.checkPlaceExist(placeId);
+    await this.getPlaceById(placeId);
 
     await this.placeRepository.createPlaceReport(
       placeId,

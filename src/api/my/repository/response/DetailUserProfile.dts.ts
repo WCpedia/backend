@@ -40,10 +40,10 @@ export class DetailUserProfileDto extends BaseReturnDto implements User {
 
   @ApiProperty({
     type: Number,
-    description: '총 평점',
+    description: '평균 평점',
   })
   @Expose()
-  totalRating: number;
+  ratingAverage: number;
 
   @ApiProperty({
     type: Number,

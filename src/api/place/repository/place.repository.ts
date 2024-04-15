@@ -223,4 +223,24 @@ export class PlaceRepository {
       data,
     });
   }
+
+  async getUserById(userId: number) {
+    return await this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
+  }
+
+  async updateUserRating(
+    userId: number,
+    userRatingAverage: number,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).user.update({
+      where: { id: userId },
+      data: {
+        ratingAverage: userRatingAverage,
+        totalReviewCount: { increment: 1 },
+      },
+    });
+  }
 }

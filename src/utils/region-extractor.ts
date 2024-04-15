@@ -32,7 +32,7 @@ export function extractRegion(address: string): IExtractedRegion {
   } else {
     throw new CustomException(
       HttpExceptionStatusCode.BAD_REQUEST,
-      MulterExceptionEnum.InvalidAddressFormat,
+      MulterExceptionEnum.INVALID_ADDRESS_FORMAT,
     );
   }
 }
