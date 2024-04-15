@@ -65,7 +65,7 @@ export class MulterBuilder {
         callback(
           new BadRequestException(
             HttpExceptionStatusCode.BAD_REQUEST,
-            MulterExceptionEnum.MultipartFileIsNotInFormat,
+            MulterExceptionEnum.MULTIPART_FILE_IS_NOT_IN_FORMAT,
           ),
           false,
         );

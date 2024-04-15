@@ -44,7 +44,7 @@ export class AwsS3Service extends MulterBuilder {
     } catch (e) {
       throw new CustomException(
         HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
-        MulterExceptionEnum.AwsS3ClientRequestError,
+        MulterExceptionEnum.AWS_S3_CLIENT_REQUEST_ERROR,
       );
     }
   }
@@ -59,7 +59,7 @@ export class AwsS3Service extends MulterBuilder {
     } catch (e) {
       throw new CustomException(
         HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
-        MulterExceptionEnum.AwsS3ClientRequestError,
+        MulterExceptionEnum.AWS_S3_CLIENT_REQUEST_ERROR,
       );
     }
   }
@@ -78,7 +78,7 @@ export class AwsS3Service extends MulterBuilder {
     } catch (e) {
       throw new CustomException(
         HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
-        MulterExceptionEnum.AwsS3ClientRequestError,
+        MulterExceptionEnum.AWS_S3_CLIENT_REQUEST_ERROR,
       );
     }
   }

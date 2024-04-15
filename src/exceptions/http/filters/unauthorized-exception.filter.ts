@@ -24,16 +24,16 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
     let errorCode: string;
     if (message) {
       if (message.includes('No auth token')) {
-        errorCode = AuthExceptionEnum.NoAuthToken;
+        errorCode = AuthExceptionEnum.NO_AUTH_TOKEN;
       } else if (
         message.includes('invalid signature') ||
         message.includes('invalid token')
       ) {
-        errorCode = AuthExceptionEnum.InvalidToken;
+        errorCode = AuthExceptionEnum.INVALID_TOKEN;
       } else if (message.includes('jwt expired')) {
-        errorCode = AuthExceptionEnum.JwtExpired;
+        errorCode = AuthExceptionEnum.JWT_EXPIRED;
       } else {
-        errorCode = AuthExceptionEnum.Unauthorized;
+        errorCode = AuthExceptionEnum.UNAUTHORIZED;
       }
 
       const res = {

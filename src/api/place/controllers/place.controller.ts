@@ -24,8 +24,6 @@ import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.de
 import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
 import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
-import { CustomException } from '@exceptions/http/custom.exception';
-import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { AllowGuestGuard } from '@api/common/guards/allow-guest.guard';
 import { ReviewWithDetailsDto } from '../../common/dto/review-with-details.dto';
 import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';

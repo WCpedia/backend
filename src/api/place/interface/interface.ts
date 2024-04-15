@@ -41,3 +41,7 @@ export interface IPlaceUpdateRatingInput {
   cleanlinessRating: number;
   reviewCount: number;
 }
+
+export interface ICalculatedRating extends IPlaceUpdateRatingInput {
+  userRatingAverage: number;
+}

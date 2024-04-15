@@ -1,13 +1,13 @@
 export enum MulterExceptionEnum {
-  MultipartFileIsNotInFormat = 'MultipartFileIsNotInFormat',
-  InvalidAddressFormat = 'InvalidAddressFormat',
-  MultipartDataIsNotInJsonFormat = 'MultipartDataIsNotInJsonFormat',
-  AwsS3ClientRequestError = 'AwsS3ClientRequestError',
+  MULTIPART_FILE_IS_NOT_IN_FORMAT = 'MultipartFileIsNotInFormat',
+  INVALID_ADDRESS_FORMAT = 'InvalidAddressFormat',
+  MULTIPART_DATA_IS_NOT_IN_JSON_FORMAT = 'MultipartDataIsNotInJsonFormat',
+  AWS_S3_CLIENT_REQUEST_ERROR = 'AwsS3ClientRequestError',
 }
 
 export enum AuthExceptionEnum {
-  NoAuthToken = 'NoAuthToken',
-  InvalidToken = 'InvalidToken',
-  JwtExpired = 'JwtExpired',
-  Unauthorized = 'Unauthorized',
+  NO_AUTH_TOKEN = 'NoAuthToken',
+  INVALID_TOKEN = 'InvalidToken',
+  JWT_EXPIRED = 'JwtExpired',
+  UNAUTHORIZED = 'Unauthorized',
 }
