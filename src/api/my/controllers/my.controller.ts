@@ -6,9 +6,11 @@ import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.de
 import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { ApiMy } from './swagger/user.swagger';
+import { ApiMy } from './swagger/my.swagger';
+import { PaginationDto } from '@api/common/dto/pagination.dto';
+import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
 
-@ApiTags('my')
+@ApiTags('My')
 @Controller(DOMAIN_NAME.MY)
 @UseGuards(AccessTokenGuard)
 export class MyController {
@@ -26,5 +28,14 @@ export class MyController {
   @Get('/profile')
   async getMyProfile(@GetAuthorizedUser() authorizedUser: IAuthorizedUser) {
     return this.myService.getMyProfile(authorizedUser.userId);
+  }
+
+  @ApiMy.GetMyReviews({ summary: '내 리뷰 조회' })
+  @Get('/reviews')
+  async getMyReviews(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<ReviewWithPlaceDto[]> {
+    return this.myService.getMyReviews(authorizedUser.userId, paginationDto);
   }
 }

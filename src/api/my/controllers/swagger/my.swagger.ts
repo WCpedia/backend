@@ -7,6 +7,7 @@ import { MyController } from '../my.controller';
 import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 import { DetailUserProfileDto } from '@api/my/repository/response/DetailUserProfile.dts';
+import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
 
 export const ApiMy: ApiOperator<keyof MyController> = {
   GetMyBasicProfile: (
@@ -35,6 +36,21 @@ export const ApiMy: ApiOperator<keyof MyController> = {
         HttpStatus.OK,
         'GetMyProfile',
         DetailUserProfileDto,
+      ),
+    );
+  },
+
+  GetMyReviews: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      CommonResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'GetMyReviews',
+        ReviewWithPlaceDto,
       ),
     );
   },
