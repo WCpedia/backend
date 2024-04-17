@@ -9,6 +9,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { ApiMy } from './swagger/my.swagger';
 import { PaginationDto } from '@api/common/dto/pagination.dto';
 import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
+import { PaginatedResponse } from '@api/common/interfaces/interface';
 
 @ApiTags('My')
 @Controller(DOMAIN_NAME.MY)
@@ -37,5 +38,17 @@ export class MyController {
     @Query() paginationDto: PaginationDto,
   ): Promise<ReviewWithPlaceDto[]> {
     return this.myService.getMyReviews(authorizedUser.userId, paginationDto);
+  }
+
+  @ApiMy.GetMyHelpfulReviews({ summary: '내게 도움이 된 리뷰 조회' })
+  @Get('/helpful-reviews')
+  async getMyHelpfulReviews(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<ReviewWithPlaceDto, 'helpfulReviews'>> {
+    return this.myService.getMyHelpfulReviews(
+      authorizedUser.userId,
+      paginationDto,
+    );
   }
 }
