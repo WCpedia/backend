@@ -36,6 +36,7 @@ export class PlaceRepository {
           include: {
             user: true,
             images: true,
+            helpfulReviews: { where: { userId } },
           },
           where: { NOT: { userId } },
           orderBy: { createdAt: 'desc' },
