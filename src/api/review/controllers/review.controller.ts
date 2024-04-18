@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ReviewService } from '../services/review.service';
-import { ReviewWithPlaceDto } from '../dtos/response/review-with-place.dto';
+import { DetailReviewWithoutHelpfulDto } from '../dtos/response/review-with-place.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiReview } from './swagger/review.swagger';
 import { TopReviewersDto } from '../dtos/response/top-reviewers.dto';
@@ -12,7 +12,7 @@ export class ReviewController {
 
   @ApiReview.GetLatestReviews({ summary: '최신 리뷰 목록 조회' })
   @Get('/latest')
-  async getLatestReviews(): Promise<ReviewWithPlaceDto[]> {
+  async getLatestReviews(): Promise<DetailReviewWithoutHelpfulDto[]> {
     return this.reviewService.getLatestReviews();
   }
 

@@ -5,9 +5,9 @@ import { plainToInstance } from 'class-transformer';
 import { DetailUserProfileDto } from '../repository/response/DetailUserProfile.dts';
 import { PaginationDto } from '@api/common/dto/pagination.dto';
 import { generatePaginationParams } from '@src/utils/pagination-params-generator';
-import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
+import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
-import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
+import { DetailReviewWithPlaceDto } from '../../common/dto/helpful-review.dto';
 
 @Injectable()
 export class MyService {
@@ -33,7 +33,7 @@ export class MyService {
   async getMyReviews(
     userId: number,
     dto: PaginationDto,
-  ): Promise<ReviewWithPlaceDto[]> {
+  ): Promise<DetailReviewWithoutHelpfulDto[]> {
     const paginationParams = generatePaginationParams(dto);
 
     const selectedReviews = await this.myRepository.getMyReviews(
@@ -41,13 +41,13 @@ export class MyService {
       paginationParams,
     );
 
-    return plainToInstance(ReviewWithPlaceDto, selectedReviews);
+    return plainToInstance(DetailReviewWithoutHelpfulDto, selectedReviews);
   }
 
   async getMyHelpfulReviews(
     userId: number,
     dto: PaginationDto,
-  ): Promise<PaginatedResponse<ReviewWithDetailsDto, 'helpfulReviews'>> {
+  ): Promise<PaginatedResponse<DetailReviewWithPlaceDto, 'helpfulReviews'>> {
     const totalItemCount =
       await this.myRepository.getHelpfulReviewCount(userId);
 
@@ -63,7 +63,10 @@ export class MyService {
 
     return {
       totalItemCount,
-      helpfulReviews: plainToInstance(ReviewWithDetailsDto, selectedReviews),
+      helpfulReviews: plainToInstance(
+        DetailReviewWithPlaceDto,
+        selectedReviews,
+      ),
     };
   }
 }
