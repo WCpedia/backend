@@ -7,6 +7,11 @@ import { REDIS_KEY } from '@core/config/constants/config.constant';
 import { DetailReviewWithoutHelpfulDto } from '../dtos/response/review-with-place.dto';
 import { plainToInstance } from 'class-transformer';
 import { TopReviewersDto } from '../dtos/response/top-reviewers.dto';
+import { CustomException } from '@exceptions/http/custom.exception';
+import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
+import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
+import { PrismaService } from '@core/database/prisma/services/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ReviewService {
@@ -19,6 +24,7 @@ export class ReviewService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly reviewRepository: ReviewRepository,
     private readonly configService: ProductConfigService,
+    private readonly prismaService: PrismaService,
   ) {
     this.initializeRedisConfig();
   }
@@ -44,5 +50,45 @@ export class ReviewService {
 
   async getTopReviewers(): Promise<TopReviewersDto[]> {
     return await this.cacheManager.get(this.redisTopReviewersKey);
+  }
+
+  async createHelpfulReview(reviewId: number, userId: number): Promise<void> {
+    const selectedReview = await this.reviewRepository.getReview(reviewId);
+    if (!selectedReview) {
+      throw new CustomException(
+        HttpExceptionStatusCode.NOT_FOUND,
+        ReviewExceptionEnum.REVIEW_NOT_EXIST,
+      );
+    }
+    if (selectedReview.userId === userId) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        ReviewExceptionEnum.SELF_HELPFUL_REVIEW_FORBIDDEN,
+      );
+    }
+
+    const isExist = await this.reviewRepository.countHelpfulReview(
+      reviewId,
+      userId,
+    );
+    if (isExist) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        ReviewExceptionEnum.ALREADY_HELPFUL_REVIEWED,
+      );
+    }
+
+    await this.prismaService.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await Promise.all([
+          this.reviewRepository.createHelpfulReview(
+            reviewId,
+            userId,
+            transaction,
+          ),
+          this.reviewRepository.updateHelpfulCount(reviewId, true, transaction),
+        ]);
+      },
+    );
   }
 }

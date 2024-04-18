@@ -33,7 +33,6 @@ export class NicknameValidator
         'InvalidNicknameLength',
       );
     }
-    console.log(nickname);
 
     if (filter.isProfane(nickname)) {
       throw new CustomException(
