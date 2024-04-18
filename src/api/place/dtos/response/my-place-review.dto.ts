@@ -4,5 +4,5 @@ import { Exclude } from 'class-transformer';
 
 @Exclude()
 export class MyPlaceReviewDto extends OmitType(ReviewWithDetailsDto, [
-  'reviewReactions',
+  'helpfulReviews',
 ] as const) {}

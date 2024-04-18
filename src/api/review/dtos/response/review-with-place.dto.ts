@@ -5,7 +5,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 
 @Exclude()
 export class ReviewWithPlaceDto extends OmitType(ReviewWithDetailsDto, [
-  'reviewReactions',
+  'helpfulReviews',
 ]) {
   @ApiProperty({
     type: BasicPlaceDto,

@@ -68,6 +68,9 @@ export class MyRepository {
             },
           },
         },
+        helpfulReviews: {
+          where: { userId },
+        },
       },
       ...paginationParams,
     });

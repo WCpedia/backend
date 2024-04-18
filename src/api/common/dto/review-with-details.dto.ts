@@ -82,7 +82,7 @@ export class ReviewWithDetailsDto extends BaseReturnDto implements PlaceReview {
   })
   @Expose()
   @Type(() => HelpfulReviewDto)
-  reviewReactions: HelpfulReviewDto[];
+  helpfulReviews: HelpfulReviewDto[];
 
   userId: number;
   deletedAt: Date;
