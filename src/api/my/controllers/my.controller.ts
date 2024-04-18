@@ -8,9 +8,9 @@ import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiMy } from './swagger/my.swagger';
 import { PaginationDto } from '@api/common/dto/pagination.dto';
-import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
+import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
-import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
+import { DetailReviewWithPlaceDto } from '../../common/dto/helpful-review.dto';
 
 @ApiTags('My')
 @Controller(DOMAIN_NAME.MY)
@@ -37,7 +37,7 @@ export class MyController {
   async getMyReviews(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Query() paginationDto: PaginationDto,
-  ): Promise<ReviewWithPlaceDto[]> {
+  ): Promise<DetailReviewWithoutHelpfulDto[]> {
     return this.myService.getMyReviews(authorizedUser.userId, paginationDto);
   }
 
@@ -46,7 +46,7 @@ export class MyController {
   async getMyHelpfulReviews(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Query() paginationDto: PaginationDto,
-  ): Promise<PaginatedResponse<ReviewWithDetailsDto, 'helpfulReviews'>> {
+  ): Promise<PaginatedResponse<DetailReviewWithPlaceDto, 'helpfulReviews'>> {
     return this.myService.getMyHelpfulReviews(
       authorizedUser.userId,
       paginationDto,

@@ -6,7 +6,7 @@ import { Cache } from 'cache-manager';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { REDIS_KEY } from '@core/config/constants/config.constant';
 import { plainToInstance } from 'class-transformer';
-import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
+import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { TopReviewerWithCount } from './type/type';
 import { TopReviewerDto } from './dtos/top-reviewer.dto';
 
@@ -54,7 +54,7 @@ export class TaskService {
       this.latestReviewsKey,
       this.latestReviewsTtl,
       'Latest reviews',
-      (reviews) => plainToInstance(ReviewWithPlaceDto, reviews),
+      (reviews) => plainToInstance(DetailReviewWithoutHelpfulDto, reviews),
     );
   }
 

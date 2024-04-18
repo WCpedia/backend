@@ -7,9 +7,10 @@ import { MyController } from '../my.controller';
 import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 import { DetailUserProfileDto } from '@api/my/repository/response/DetailUserProfile.dts';
-import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
+import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
 import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
+import { DetailReviewWithPlaceDto } from '@api/common/dto/helpful-review.dto';
 
 export const ApiMy: ApiOperator<keyof MyController> = {
   GetMyBasicProfile: (
@@ -52,7 +53,7 @@ export const ApiMy: ApiOperator<keyof MyController> = {
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'GetMyReviews',
-        ReviewWithPlaceDto,
+        DetailReviewWithoutHelpfulDto,
       ),
     );
   },
@@ -67,7 +68,7 @@ export const ApiMy: ApiOperator<keyof MyController> = {
       PaginationResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'helpfulReviews',
-        ReviewWithDetailsDto,
+        DetailReviewWithPlaceDto,
       ),
     );
   },

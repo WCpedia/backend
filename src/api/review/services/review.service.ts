@@ -4,7 +4,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { REDIS_KEY } from '@core/config/constants/config.constant';
-import { ReviewWithPlaceDto } from '../dtos/response/review-with-place.dto';
+import { DetailReviewWithoutHelpfulDto } from '../dtos/response/review-with-place.dto';
 import { plainToInstance } from 'class-transformer';
 import { TopReviewersDto } from '../dtos/response/top-reviewers.dto';
 
@@ -38,7 +38,7 @@ export class ReviewService {
     );
   }
 
-  async getLatestReviews(): Promise<ReviewWithPlaceDto[]> {
+  async getLatestReviews(): Promise<DetailReviewWithoutHelpfulDto[]> {
     return await this.cacheManager.get(this.redisLatestReviewsKey);
   }
 
