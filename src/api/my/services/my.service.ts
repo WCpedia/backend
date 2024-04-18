@@ -7,6 +7,7 @@ import { PaginationDto } from '@api/common/dto/pagination.dto';
 import { generatePaginationParams } from '@src/utils/pagination-params-generator';
 import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
+import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
 
 @Injectable()
 export class MyService {
@@ -46,7 +47,7 @@ export class MyService {
   async getMyHelpfulReviews(
     userId: number,
     dto: PaginationDto,
-  ): Promise<PaginatedResponse<ReviewWithPlaceDto, 'helpfulReviews'>> {
+  ): Promise<PaginatedResponse<ReviewWithDetailsDto, 'helpfulReviews'>> {
     const totalItemCount =
       await this.myRepository.getHelpfulReviewCount(userId);
 
@@ -62,7 +63,7 @@ export class MyService {
 
     return {
       totalItemCount,
-      helpfulReviews: plainToInstance(ReviewWithPlaceDto, selectedReviews),
+      helpfulReviews: plainToInstance(ReviewWithDetailsDto, selectedReviews),
     };
   }
 }

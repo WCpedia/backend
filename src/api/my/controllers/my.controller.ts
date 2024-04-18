@@ -10,6 +10,7 @@ import { ApiMy } from './swagger/my.swagger';
 import { PaginationDto } from '@api/common/dto/pagination.dto';
 import { ReviewWithPlaceDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
+import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
 
 @ApiTags('My')
 @Controller(DOMAIN_NAME.MY)
@@ -45,7 +46,7 @@ export class MyController {
   async getMyHelpfulReviews(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Query() paginationDto: PaginationDto,
-  ): Promise<PaginatedResponse<ReviewWithPlaceDto, 'helpfulReviews'>> {
+  ): Promise<PaginatedResponse<ReviewWithDetailsDto, 'helpfulReviews'>> {
     return this.myService.getMyHelpfulReviews(
       authorizedUser.userId,
       paginationDto,
