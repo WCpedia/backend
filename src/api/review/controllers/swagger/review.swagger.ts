@@ -6,6 +6,8 @@ import { HttpStatus, applyDecorators } from '@nestjs/common';
 import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { TopReviewersDto } from '@api/review/dtos/response/top-reviewers.dto';
+import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
+import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 
 export const ApiReview: ApiOperator<keyof ReviewController> = {
   GetLatestReviews: (
@@ -34,6 +36,20 @@ export const ApiReview: ApiOperator<keyof ReviewController> = {
         'GetTopReviewers',
         TopReviewersDto,
         { isArray: true },
+      ),
+    );
+  },
+
+  CreateHelpfulReview: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      StatusResponseDto.swaggerBuilder(
+        HttpStatus.CREATED,
+        'CreateHelpfulReview',
       ),
     );
   },

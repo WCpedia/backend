@@ -1,5 +1,6 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ReviewRepository {
@@ -28,6 +29,39 @@ export class ReviewRepository {
           },
         },
       },
+    });
+  }
+
+  async getReview(reviewId: number) {
+    return this.prismaService.placeReview.findFirst({
+      where: { id: reviewId, deletedAt: null },
+    });
+  }
+
+  async countHelpfulReview(reviewId: number, userId: number) {
+    return this.prismaService.helpfulReview.count({
+      where: { reviewId, userId },
+    });
+  }
+
+  async createHelpfulReview(
+    reviewId: number,
+    userId: number,
+    transaction?: Prisma.TransactionClient,
+  ): Promise<void> {
+    await (transaction ?? this.prismaService).helpfulReview.create({
+      data: { reviewId, userId },
+    });
+  }
+
+  async updateHelpfulCount(
+    reviewId: number,
+    isIncrement: boolean,
+    transaction?: Prisma.TransactionClient,
+  ): Promise<void> {
+    await (transaction ?? this.prismaService).placeReview.update({
+      where: { id: reviewId },
+      data: { helpfulCount: isIncrement ? { increment: 1 } : { decrement: 1 } },
     });
   }
 }
