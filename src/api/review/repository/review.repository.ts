@@ -1,6 +1,6 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { HelpfulReview, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ReviewRepository {
@@ -48,8 +48,8 @@ export class ReviewRepository {
     reviewId: number,
     userId: number,
     transaction?: Prisma.TransactionClient,
-  ): Promise<void> {
-    await (transaction ?? this.prismaService).helpfulReview.create({
+  ): Promise<HelpfulReview> {
+    return await (transaction ?? this.prismaService).helpfulReview.create({
       data: { reviewId, userId },
     });
   }
