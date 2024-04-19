@@ -64,4 +64,19 @@ export class ReviewRepository {
       data: { helpfulCount: isIncrement ? { increment: 1 } : { decrement: 1 } },
     });
   }
+
+  async getHelpfulReview(id: number) {
+    return this.prismaService.helpfulReview.findUnique({
+      where: { id },
+    });
+  }
+
+  async deleteHelpfulReview(
+    id: number,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction ?? this.prismaService).helpfulReview.delete({
+      where: { id },
+    });
+  }
 }
