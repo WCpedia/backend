@@ -11,7 +11,8 @@ import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
-import { Prisma } from '@prisma/client';
+import { HelpfulReview, Prisma } from '@prisma/client';
+import { HelpfulReviewDto } from '@api/common/dto/reveiw-reaction.dto';
 
 @Injectable()
 export class ReviewService {
@@ -52,7 +53,10 @@ export class ReviewService {
     return await this.cacheManager.get(this.redisTopReviewersKey);
   }
 
-  async createHelpfulReview(reviewId: number, userId: number): Promise<void> {
+  async createHelpfulReview(
+    reviewId: number,
+    userId: number,
+  ): Promise<HelpfulReview> {
     const selectedReview = await this.reviewRepository.getReview(reviewId);
     if (!selectedReview) {
       throw new CustomException(
@@ -78,9 +82,9 @@ export class ReviewService {
       );
     }
 
-    await this.prismaService.$transaction(
+    const result = await this.prismaService.$transaction(
       async (transaction: Prisma.TransactionClient) => {
-        await Promise.all([
+        return await Promise.all([
           this.reviewRepository.createHelpfulReview(
             reviewId,
             userId,
@@ -90,5 +94,7 @@ export class ReviewService {
         ]);
       },
     );
+
+    return plainToInstance(HelpfulReviewDto, result[0]);
   }
 }

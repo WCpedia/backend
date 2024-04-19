@@ -16,6 +16,7 @@ import { TopReviewersDto } from '../dtos/response/top-reviewers.dto';
 import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.decorator';
 import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
+import { HelpfulReview } from '@prisma/client';
 
 @ApiTags('Reviews')
 @Controller('reviews')
@@ -40,7 +41,7 @@ export class ReviewController {
   async createHelpfulReview(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Param('reviewId', ParseIntPipe) placeId: number,
-  ): Promise<void> {
+  ): Promise<HelpfulReview> {
     return this.reviewService.createHelpfulReview(
       placeId,
       authorizedUser.userId,

@@ -8,6 +8,7 @@ import { ApiOperation } from '@nestjs/swagger';
 import { TopReviewersDto } from '@api/review/dtos/response/top-reviewers.dto';
 import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
+import { HelpfulReviewDto } from '@api/common/dto/reveiw-reaction.dto';
 
 export const ApiReview: ApiOperator<keyof ReviewController> = {
   GetLatestReviews: (
@@ -47,9 +48,10 @@ export const ApiReview: ApiOperator<keyof ReviewController> = {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
       TokenConfigDto.swaggerBuilder('accessToken'),
-      StatusResponseDto.swaggerBuilder(
+      CommonResponseDto.swaggerBuilder(
         HttpStatus.CREATED,
         'CreateHelpfulReview',
+        HelpfulReviewDto,
       ),
     );
   },
