@@ -69,7 +69,6 @@ export class PlaceService {
     userId?: number,
   ): Promise<PlaceDetailDto> {
     let myReview = null;
-
     const selectedPlace = await this.placeRepository.getPlaceWithDetailsById(
       placeId,
       userId,
@@ -99,11 +98,14 @@ export class PlaceService {
       );
     }
 
-    return plainToInstance(PlaceDetailDto, {
+    const a = plainToInstance(PlaceDetailDto, {
       ...selectedPlace,
       totalReviewCount,
       myReview,
     });
+
+    console.log(a.reviews[0].helpfulReviews);
+    return a;
   }
 
   private async ensurePlaceImages(
