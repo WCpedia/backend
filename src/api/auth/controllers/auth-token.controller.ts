@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Res,
+  UseGuards,
+  Post,
+  Delete,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
@@ -51,5 +59,14 @@ export class AuthTokenController {
     response.cookie('refreshToken', token.refreshToken, {
       httpOnly: true,
     });
+  }
+
+  @ApiAuthToken.RevokeTokens({ summary: '모든 토큰 초기화' })
+  @Delete('/revoke')
+  async revokeTokens(
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    response.clearCookie('accessToken');
+    response.clearCookie('refreshToken');
   }
 }

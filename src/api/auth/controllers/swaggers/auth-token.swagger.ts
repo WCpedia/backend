@@ -27,4 +27,14 @@ export const ApiAuthToken: ApiOperator<keyof AuthTokenController> = {
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'RefreshTokens'),
     );
   },
+
+  RevokeTokens: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'RevokeTokens'),
+    );
+  },
 };
