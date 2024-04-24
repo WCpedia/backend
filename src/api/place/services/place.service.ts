@@ -98,14 +98,11 @@ export class PlaceService {
       );
     }
 
-    const a = plainToInstance(PlaceDetailDto, {
+    return plainToInstance(PlaceDetailDto, {
       ...selectedPlace,
       totalReviewCount,
       myReview,
     });
-
-    console.log(a.reviews[0].helpfulReviews);
-    return a;
   }
 
   private async ensurePlaceImages(
