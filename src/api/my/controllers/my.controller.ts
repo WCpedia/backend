@@ -1,5 +1,13 @@
 import { DOMAIN_NAME } from '@enums/domain-name.enum';
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Query,
+  UploadedFile,
+  UseGuards,
+} from '@nestjs/common';
 import { MyService } from '../services/my.service';
 import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
 import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.decorator';
@@ -11,6 +19,13 @@ import { PaginationDto } from '@api/common/dto/pagination.dto';
 import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { DetailReviewWithPlaceDto } from '../../common/dto/helpful-review.dto';
+import { UploadImages } from '@src/utils/image-upload-interceptor';
+import {
+  FilePath,
+  UploadFileLimit,
+} from '@src/constants/consts/upload-file.const';
+import { UpdateMyProfileDto } from '../dtos/request/update-my-profile.dto';
+import { DetailUserProfileDto } from '../repository/response/DetailUserProfile.dts';
 
 @ApiTags('My')
 @Controller(DOMAIN_NAME.MY)
@@ -28,7 +43,9 @@ export class MyController {
 
   @ApiMy.GetMyProfile({ summary: '내 프로필 상세 조회' })
   @Get('/profile')
-  async getMyProfile(@GetAuthorizedUser() authorizedUser: IAuthorizedUser) {
+  async getMyProfile(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+  ): Promise<DetailUserProfileDto> {
     return this.myService.getMyProfile(authorizedUser.userId);
   }
 
@@ -50,6 +67,24 @@ export class MyController {
     return this.myService.getMyHelpfulReviews(
       authorizedUser.userId,
       paginationDto,
+    );
+  }
+
+  @ApiMy.UpdateMyProfile({ summary: '내 프로필 수정' })
+  @Patch('/profile')
+  @UploadImages({
+    maxCount: UploadFileLimit.SINGLE,
+    path: FilePath.USER,
+  })
+  async updateMyProfile(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @UploadedFile() profileImage: Express.MulterS3.File,
+    @Body() updateMyProfileDto: UpdateMyProfileDto,
+  ): Promise<string | null> {
+    return this.myService.updateMyProfile(
+      authorizedUser.userId,
+      updateMyProfileDto,
+      profileImage,
     );
   }
 }

@@ -8,6 +8,9 @@ import { generatePaginationParams } from '@src/utils/pagination-params-generator
 import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { DetailReviewWithPlaceDto } from '../../common/dto/helpful-review.dto';
+import { UpdateMyProfileDto } from '../dtos/request/update-my-profile.dto';
+import { IUserProfileUpdateInput } from '../interface/interface';
+import { transformS3Url } from '@src/utils/s3-url-transformer';
 
 @Injectable()
 export class MyService {
@@ -68,5 +71,23 @@ export class MyService {
         selectedReviews,
       ),
     };
+  }
+
+  async updateMyProfile(
+    userId: number,
+    dto: UpdateMyProfileDto,
+    newProfileImage?: Express.MulterS3.File,
+  ): Promise<string | null> {
+    const { profileImage, nickname, description } = dto;
+    const profileImageKey = newProfileImage?.key ?? profileImage;
+    const data: IUserProfileUpdateInput = {
+      profileImageKey,
+      nickname: nickname ?? undefined,
+      description: description ?? undefined,
+    };
+
+    await this.myRepository.updateMyProfile(userId, data);
+
+    return profileImageKey ? transformS3Url({ value: profileImageKey }) : null;
   }
 }
