@@ -6,7 +6,7 @@ import { ApiOperator } from '@src/types/type';
 import { MyController } from '../my.controller';
 import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
-import { DetailUserProfileDto } from '@api/my/repository/response/DetailUserProfile.dts';
+import { DetailUserProfileDto } from '@api/my/dtos/response/DetailUserProfile.dts';
 import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
 import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
