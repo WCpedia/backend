@@ -25,7 +25,7 @@ import {
   UploadFileLimit,
 } from '@src/constants/consts/upload-file.const';
 import { UpdateMyProfileDto } from '../dtos/request/update-my-profile.dto';
-import { DetailUserProfileDto } from '../repository/response/DetailUserProfile.dts';
+import { DetailUserProfileDto } from '../dtos/response/DetailUserProfile.dts';
 
 @ApiTags('My')
 @Controller(DOMAIN_NAME.MY)
