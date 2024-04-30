@@ -17,6 +17,7 @@ export class SearchRepository {
       },
       update: {},
       create: placeCategory,
+      select: { id: true },
     });
   }
 
@@ -37,9 +38,9 @@ export class SearchRepository {
     });
   }
 
-  async createPlace(
+  async upsertPlace(
     data: Prisma.PlaceUncheckedCreateInput,
-    transaction: Prisma.TransactionClient,
+    transaction?: Prisma.TransactionClient,
   ) {
     return await (transaction ?? this.prismaService).place.upsert({
       where: { kakaoId: data.kakaoId },
@@ -66,6 +67,27 @@ export class SearchRepository {
   ): Promise<Region> {
     return await (transaction ?? this.prismaService).region.findUnique({
       where: { administrativeDistrict_district: region },
+    });
+  }
+
+  async getPlaceByKakaoId(
+    kakaoId: string,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).place.findUnique({
+      where: { kakaoId },
+      include: {
+        region: true,
+        placeCategory: {
+          include: {
+            depth1: true,
+            depth2: true,
+            depth3: true,
+            depth4: true,
+            depth5: true,
+          },
+        },
+      },
     });
   }
 }

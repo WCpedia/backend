@@ -12,7 +12,7 @@ export class SearchController {
     summary: '장소 검색',
   })
   @Get('places')
-  async searchPlaces(@Query('value') value: string): Promise<BasicPlaceDto[]> {
+  async searchPlaces(@Query('value') value: string): Promise<any> {
     return await this.searchService.searchPlaces(value);
   }
 }
