@@ -9,6 +9,11 @@ const REDIS_KEY_VALIDATOR = {
   REDIS_LATEST_REVIEW_KEY: Joi.string().required(),
   REDIS_TOP_REVIEWERS_TTL: Joi.number().required(),
   REDIS_TOP_REVIEWERS_KEY: Joi.string().required(),
+  REDIS_CATEGORY_KEY: Joi.string().required(),
+  REDIS_LAST_CATEGORY_KEY: Joi.string().required(),
+  REDIS_PLACE_CATEGORY_KEY: Joi.string().required(),
+  REDIS_LAST_PLACE_CATEGORY_KEY: Joi.string().required(),
+  REDIS_PLACE_CATEGORY_TTL: Joi.number().required(),
 };
 
 const JWT_KEY_VALIDATOR = {
