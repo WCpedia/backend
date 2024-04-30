@@ -51,7 +51,7 @@ export class SearchService {
     );
   }
 
-  async searchPlaces(value: string): Promise<any> {
+  async searchPlaces(value: string): Promise<BasicPlaceDto[]> {
     const kakaoData = await this.fetchKakaoSearchResponse(value);
     const places = await this.createPlacesFromKakaoData(kakaoData);
 
@@ -84,44 +84,34 @@ export class SearchService {
   }
 
   private async createPlacesFromKakaoData(kakaoData: IKakaoSearchDocuments[]) {
-    return this.prismaService.$transaction(
-      async (transaction: Prisma.TransactionClient) => {
-        const placePromises = kakaoData.map(async (data) => {
-          // 먼저 해당 kakaoId를 가진 장소가 있는지 확인
-          let place = await this.searchRepository.getPlaceByKakaoId(
-            data.id,
-            transaction,
-          );
+    const placePromises = kakaoData.map(async (data) => {
+      // 먼저 해당 kakaoId를 가진 장소가 있는지 확인
+      let place;
 
-          if (!place) {
-            // 장소가 없을 경우, 새로 생성
-            const [placeCategory, selectedRegion] = await Promise.all([
-              this.upsertPlaceCategory(data.category_name, transaction),
-              this.getPlaceRegion(data.address_name),
-            ]);
+      if (!place) {
+        // 장소가 없을 경우, 새로 생성
+        const [placeCategory, selectedRegion] = await Promise.all([
+          this.upsertPlaceCategory(data.category_name),
+          this.getPlaceRegion(data.address_name),
+        ]);
 
-            place = await this.searchRepository.upsertPlace(
-              {
-                kakaoId: data.id,
-                name: data.place_name,
-                placeCategoryId: placeCategory.id,
-                regionId: selectedRegion.id,
-                detailAddress: selectedRegion.detailAddress,
-                telephone: data.phone,
-                kakaoUrl: data.place_url,
-                x: parseFloat(data.x),
-                y: parseFloat(data.y),
-              },
-              transaction,
-            );
-          }
-
-          return place;
+        place = await this.searchRepository.upsertPlace({
+          kakaoId: data.id,
+          name: data.place_name,
+          placeCategoryId: placeCategory.id,
+          regionId: selectedRegion.id,
+          detailAddress: selectedRegion.detailAddress,
+          telephone: data.phone,
+          kakaoUrl: data.place_url,
+          x: parseFloat(data.x),
+          y: parseFloat(data.y),
         });
+      }
 
-        return Promise.all(placePromises);
-      },
-    );
+      return place;
+    });
+
+    return Promise.all(placePromises);
   }
 
   private async getPlaceRegion(address: string): Promise<
@@ -137,35 +127,36 @@ export class SearchService {
 
   private async upsertPlaceCategory(
     categoryName: string,
-    transaction: Prisma.TransactionClient,
   ): Promise<{ id: number }> {
-    // 카테고리 이름을 기반으로 캐시에서 카테고리 ID를 조회
-    const cacheKey = `${this.redisPlaceCategoryKey}/${categoryName}`;
+    // 카테고리 풀 텍스트로 캐시에서 카테고리 ID를 조회
+    const cacheKey = this.generateCacheKey(
+      this.redisPlaceCategoryKey,
+      categoryName,
+    );
     let placeCategoryId = await this.cacheManager.get<number>(cacheKey);
-
     if (placeCategoryId) {
       return { id: placeCategoryId };
     }
 
-    // 캐시에 없다면, 새로운 카테고리를 생성하거나 업데이트
-    const placeCategory: IPlaceCategory = await this.generatePlaceCategory(
-      categoryName,
-      transaction,
-    );
+    // 카테고리가 캐시에 없으면, fullCategoryIds와 categoryIds를 생성
+    const placeCategory: IPlaceCategory =
+      await this.generatePlaceCategory(categoryName);
 
-    // fullCategoryIds를 사용하여 캐시에서 카테고리 ID를 다시 조회
-    const fullCategoryCacheKey = `${this.redisPlaceCategoryKey}/${placeCategory.fullCategoryIds}`;
+    // fullCategoryIds를 사용하여 캐시에서 가게 카테고리 ID를 조회
+    const fullCategoryCacheKey = this.generateCacheKey(
+      this.redisPlaceCategoryKey,
+      placeCategory.fullCategoryIds,
+    );
     placeCategoryId = await this.cacheManager.get<number>(fullCategoryCacheKey);
 
     if (!placeCategoryId) {
-      // 캐시에 없다면, 새로운 카테고리를 저장소에 저장하고, 캐시에도 저장
-      const newPlaceCategory = await this.searchRepository.upsertPlaceCategory(
-        placeCategory,
-        transaction,
-      );
+      //없다면, 새로운 카테고리를 placeCategory에 저장
+      const newPlaceCategory =
+        await this.searchRepository.upsertPlaceCategory(placeCategory);
       placeCategoryId = newPlaceCategory.id;
     }
 
+    //새로운 카테고리를 풀 텍스트로 케시에 저장
     await this.cacheManager.set(cacheKey, placeCategoryId, {
       ttl: this.redisPlaceCategoryTtl,
     });
@@ -175,35 +166,35 @@ export class SearchService {
 
   private async generatePlaceCategory(
     category: string,
-    transaction: Prisma.TransactionClient,
   ): Promise<IPlaceCategory> {
     const categoryParts = category.split(' > ');
-    const categoryIds = [];
+
+    const categoryIds = await Promise.all(
+      categoryParts.map(async (name, index) => {
+        const cacheKey = this.generateCacheKey(this.redisCategoryKey, name);
+        let categoryId = await this.cacheManager.get<number>(cacheKey);
+        if (!categoryId) {
+          const category = await this.searchRepository.upsertCategory(name);
+          categoryId = category.id;
+        }
+        return categoryId;
+      }),
+    );
+
+    const categoryIdsLength = categoryIds.length;
     const placeCategory: IPlaceCategory = {
-      fullCategoryIds: null,
-      lastDepth: categoryParts.length,
-      depth1Id: null,
+      fullCategoryIds: categoryIds.join('|'),
+      lastDepth: categoryIdsLength,
+      depth1Id: categoryIds[0],
+      depth2Id: categoryIdsLength > 1 ? categoryIds[1] : null,
+      depth3Id: categoryIdsLength > 2 ? categoryIds[2] : null,
+      depth4Id: categoryIdsLength > 3 ? categoryIds[3] : null,
+      depth5Id: categoryIdsLength > 4 ? categoryIds[4] : null,
     };
 
-    for (const [depth, name] of categoryParts.entries()) {
-      const cacheKey = `${this.redisCategoryKey}/${name}`;
-
-      // Redis에서 카테고리 ID 조회
-      let categoryId = await this.cacheManager.get<number>(cacheKey);
-
-      if (!categoryId) {
-        // Redis에 없으면 데이터베이스에서 카테고리 생성 또는 업데이트
-        const category = await this.searchRepository.upsertCategory(
-          name,
-          transaction,
-        );
-        categoryId = category.id;
-      }
-      categoryIds.push(categoryId);
-      placeCategory[`depth${depth + 1}Id`] = categoryId;
-    }
-    placeCategory.fullCategoryIds = categoryIds.join('|');
-
     return placeCategory;
+  }
+  private generateCacheKey(baseKey: string, suffix: string): string {
+    return `${baseKey}/${suffix}`;
   }
 }
