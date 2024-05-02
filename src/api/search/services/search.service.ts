@@ -9,7 +9,7 @@ import { ProductConfigService } from '@core/config/services/config.service';
 import { OAUTH_KEY, REDIS_KEY } from '@core/config/constants/config.constant';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { extractRegion } from '@src/utils/region-extractor';
-import { PlaceCategory, Prisma, Region } from '@prisma/client';
+import { Place, PlaceCategory, Prisma, Region } from '@prisma/client';
 import { IPlaceCategory } from '@src/interface/common.interface';
 import {
   IKakaoSearchDocuments,
@@ -83,35 +83,91 @@ export class SearchService {
     }
   }
 
-  private async createPlacesFromKakaoData(kakaoData: IKakaoSearchDocuments[]) {
-    const placePromises = kakaoData.map(async (data) => {
-      // 먼저 해당 kakaoId를 가진 장소가 있는지 확인
-      let place = await this.searchRepository.getPlaceByKakaoId(data.id);
+  private async createPlacesFromKakaoData(
+    kakaoData: IKakaoSearchDocuments[],
+  ): Promise<BasicPlaceDto[]> {
+    // 중복되지 않는 카테고리를 Set을 사용하여 추출
+    const uniqueCategories = this.extractUniqueCategories(kakaoData);
+    //카테고리 캐시 또는 새로 생성및 PlaceId를 반환하는 Promise를 생성
+    const categoryPromiseMap =
+      await this.createCategoryPromiseMap(uniqueCategories);
 
-      if (!place) {
-        // 장소가 없을 경우, 새로 생성
-        const [placeCategory, selectedRegion] = await Promise.all([
-          this.upsertPlaceCategory(data.category_name),
-          this.getPlaceRegion(data.address_name),
-        ]);
+    //가게정보 생성 Promise
+    const placePromises = this.createPlacePromises(
+      kakaoData,
+      categoryPromiseMap,
+    );
 
-        place = await this.searchRepository.upsertPlace({
-          kakaoId: data.id,
-          name: data.place_name,
-          placeCategoryId: placeCategory.id,
-          regionId: selectedRegion.id,
-          detailAddress: selectedRegion.detailAddress,
-          telephone: data.phone,
-          kakaoUrl: data.place_url,
-          x: parseFloat(data.x),
-          y: parseFloat(data.y),
-        });
-      }
+    return this.resolvePlacePromises(placePromises);
+  }
 
-      return place;
+  // 중복되지 않는 카테고리를 Set을 사용하여 추출
+  private extractUniqueCategories(
+    kakaoData: IKakaoSearchDocuments[],
+  ): string[] {
+    const categorySet = new Set<string>();
+    kakaoData.forEach((data) => {
+      return categorySet.add(data.category_name);
     });
 
-    return Promise.all(placePromises);
+    return Array.from(categorySet);
+  }
+
+  //카테고리 캐시 또는 새로 생성및 PlaceId를 반환하는 Promise를 생성
+  private async createCategoryPromiseMap(
+    uniqueCategories: string[],
+  ): Promise<Map<string, Promise<{ id: number }>>> {
+    const categoryMap = new Map<string, Promise<{ id: number }>>();
+    uniqueCategories.forEach((categoryName) => {
+      categoryMap.set(categoryName, this.upsertPlaceCategory(categoryName));
+    });
+
+    return categoryMap;
+  }
+
+  //가게정보 생성 Promise를 반환
+  private createPlacePromises(
+    kakaoData: IKakaoSearchDocuments[],
+    categoryPromiseMap: Map<string, Promise<{ id: number }>>,
+  ): Promise<BasicPlaceDto>[] {
+    return kakaoData.map(async (data) => {
+      const placeCategoryPromise = categoryPromiseMap.get(data.category_name);
+      const [placeCategory, selectedRegion] = await Promise.all([
+        placeCategoryPromise,
+        this.getPlaceRegion(data.address_name),
+      ]);
+
+      const place: BasicPlaceDto = await this.searchRepository.upsertPlace({
+        kakaoId: data.id,
+        name: data.place_name,
+        placeCategoryId: placeCategory.id,
+        regionId: selectedRegion.id,
+        detailAddress: selectedRegion.detailAddress,
+        telephone: data.phone,
+        kakaoUrl: data.place_url,
+        x: parseFloat(data.x),
+        y: parseFloat(data.y),
+      });
+      return place;
+    });
+  }
+
+  private async resolvePlacePromises(
+    placePromises: Promise<BasicPlaceDto>[],
+  ): Promise<BasicPlaceDto[]> {
+    const results = await Promise.allSettled(placePromises);
+
+    return results.reduce(
+      (acc: BasicPlaceDto[], result: PromiseSettledResult<BasicPlaceDto>) => {
+        if (result.status === 'rejected') {
+          console.error('Failed to process place:', result.reason);
+        } else if (result.status === 'fulfilled' && result.value !== null) {
+          acc.push(result.value);
+        }
+        return acc;
+      },
+      [],
+    );
   }
 
   private async getPlaceRegion(address: string): Promise<
