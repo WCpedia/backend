@@ -59,6 +59,8 @@ export class PrismaService
   }
 
   async cacheAllCategories() {
+    this.logger.log(`Categories cache start`);
+
     const cacheKey = process.env.REDIS_CATEGORY_KEY;
     const lastCategoryIdKey = process.env.REDIS_LAST_CATEGORY_KEY;
 
@@ -71,6 +73,7 @@ export class PrismaService
     });
     const newCategoryCounts = categories.length;
     if (!newCategoryCounts) {
+      this.logger.log(`Categories cache end. No new categories.`);
       return;
     }
 
@@ -91,6 +94,7 @@ export class PrismaService
   }
 
   async cacheAllPlaceCategories() {
+    this.logger.log(`PlaceCategories cache start`);
     const cacheKey = process.env.REDIS_PLACE_CATEGORY_KEY;
     const lastPlaceCategoryIdKey = process.env.REDIS_LAST_PLACE_CATEGORY_KEY;
 
@@ -103,6 +107,7 @@ export class PrismaService
     });
     const newPlaceCategoryCounts = placeCategories.length;
     if (!newPlaceCategoryCounts) {
+      this.logger.log(`PlaceCategories cache end. No new placeCategories.`);
       return;
     }
 

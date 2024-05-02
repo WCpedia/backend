@@ -86,7 +86,7 @@ export class SearchService {
   private async createPlacesFromKakaoData(kakaoData: IKakaoSearchDocuments[]) {
     const placePromises = kakaoData.map(async (data) => {
       // 먼저 해당 kakaoId를 가진 장소가 있는지 확인
-      let place;
+      let place = await this.searchRepository.getPlaceByKakaoId(data.id);
 
       if (!place) {
         // 장소가 없을 경우, 새로 생성
@@ -129,11 +129,13 @@ export class SearchService {
     categoryName: string,
   ): Promise<{ id: number }> {
     // 카테고리 풀 텍스트로 캐시에서 카테고리 ID를 조회
-    const cacheKey = this.generateCacheKey(
+    const fullCategoryPathCacheKey = this.generateCacheKey(
       this.redisPlaceCategoryKey,
       categoryName,
     );
-    let placeCategoryId = await this.cacheManager.get<number>(cacheKey);
+    let placeCategoryId = await this.cacheManager.get<number>(
+      fullCategoryPathCacheKey,
+    );
     if (placeCategoryId) {
       return { id: placeCategoryId };
     }
@@ -143,11 +145,13 @@ export class SearchService {
       await this.generatePlaceCategory(categoryName);
 
     // fullCategoryIds를 사용하여 캐시에서 가게 카테고리 ID를 조회
-    const fullCategoryCacheKey = this.generateCacheKey(
+    const placeCategoryIdCacheKey = this.generateCacheKey(
       this.redisPlaceCategoryKey,
       placeCategory.fullCategoryIds,
     );
-    placeCategoryId = await this.cacheManager.get<number>(fullCategoryCacheKey);
+    placeCategoryId = await this.cacheManager.get<number>(
+      placeCategoryIdCacheKey,
+    );
 
     if (!placeCategoryId) {
       //없다면, 새로운 카테고리를 placeCategory에 저장
@@ -157,7 +161,7 @@ export class SearchService {
     }
 
     //새로운 카테고리를 풀 텍스트로 케시에 저장
-    await this.cacheManager.set(cacheKey, placeCategoryId, {
+    await this.cacheManager.set(fullCategoryPathCacheKey, placeCategoryId, {
       ttl: this.redisPlaceCategoryTtl,
     });
 
