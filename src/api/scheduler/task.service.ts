@@ -9,6 +9,7 @@ import { plainToInstance } from 'class-transformer';
 import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { TopReviewerWithCount } from './type/type';
 import { TopReviewerDto } from './dtos/top-reviewer.dto';
+import { PrismaService } from '@core/database/prisma/services/prisma.service';
 
 @Injectable()
 export class TaskService {
@@ -21,6 +22,7 @@ export class TaskService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly taskRepository: TaskRepository,
     private readonly configService: ProductConfigService,
+    private readonly prismaService: PrismaService,
   ) {
     this.topReviewersKey = this.configService.get<string>(
       REDIS_KEY.REDIS_TOP_REVIEWERS_KEY,
@@ -58,6 +60,12 @@ export class TaskService {
     );
   }
 
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async cacheCategory() {
+    await this.prismaService.cacheAllCategories();
+    await this.prismaService.cacheAllPlaceCategories();
+  }
+
   private async getTopReviewers(): Promise<TopReviewerDto[]> {
     const topReviewers: TopReviewerWithCount[] =
       await this.taskRepository.getTopReviewers();
@@ -87,7 +95,7 @@ export class TaskService {
 
     const data = await fetchData();
     if (!data) {
-      Logger.error(
+      Logger.log(
         `Data Empty: ${logTitle}`,
         `Cache${logTitle.replace(/\s/g, '')}`,
       );
