@@ -1,6 +1,7 @@
 <div align="center">
 
-  ![Group 1](https://github.com/WCpedia/backend/assets/96464209/8c0b806d-6499-40b8-85b5-cc228bb5e7ee)
+![Group 1](https://github.com/WCpedia/backend/assets/96464209/968f0b9e-a23b-4a11-91ae-f30c56761f0b)
+
 
 </div>
 
