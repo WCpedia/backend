@@ -1,3 +1,4 @@
+import { IPlaceUpdateRatingInput } from '@api/place/interface/interface';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { HelpfulReview, Prisma } from '@prisma/client';
@@ -35,6 +36,16 @@ export class ReviewRepository {
   async getReview(reviewId: number) {
     return this.prismaService.placeReview.findFirst({
       where: { id: reviewId, deletedAt: null },
+    });
+  }
+
+  async getReviewWithPlace(reviewId: number) {
+    return this.prismaService.placeReview.findFirst({
+      where: { id: reviewId, deletedAt: null },
+      include: {
+        place: true,
+        images: { where: { deletedAt: null } },
+      },
     });
   }
 
@@ -78,5 +89,64 @@ export class ReviewRepository {
     await (transaction ?? this.prismaService).helpfulReview.delete({
       where: { id },
     });
+  }
+
+  async getUser(userId: number) {
+    return this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
+  }
+
+  async updateUserReview(
+    reviewId: number,
+    updatedRatings: Prisma.PlaceReviewUpdateInput,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction ?? this.prismaService).placeReview.update({
+      where: { id: reviewId },
+      data: updatedRatings,
+    });
+  }
+
+  async updatePlaceRating(
+    placeId: number,
+    updatedRatings: IPlaceUpdateRatingInput,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction ?? this.prismaService).place.update({
+      where: { id: placeId },
+      data: updatedRatings,
+    });
+  }
+
+  async updateUserRating(
+    userId: number,
+    updatedRatings: number,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction ?? this.prismaService).user.update({
+      where: { id: userId },
+      data: { ratingAverage: updatedRatings },
+    });
+  }
+
+  async updateReviewImages(
+    reviewId: number,
+    imagesToAdd: string[],
+    imagesToDelete: number[],
+    transaction?: Prisma.TransactionClient,
+  ) {
+    if (imagesToDelete.length) {
+      const date = new Date();
+      await (transaction ?? this.prismaService).reviewImage.updateMany({
+        where: { id: { in: imagesToDelete } },
+        data: { deletedAt: date },
+      });
+    }
+    if (imagesToAdd.length) {
+      await (transaction ?? this.prismaService).reviewImage.createMany({
+        data: imagesToAdd.map((url) => ({ key: url, reviewId })),
+      });
+    }
   }
 }

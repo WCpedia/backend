@@ -5,4 +5,6 @@ export enum ReviewExceptionEnum {
   SELF_HELPFUL_REVIEW_FORBIDDEN = 'SelfHelpfulReviewForbidden',
   HELPFUL_REVIEW_NOT_EXIST = 'HelpfulReviewNotExist',
   NOT_AUTHORIZED = 'NotAuthorized',
+  MISMATCHED_AUTHOR = 'MismatchedAuthor',
+  REVIEW_IMAGE_LIMIT_EXCEEDED = 'ReviewImageLimitExceeded',
 }
