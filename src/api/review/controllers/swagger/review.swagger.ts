@@ -9,6 +9,9 @@ import { TopReviewersDto } from '@api/review/dtos/response/top-reviewers.dto';
 import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 import { HelpfulReviewDto } from '@api/common/dto/reveiw-reaction.dto';
+import { MultipartFormDataRequestDto } from '@src/swagger-builder/multipart-form-data-request.dto';
+import { CreatePlaceReviewDto } from '@api/place/dtos/request/create-place-review.dto';
+import { UpdatePlaceReviewDto } from '@api/review/dtos/request/update-place-review.dto';
 
 export const ApiReview: ApiOperator<keyof ReviewController> = {
   GetLatestReviews: (
@@ -53,6 +56,23 @@ export const ApiReview: ApiOperator<keyof ReviewController> = {
         'CreateHelpfulReview',
         HelpfulReviewDto,
       ),
+    );
+  },
+
+  UpdateReview: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      MultipartFormDataRequestDto.swaggerBuilder(
+        'UpdateReview',
+        'images',
+        UpdatePlaceReviewDto,
+        { required: false, isArray: true },
+      ),
+      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'UpdateReview'),
     );
   },
 };

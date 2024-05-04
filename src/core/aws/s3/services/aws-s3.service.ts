@@ -64,13 +64,13 @@ export class AwsS3Service extends MulterBuilder {
     }
   }
 
-  async deleteMany(objects: S3ObjectDto[]): Promise<void> {
+  async deleteMany(objectKeys: string[]): Promise<void> {
     try {
       const command = new DeleteObjectsCommand({
         Bucket: this.bucketName,
         Delete: {
-          Objects: objects.map((object) => {
-            return { Key: object.key };
+          Objects: objectKeys.map((object) => {
+            return { Key: object };
           }),
         },
       });
