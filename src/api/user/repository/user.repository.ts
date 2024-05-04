@@ -1,5 +1,6 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { IPaginationParams } from '@src/interface/common.interface';
 
 @Injectable()
 export class UserRepository {
@@ -17,13 +18,29 @@ export class UserRepository {
     });
   }
 
-  async getReviewByUserId(targetUserId: number, userId?: number) {
+  async getReviewByUserId(
+    targetUserId: number,
+    paginationParams: IPaginationParams,
+    userId?: number,
+  ) {
     return this.prismaService.placeReview.findMany({
       where: { userId: targetUserId },
-      take: 5,
       include: {
         images: true,
-        place: true,
+        place: {
+          include: {
+            region: true,
+            placeCategory: {
+              include: {
+                depth1: true,
+                depth2: true,
+                depth3: true,
+                depth4: true,
+                depth5: true,
+              },
+            },
+          },
+        },
         ...(userId && {
           helpfulReviews: {
             where: {
@@ -32,7 +49,20 @@ export class UserRepository {
           },
         }),
       },
+      ...paginationParams,
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getUserTotalReviewCount(userId: number) {
+    return this.prismaService.placeReview.count({
+      where: { userId },
+    });
+  }
+
+  async getReadableReviewCount(userId: number, lastItemId: number) {
+    return this.prismaService.placeReview.count({
+      where: { userId, id: { lt: lastItemId } },
     });
   }
 }
