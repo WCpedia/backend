@@ -1,18 +1,11 @@
 import { BasicPlaceDto } from '@api/common/dto/basic-place.dto';
+import { ReviewDetailWithPlaceDto } from '@api/common/dto/detail-review-with-place.dto';
 import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
 import { DetailUserProfileDto } from '@api/my/dtos/response/DetailUserProfile.dts';
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
-class ReviewDetailWithPlaceDto extends ReviewWithDetailsDto {
-  @ApiProperty({
-    type: BasicPlaceDto,
-    description: '장소 정보',
-  })
-  @Type(() => BasicPlaceDto)
-  @Expose()
-  place: BasicPlaceDto;
-}
+@Exclude()
 export class UserWithReviewsDto {
   @ApiProperty({
     type: DetailUserProfileDto,

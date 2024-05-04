@@ -6,6 +6,8 @@ import { OperationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.i
 import { ApiOperator } from '@src/types/type';
 import { UserWithReviewsDto } from '@api/user/dtos/response/user-with-reviews.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
+import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
+import { ReviewDetailWithPlaceDto } from '@api/common/dto/detail-review-with-place.dto';
 
 export const ApiUser: ApiOperator<keyof UserController> = {
   CheckNicknameUsable: (
@@ -33,6 +35,21 @@ export const ApiUser: ApiOperator<keyof UserController> = {
         HttpStatus.OK,
         'GetUserProfileWithReviews',
         UserWithReviewsDto,
+      ),
+    );
+  },
+
+  GetUserReviews: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      PaginationResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'reviews',
+        ReviewDetailWithPlaceDto,
       ),
     );
   },

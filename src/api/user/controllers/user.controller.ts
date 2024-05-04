@@ -16,6 +16,9 @@ import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { UserExistenceValidationPipe } from '../validators/user-existence-validator';
 import { UserWithReviewsDto } from '../dtos/response/user-with-reviews.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from '@api/common/dto/pagination.dto';
+import { ReviewDetailWithPlaceDto } from '@api/common/dto/detail-review-with-place.dto';
+import { PaginatedResponse } from '@api/common/interfaces/interface';
 @ApiTags(DOMAIN_NAME.USER)
 @Controller(DOMAIN_NAME.USER)
 export class UserController {
@@ -38,6 +41,22 @@ export class UserController {
   ): Promise<UserWithReviewsDto> {
     return this.userService.getUserProfileWithReviews(
       targetUserId,
+      authorizedUser?.userId,
+    );
+  }
+
+  @ApiUser.GetUserReviews({ summary: '유저가 작성한 리뷰 조회' })
+  @UseGuards(AllowGuestGuard)
+  @Get(':userId/reviews')
+  async getUserReviews(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Param('userId', ParseIntPipe, UserExistenceValidationPipe)
+    targetUserId: number,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<ReviewDetailWithPlaceDto, 'reviews'>> {
+    return this.userService.getUserReviews(
+      targetUserId,
+      paginationDto,
       authorizedUser?.userId,
     );
   }
