@@ -35,7 +35,7 @@ export class PlaceRepository {
           take: 5,
           include: {
             user: true,
-            images: true,
+            images: { where: { deletedAt: null } },
             ...(userId && {
               helpfulReviews: {
                 where: {
@@ -79,7 +79,7 @@ export class PlaceRepository {
       where: { placeId_userId: { placeId, userId } },
       include: {
         user: true,
-        images: true,
+        images: { where: { deletedAt: null } },
       },
     });
   }
@@ -136,7 +136,7 @@ export class PlaceRepository {
         helpfulReviews: {
           where: { userId },
         },
-        images: true,
+        images: { where: { deletedAt: null } },
         user: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -148,7 +148,7 @@ export class PlaceRepository {
     return await this.prismaService.placeReview.findUnique({
       where: { placeId_userId: { placeId, userId } },
       include: {
-        images: true,
+        images: { where: { deletedAt: null } },
         user: true,
       },
     });
