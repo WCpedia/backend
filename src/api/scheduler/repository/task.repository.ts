@@ -51,7 +51,7 @@ export class TaskRepository {
       },
       orderBy: { createdAt: 'desc' },
       include: {
-        images: true,
+        images: { where: { deletedAt: null } },
         user: true,
         place: {
           include: {
