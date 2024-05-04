@@ -15,6 +15,7 @@ import {
   IKakaoUserProfile,
   IGoogleUserProfile,
   INaverUserProfile,
+  AppleJwtTokenPayload,
 } from '@api/auth/interface/interface';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -22,6 +23,8 @@ import { SignUpWithOAuthProviderDto } from '../dtos/requests/oauth-signup-user.d
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
+import * as jwt from 'jsonwebtoken';
+import { JwksClient } from 'jwks-rsa';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +32,7 @@ export class AuthService {
   private googleGetUserUri: string;
   private naverGetUserUri: string;
   private redisTempAuthTtl: number;
+  private appleGetUserUri: string;
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -48,6 +52,9 @@ export class AuthService {
     this.redisTempAuthTtl = this.configService.get<number>(
       REDIS_KEY.REDIS_TEMP_AUTH_TTL,
     );
+    this.appleGetUserUri = this.configService.get<string>(
+      OAUTH_KEY.APPLE_GET_USER_URI,
+    );
   }
 
   async signinWithOAuth(
@@ -64,6 +71,9 @@ export class AuthService {
         break;
       case Provider.NAVER:
         email = await this.getNaverUserEmail(accessToken);
+        break;
+      case Provider.APPLE:
+        email = await this.getAppleUserEmail(accessToken);
         break;
     }
 
@@ -142,6 +152,52 @@ export class AuthService {
     }
   }
 
+  private async getAppleUserEmail(appleIdToken: string): Promise<string> {
+    try {
+      // Apple ID 토큰을 디코드하여 헤더와 페이로드를 추출.
+      const decodedToken = jwt.decode(appleIdToken, { complete: true }) as {
+        header: { kid: string; alg: jwt.Algorithm };
+        payload: { sub: string };
+      };
+      if (!decodedToken) {
+        throw new CustomException(
+          HttpExceptionStatusCode.BAD_REQUEST,
+          'InvalidToken',
+        );
+      }
+
+      // 토큰 헤더에서 키 ID를 추출.
+      const keyIdFromToken = decodedToken.header.kid;
+
+      // JWKS 클라이언트를 생성하여 Apple의 JWKS URI로 설정.
+      const jwksClient = new JwksClient({ jwksUri: this.appleGetUserUri });
+
+      // JWKS 클라이언트를 사용하여 해당 키 ID의 Signing Key 키를 가져옴.
+      const key = await jwksClient.getSigningKey(keyIdFromToken);
+      // 서명 키에서 공개 키를 추출.
+      const publicKey = key.getPublicKey();
+
+      // 공개 키를 사용하여 Apple ID 토큰을 검증하고 디코드된 토큰을 반환.
+      const verifiedDecodedToken: AppleJwtTokenPayload = jwt.verify(
+        appleIdToken,
+        publicKey,
+        {
+          algorithms: [decodedToken.header.alg], // 사용할 알고리즘을 지정.
+        },
+      ) as AppleJwtTokenPayload;
+
+      return verifiedDecodedToken.email;
+    } catch (error) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new CustomException(
+          HttpExceptionStatusCode.UNAUTHORIZED,
+          'TokenVerificationFailed',
+        );
+      } else {
+        throw new InternalServerErrorException('ServerError');
+      }
+    }
+  }
   // async createUserAuth({
   //   userId,
   //   authEmail,

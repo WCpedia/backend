@@ -8,6 +8,7 @@ enum Provider {
   KAKAO
   GOOGLE
   NAVER
+  APPLE
 }
 
 enum Role {

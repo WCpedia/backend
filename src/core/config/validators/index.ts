@@ -46,6 +46,7 @@ const OAUTH_KEY_VALIDATOR = {
   KAKAO_SEARCH_IMAGE_MAX_SIZE: Joi.number().required(),
   GOOGLE_GET_USER_URI: Joi.string().required(),
   NAVER_GET_USER_URI: Joi.string().required(),
+  APPLE_GET_USER_URI: Joi.string().required(),
 };
 
 export const ENVIRONMENT_KEY_VALIDATOR: ConfigModuleOptions = {
