@@ -37,6 +37,8 @@ import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
 import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
 import { RatingTypes } from '../constants/const/const';
 import { UserExceptionEnum } from '@exceptions/http/enums/user.exception.enum';
+import { RatingCalculator } from '@src/utils/rating-calculator';
+import { CalculateOperation } from '@enums/calculate-operation.enum';
 
 @Injectable()
 export class PlaceService {
@@ -201,34 +203,37 @@ export class PlaceService {
     const selectedPlace = await this.getPlaceById(placeId);
     await this.checkReviewNotExist(placeId, userId);
     const userprofile = await this.getUserProfile(userId);
+    console.log(selectedPlace, userprofile, dto);
 
-    const { userRatingAverage, ...calculatedRating } = this.calculateRating(
+    const { userRatingAverage, ...calculatedPlaceRatings } = RatingCalculator(
       selectedPlace,
       userprofile,
+      CalculateOperation.CREATE,
       dto,
     );
 
-    await this.prismaService.$transaction(
-      async (transaction: Prisma.TransactionClient) => {
-        await this.placeRepository.createPlaceReview(
-          placeId,
-          userId,
-          dto,
-          reviewImages,
-          transaction,
-        );
-        await this.placeRepository.updatePlaceRating(
-          placeId,
-          calculatedRating,
-          transaction,
-        );
-        await this.placeRepository.updateUserRating(
-          userId,
-          userRatingAverage,
-          transaction,
-        );
-      },
-    );
+    // await this.prismaService.$transaction(
+    //   async (transaction: Prisma.TransactionClient) => {
+    //     await this.placeRepository.createPlaceReview(
+    //       placeId,
+    //       userId,
+    //       dto,
+    //       reviewImages,
+    //       transaction,
+    //     );
+    //     await this.placeRepository.updatePlaceRating(
+    //       placeId,
+    //       calculatedPlaceRatings,
+    //       transaction,
+    //     );
+    //     await this.placeRepository.updateUserRating(
+    //       userId,
+    //       userRatingAverage,
+    //       transaction,
+    //     );
+    //   },
+    //   { isolationLevel: 'Serializable' },
+    // );
   }
 
   private async checkReviewNotExist(
@@ -293,40 +298,6 @@ export class PlaceService {
       totalItemCount,
       reviews: plainToInstance(ReviewWithDetailsDto, reviews),
     };
-  }
-
-  private calculateRating(
-    place: Place,
-    userprofile: User,
-    dto: CreatePlaceReviewDto,
-  ): ICalculatedRating {
-    const updatedCount = place.reviewCount + 1;
-    let totalNewRating = 0;
-
-    const updateData = RatingTypes.reduce((acc, ratingType) => {
-      const newRating = dto[ratingType];
-      totalNewRating += newRating;
-      const currentRating = place[ratingType];
-      const updatedRating =
-        currentRating === null
-          ? newRating
-          : (currentRating * place.reviewCount + newRating) / updatedCount;
-
-      acc[ratingType] = Math.round(updatedRating * 100) / 100;
-      return acc;
-    }, {} as ICalculatedRating);
-
-    // 모든 평가 항목에 대한 계산이 완료된 후 userRatingAverage를 계산
-    updateData.userRatingAverage =
-      Math.round(
-        ((userprofile.ratingAverage * userprofile.totalReviewCount +
-          totalNewRating / RatingTypes.length) /
-          (userprofile.totalReviewCount + 1)) *
-          100,
-      ) / 100;
-    updateData.reviewCount = updatedCount;
-
-    return updateData;
   }
 
   async getMyPlaceReview(

@@ -75,4 +75,15 @@ export const ApiReview: ApiOperator<keyof ReviewController> = {
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'UpdateReview'),
     );
   },
+
+  DeleteReview: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'DeleteReview'),
+    );
+  },
 };
