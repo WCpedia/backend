@@ -11,22 +11,15 @@ import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
-import {
-  HelpfulReview,
-  Place,
-  PlaceReview,
-  Prisma,
-  ReviewImage,
-  User,
-} from '@prisma/client';
+import { HelpfulReview, Prisma, ReviewImage } from '@prisma/client';
 import { HelpfulReviewDto } from '@api/common/dto/reveiw-reaction.dto';
 import { UpdatePlaceReviewDto } from '../dtos/request/update-place-review.dto';
 import { extractS3Key } from '@src/utils/s3-url-transformer';
 import { AwsS3Service } from '@core/aws/s3/services/aws-s3.service';
 import { UploadFileLimit } from '@src/constants/consts/upload-file.const';
 import { IComparedReviewImages } from '../interface/interface';
-import { ICalculatedRating } from '@api/place/interface/interface';
-import { RatingTypes } from '@api/place/constants/const/const';
+import { RatingCalculator } from '@src/utils/rating-calculator';
+import { CalculateOperation } from '@enums/calculate-operation.enum';
 
 @Injectable()
 export class ReviewService {
@@ -119,38 +112,39 @@ export class ReviewService {
     updatePlaceReviewDto: UpdatePlaceReviewDto,
     newImages: Express.MulterS3.File[],
   ) {
-    const { imageUrls, ...updateReviewDto } = updatePlaceReviewDto;
+    const { imageUrls, ...newReview } = updatePlaceReviewDto;
 
-    const { place, ...userReview } = await this.getUserReview(userId, reviewId);
+    const { place, ...oldReview } = await this.getUserReview(userId, reviewId);
     const selectedUser = await this.reviewRepository.getUser(userId);
 
     const { imagesToAdd, imagesToDelete } = await this.compareReviewImages(
       updatePlaceReviewDto.imageUrls,
       newImages,
-      userReview.images,
+      oldReview.images,
     );
 
-    const { userRatingAverage, ...updatedPlaceRatings } =
-      this.calculateUpdatedRating(
-        place,
-        selectedUser,
-        userReview,
-        updatePlaceReviewDto,
-      );
+    const { userRatingAverage, ...calculatedPlaceRatings } = RatingCalculator(
+      place,
+      selectedUser,
+      CalculateOperation.UPDATE,
+      newReview,
+      oldReview,
+    );
 
     await this.prismaService.$transaction(
       async (transaction: Prisma.TransactionClient) => {
         await this.reviewRepository.updateUserReview(
           reviewId,
-          updateReviewDto,
+          newReview,
           transaction,
         );
         await this.reviewRepository.updatePlaceRating(
           place.id,
-          updatedPlaceRatings,
+          calculatedPlaceRatings,
           transaction,
         );
         await this.reviewRepository.updateUserRating(
+          CalculateOperation.UPDATE,
           userId,
           userRatingAverage,
           transaction,
@@ -230,42 +224,33 @@ export class ReviewService {
     await this.awsS3Service.deleteMany(imageKeys);
   }
 
-  private calculateUpdatedRating(
-    place: Place,
-    userProfile: User,
-    oldRatings: PlaceReview,
-    newRatings: UpdatePlaceReviewDto,
-  ): ICalculatedRating {
-    const placeReviewCount = place.reviewCount;
-    let totalNewRating = 0;
-    let totalOldRating = 0;
+  async deleteReview(userId: number, reviewId: number) {
+    const { place, ...oldReview } = await this.getUserReview(userId, reviewId);
+    const selectedUser = await this.reviewRepository.getUser(userId);
+    const { userRatingAverage, ...calculatedPlaceRatings } = RatingCalculator(
+      place,
+      selectedUser,
+      CalculateOperation.DELETE,
+      undefined,
+      oldReview,
+    );
 
-    const updateData = RatingTypes.reduce((acc, ratingType) => {
-      const oldRating = oldRatings[ratingType];
-      const newRating = newRatings[ratingType];
-
-      totalOldRating += oldRating;
-      totalNewRating += newRating;
-
-      const currentRating = place[ratingType];
-      const updatedRating =
-        (currentRating * placeReviewCount - oldRating + newRating) /
-        placeReviewCount;
-      acc[ratingType] = Math.round(updatedRating * 100) / 100;
-
-      return acc;
-    }, {} as ICalculatedRating);
-
-    // 모든 평가 항목에 대한 계산이 완료된 후 userRatingAverage를 계산
-    updateData.userRatingAverage =
-      Math.round(
-        ((userProfile.ratingAverage * userProfile.totalReviewCount -
-          totalOldRating +
-          totalNewRating) /
-          userProfile.totalReviewCount) *
-          100,
-      ) / 100;
-
-    return updateData;
+    await this.prismaService.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await this.reviewRepository.softDeleteReview(reviewId, transaction);
+        await this.reviewRepository.updatePlaceRating(
+          place.id,
+          calculatedPlaceRatings,
+          transaction,
+        );
+        await this.reviewRepository.updateUserRating(
+          CalculateOperation.DELETE,
+          userId,
+          userRatingAverage,
+          transaction,
+        );
+      },
+      { isolationLevel: 'Serializable' },
+    );
   }
 }

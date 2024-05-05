@@ -1,5 +1,6 @@
 import { IPlaceUpdateRatingInput } from '@api/place/interface/interface';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
+import { CalculateOperation } from '@enums/calculate-operation.enum';
 import { Injectable } from '@nestjs/common';
 import { HelpfulReview, Prisma } from '@prisma/client';
 
@@ -120,13 +121,19 @@ export class ReviewRepository {
   }
 
   async updateUserRating(
+    operation: CalculateOperation,
     userId: number,
     updatedRatings: number,
     transaction?: Prisma.TransactionClient,
   ) {
     await (transaction ?? this.prismaService).user.update({
       where: { id: userId },
-      data: { ratingAverage: updatedRatings },
+      data: {
+        ratingAverage: updatedRatings,
+        ...(operation === CalculateOperation.DELETE && {
+          totalReviewCount: { decrement: 1 },
+        }),
+      },
     });
   }
 
@@ -148,5 +155,15 @@ export class ReviewRepository {
         data: imagesToAdd.map((url) => ({ key: url, reviewId })),
       });
     }
+  }
+
+  async softDeleteReview(
+    reviewId: number,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction ?? this.prismaService).placeReview.update({
+      where: { id: reviewId },
+      data: { deletedAt: new Date() },
+    });
   }
 }

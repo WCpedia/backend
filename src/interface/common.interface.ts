@@ -38,3 +38,18 @@ export interface IUploadFileParams {
   maxCount: number;
   path: string;
 }
+
+export interface IRatingTypes {
+  accessibilityRating: number;
+  facilityRating: number;
+  cleanlinessRating: number;
+}
+
+export interface IUserRatingInfo {
+  totalReviewCount?: number;
+  ratingAverage?: number;
+}
+
+export interface IPlaceRatingInfo extends IRatingTypes {
+  reviewCount: number;
+}

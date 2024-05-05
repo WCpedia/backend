@@ -67,6 +67,16 @@ export class ReviewController {
     );
   }
 
+  @UseGuards(AccessTokenGuard)
+  @Delete(':reviewId')
+  async deleteReview(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Param('reviewId', ParseIntPipe, ReviewExistenceValidationPipe)
+    reviewId: number,
+  ) {
+    return this.reviewService.deleteReview(authorizedUser.userId, reviewId);
+  }
+
   @ApiReview.CreateHelpfulReview({ summary: '도움이 된 리뷰 추가' })
   @UseGuards(AccessTokenGuard)
   @Post(':reviewId/helpful')
