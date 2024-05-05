@@ -11,14 +11,14 @@ export function RatingCalculator(
   place: IPlaceRatingInfo,
   userRating: IUserRatingInfo,
   operation: CalculateOperation.CREATE,
-  newRatings: IRatingTypes,
+  userNewReviewRatings: IRatingTypes,
 ): ICalculatedRating;
 
 export function RatingCalculator(
   place: IPlaceRatingInfo,
   userRating: IUserRatingInfo,
   operation: CalculateOperation.DELETE,
-  newRatings: undefined,
+  userNewReviewRatings: undefined,
   oldRatings: IRatingTypes,
 ): ICalculatedRating;
 
@@ -26,7 +26,7 @@ export function RatingCalculator(
   place: IPlaceRatingInfo,
   userRating: IUserRatingInfo,
   operation: CalculateOperation.UPDATE,
-  newRatings: IRatingTypes,
+  userNewReviewRatings: IRatingTypes,
   oldRatings: IRatingTypes,
 ): ICalculatedRating;
 
@@ -34,8 +34,8 @@ export function RatingCalculator(
   place: IPlaceRatingInfo,
   userRating: IUserRatingInfo,
   operation: CalculateOperation,
-  newRatings?: IRatingTypes, // 새 리뷰 평점, 생성 또는 업데이트 시 사용
-  oldRatings?: IRatingTypes, // 이전 리뷰 평점, 삭제 또는 업데이트 시 사용
+  userNewReviewRatings?: IRatingTypes, // 새 리뷰 평점, 생성 또는 업데이트 시 사용
+  userOldReviewRatings?: IRatingTypes, // 이전 리뷰 평점, 삭제 또는 업데이트 시 사용
 ): ICalculatedRating {
   let placeReviewCount = place.reviewCount;
   let userReviewCount = userRating.totalReviewCount;
@@ -52,50 +52,87 @@ export function RatingCalculator(
   let totalOldRating = 0;
 
   const updateData = RatingTypes.reduce((acc, ratingType) => {
-    const oldRating = oldRatings ? oldRatings[ratingType] : 0;
-    const newRating = newRatings ? newRatings[ratingType] : 0;
+    const userOldReviewRating = userOldReviewRatings
+      ? userOldReviewRatings[ratingType]
+      : 0;
+    const userNewReviewRating = userNewReviewRatings
+      ? userNewReviewRatings[ratingType]
+      : 0;
 
-    if (operation !== CalculateOperation.DELETE) {
-      totalNewRating += newRating;
-    }
-    totalOldRating += oldRating;
+    totalNewRating += userNewReviewRating;
+    totalOldRating += userOldReviewRating;
 
-    if (placeReviewCount === 0) {
-      acc[ratingType] = null; // 리뷰 수가 0일 때는 평점을 null로 설정
-    } else {
-      const currentRating = place[ratingType];
-      let updatedRating =
-        operation === CalculateOperation.DELETE
-          ? (currentRating * place.reviewCount - oldRating) / placeReviewCount
-          : (currentRating * place.reviewCount - oldRating + newRating) /
-            placeReviewCount;
+    const updatedRating = calculateUpdatedRating(
+      place[ratingType],
+      place.reviewCount,
+      userOldReviewRating,
+      userNewReviewRating,
+      placeReviewCount,
+      operation,
+    );
 
-      acc[ratingType] = Math.round(updatedRating * 10000) / 10000;
-    }
+    acc[ratingType] =
+      placeReviewCount > 0 ? Math.round(updatedRating * 10000) / 10000 : null;
 
     return acc;
   }, {} as ICalculatedRating);
 
-  if (userReviewCount === 0) {
-    updateData.userRatingAverage = 0;
+  updateData.userRatingAverage = calculateUserRatingAverage(
+    userRating,
+    totalNewRating,
+    totalOldRating,
+    userReviewCount,
+  );
+  updateData.reviewCount = placeReviewCount;
+
+  return updateData;
+}
+
+function calculateUpdatedRating(
+  placeCurrentRating: number,
+  reviewCount: number,
+  userOldReviewRating: number,
+  userNewReviewRating: number,
+  placeReviewCount: number,
+  operation: CalculateOperation,
+): number {
+  if (operation === CalculateOperation.DELETE) {
+    return (
+      (placeCurrentRating * reviewCount - userOldReviewRating) /
+      placeReviewCount
+    );
   } else {
-    // 모든 평가 항목에 대한 계산이 완료된 후 유저  평점  계산
+    return (
+      (placeCurrentRating * reviewCount -
+        userOldReviewRating +
+        userNewReviewRating) /
+      placeReviewCount
+    );
+  }
+}
+
+function calculateUserRatingAverage(
+  userRating: IUserRatingInfo,
+  totalNewRating: number,
+  totalOldRating: number,
+  userReviewCount: number,
+): number {
+  if (userReviewCount === 0) {
+    return 0;
+  } else {
     const userTotalRatingAverage =
       userRating.ratingAverage *
       RatingTypes.length *
       userRating.totalReviewCount;
-    const totalRating = totalNewRating - totalOldRating;
+    const totalRatingChange = totalNewRating - totalOldRating;
     const userReviewCountPerRatingType = userReviewCount * RatingTypes.length;
 
-    updateData.userRatingAverage =
+    return (
       Math.round(
-        ((userTotalRatingAverage + totalRating) /
+        ((userTotalRatingAverage + totalRatingChange) /
           userReviewCountPerRatingType) *
           10000,
-      ) / 10000;
+      ) / 10000
+    );
   }
-
-  updateData.reviewCount = placeReviewCount;
-
-  return updateData;
 }
