@@ -75,10 +75,15 @@ export const ApiReview: ApiOperator<keyof ReviewController> = {
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'UpdateReview'),
     );
   },
-  DeleteReview: function (
+
+  DeleteReview: (
     apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
       Partial<OperationObject>,
-  ): PropertyDecorator {
-    throw new Error('Function not implemented.');
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'DeleteReview'),
+    );
   },
 };

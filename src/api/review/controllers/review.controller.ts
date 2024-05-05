@@ -67,6 +67,7 @@ export class ReviewController {
     );
   }
 
+  @ApiReview.DeleteReview({ summary: '리뷰 삭제' })
   @UseGuards(AccessTokenGuard)
   @Delete(':reviewId')
   async deleteReview(
