@@ -19,7 +19,7 @@ export function RatingCalculator(
   userRating: IUserRatingInfo,
   operation: CalculateOperation.DELETE,
   userNewReviewRatings: undefined,
-  oldRatings: IRatingTypes,
+  userOldReviewRatings: IRatingTypes,
 ): ICalculatedRating;
 
 export function RatingCalculator(
@@ -27,7 +27,7 @@ export function RatingCalculator(
   userRating: IUserRatingInfo,
   operation: CalculateOperation.UPDATE,
   userNewReviewRatings: IRatingTypes,
-  oldRatings: IRatingTypes,
+  userOldReviewRatings: IRatingTypes,
 ): ICalculatedRating;
 
 export function RatingCalculator(
