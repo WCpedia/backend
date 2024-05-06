@@ -44,7 +44,7 @@ export class PlaceRepository {
               },
             }),
           },
-          where: { NOT: { userId } },
+          where: { NOT: { userId }, deletedAt: null },
           orderBy: { createdAt: 'desc' },
         },
         publicToiletInfo: true,
@@ -75,8 +75,8 @@ export class PlaceRepository {
   }
 
   async getPlaceReviewByUserId(placeId: number, userId: number) {
-    return await this.prismaService.placeReview.findUnique({
-      where: { placeId_userId: { placeId, userId } },
+    return await this.prismaService.placeReview.findFirst({
+      where: { placeId, userId, deletedAt: null },
       include: {
         user: true,
         images: { where: { deletedAt: null } },
@@ -131,7 +131,7 @@ export class PlaceRepository {
     userId?: number,
   ) {
     return await this.prismaService.placeReview.findMany({
-      where: { placeId, NOT: { userId } },
+      where: { placeId, NOT: { userId }, deletedAt: null },
       include: {
         helpfulReviews: {
           where: { userId },
@@ -145,8 +145,8 @@ export class PlaceRepository {
   }
 
   async getPlaceReviewWithDetailsByUserId(placeId: number, userId: number) {
-    return await this.prismaService.placeReview.findUnique({
-      where: { placeId_userId: { placeId, userId } },
+    return await this.prismaService.placeReview.findFirst({
+      where: { placeId, userId, deletedAt: null },
       include: {
         images: { where: { deletedAt: null } },
         user: true,
@@ -202,7 +202,9 @@ export class PlaceRepository {
   }
 
   async countReview(placeId: number): Promise<number> {
-    return await this.prismaService.placeReview.count({ where: { placeId } });
+    return await this.prismaService.placeReview.count({
+      where: { placeId, deletedAt: null },
+    });
   }
 
   async createPlaceReport(

@@ -21,6 +21,7 @@ export class TaskRepository {
         createdAt: {
           gte: oneWeekAgo,
         },
+        deletedAt: null,
       },
       // 작성된 리뷰의 수 내림차순 정렬
       orderBy: {

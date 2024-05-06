@@ -84,6 +84,11 @@ export class ReviewWithDetailsDto extends BaseReturnDto implements PlaceReview {
   @Type(() => HelpfulReviewDto)
   helpfulReviews: HelpfulReviewDto[];
 
+  @ApiProperty({
+    type: Number,
+    description: '작성한 유저 Id',
+  })
+  @Expose()
   userId: number;
   deletedAt: Date;
 }

@@ -212,28 +212,28 @@ export class PlaceService {
       dto,
     );
 
-    // await this.prismaService.$transaction(
-    //   async (transaction: Prisma.TransactionClient) => {
-    //     await this.placeRepository.createPlaceReview(
-    //       placeId,
-    //       userId,
-    //       dto,
-    //       reviewImages,
-    //       transaction,
-    //     );
-    //     await this.placeRepository.updatePlaceRating(
-    //       placeId,
-    //       calculatedPlaceRatings,
-    //       transaction,
-    //     );
-    //     await this.placeRepository.updateUserRating(
-    //       userId,
-    //       userRatingAverage,
-    //       transaction,
-    //     );
-    //   },
-    //   { isolationLevel: 'Serializable' },
-    // );
+    await this.prismaService.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await this.placeRepository.createPlaceReview(
+          placeId,
+          userId,
+          dto,
+          reviewImages,
+          transaction,
+        );
+        await this.placeRepository.updatePlaceRating(
+          placeId,
+          calculatedPlaceRatings,
+          transaction,
+        );
+        await this.placeRepository.updateUserRating(
+          userId,
+          userRatingAverage,
+          transaction,
+        );
+      },
+      { isolationLevel: 'Serializable' },
+    );
   }
 
   private async checkReviewNotExist(
