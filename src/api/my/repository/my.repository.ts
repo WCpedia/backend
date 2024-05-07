@@ -52,7 +52,7 @@ export class MyRepository {
     paginationParams: IPaginationParams,
   ) {
     return this.prismaService.placeReview.findMany({
-      where: { helpfulReviews: { some: { userId } } },
+      where: { helpfulReviews: { some: { userId } }, deletedAt: null },
       include: {
         images: true,
         user: true,

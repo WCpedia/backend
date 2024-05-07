@@ -24,7 +24,7 @@ export class UserRepository {
     userId?: number,
   ) {
     return this.prismaService.placeReview.findMany({
-      where: { userId: targetUserId },
+      where: { userId: targetUserId, deletedAt: null },
       include: {
         images: true,
         place: {
@@ -56,13 +56,13 @@ export class UserRepository {
 
   async getUserTotalReviewCount(userId: number) {
     return this.prismaService.placeReview.count({
-      where: { userId },
+      where: { userId, deletedAt: null },
     });
   }
 
   async getReadableReviewCount(userId: number, lastItemId: number) {
     return this.prismaService.placeReview.count({
-      where: { userId, id: { lt: lastItemId } },
+      where: { userId, id: { lt: lastItemId }, deletedAt: null },
     });
   }
 }

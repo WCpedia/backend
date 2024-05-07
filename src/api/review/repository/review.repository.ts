@@ -11,7 +11,7 @@ export class ReviewRepository {
   async getLatestReviews() {
     return this.prismaService.placeReview.findMany({
       take: 7,
-      where: { images: { some: { id: { not: undefined } } } },
+      where: { images: { some: { id: { not: undefined } } }, deletedAt: null },
       orderBy: { createdAt: 'desc' },
       include: {
         images: true,
