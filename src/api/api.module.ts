@@ -7,8 +7,8 @@ import { PlaceModule } from './place/place.module';
 import { UserModule } from './user/user.module';
 import { MyModule } from './my/my.module';
 import { ReviewModule } from './review/review.module';
-import { ScheduleModule } from '@nestjs/schedule';
 import { TaskModule } from './scheduler/task.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   providers: [NicknameNotExistValidator],
@@ -21,6 +21,7 @@ import { TaskModule } from './scheduler/task.module';
     MyModule,
     ReviewModule,
     TaskModule,
+    FeedbackModule,
   ],
 })
 export class ApiModule {}
