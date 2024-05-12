@@ -53,6 +53,15 @@ model User {
   reviews                 PlaceReview[]
   helpfulReviews          HelpfulReview[]
   userSubmittedToiletInfo UserSubmittedToiletInfo[]
+  userFeedbacks           UserFeedback[]
+}
+
+model UserFeedback {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  description String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model Authentication {
