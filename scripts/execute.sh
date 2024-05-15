@@ -7,6 +7,8 @@ echo ${S3_URL}
 
 aws s3 cp ${S3_URL} /home/ubuntu/tori-backend/.env
 
+npm -v
+
 npm ci
 
 # docker system prune -a -f
