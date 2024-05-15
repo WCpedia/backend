@@ -1,6 +1,7 @@
 #!/bin/sh
 
 cd /home/ubuntu/tori-backend
+ls -al
 source /etc/profile
 
 echo ${S3_URL}
