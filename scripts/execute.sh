@@ -1,18 +1,19 @@
 #!/bin/sh
 
-cd /home/ubuntu/backend
-source /home/ubuntu/backend/.env
+cd /home/ubuntu/tori-backend
 
-npm ci
+aws s3 cp ${S3_URL} /home/ubuntu/tori-backend/.env
 
-DOCKER_IMAGE_NAME=server-img
+# npm ci
 
-DOCKER_CONTAINER_NAME=server-container
+# DOCKER_IMAGE_NAME=server-img
 
-docker system prune -a -f
+# DOCKER_CONTAINER_NAME=server-container
 
-docker rm -f $(docker ps -qa)
+# docker system prune -a -f
 
-docker build -t ${DOCKER_IMAGE_NAME} . # <--- 프로젝트 루트 경로에 대한 상대경로
+# docker rm -f $(docker ps -qa)
 
-docker run -d -p ${PORT}:${PORT} --name ${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}
+# docker build -t ${DOCKER_IMAGE_NAME} . # <--- 프로젝트 루트 경로에 대한 상대경로
+
+# docker run -d -p ${PORT}:${PORT} --name ${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}
