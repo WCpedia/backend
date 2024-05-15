@@ -4,7 +4,7 @@ cd /home/ubuntu/tori-backend
 
 echo ${S3_URL}
 
-aws s3 cp ${S3_URL} /home/ubuntu/tori-backend/.env
+# aws s3 cp ${S3_URL} /home/ubuntu/tori-backend/.env
 
 # npm ci
 
