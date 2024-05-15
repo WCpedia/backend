@@ -7,14 +7,12 @@ echo ${S3_URL}
 
 aws s3 cp ${S3_URL} /home/ubuntu/tori-backend/.env
 
-npm -v
-
 npm ci
 
-# docker system prune -a -f
+docker system prune -a -f
 
-# docker rm -f $(docker ps -qa)
+docker rm -f $(docker ps -qa)
 
-# docker build -t ${DOCKER_IMAGE_NAME} . # <--- 프로젝트 루트 경로에 대한 상대경로
+docker build -t ${DOCKER_IMAGE_NAME} . # <--- 프로젝트 루트 경로에 대한 상대경로
 
-# docker run -d -p ${PORT}:${PORT} --name ${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}
+docker run -d -p ${PORT}:${PORT} --name ${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}
