@@ -42,11 +42,11 @@ export class PrismaService
 
   async onModuleInit() {
     await this.$connect();
-    this.$on('query', (e) => {
-      console.log('Query: ' + e.query);
-      console.log('Params: ' + e.params);
-      console.log('Duration: ' + e.duration + 'ms');
-    });
+    // this.$on('query', (e) => {
+    //   console.log('Query: ' + e.query);
+    //   console.log('Params: ' + e.params);
+    //   console.log('Duration: ' + e.duration + 'ms');
+    // });
 
     await this.cacheAllCategories();
     await this.cacheAllPlaceCategories();
