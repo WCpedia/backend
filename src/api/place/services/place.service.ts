@@ -203,7 +203,6 @@ export class PlaceService {
     const selectedPlace = await this.getPlaceById(placeId);
     await this.checkReviewNotExist(placeId, userId);
     const userprofile = await this.getUserProfile(userId);
-    console.log(selectedPlace, userprofile, dto);
 
     const { userRatingAverage, ...calculatedPlaceRatings } = RatingCalculator(
       selectedPlace,

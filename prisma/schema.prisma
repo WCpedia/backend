@@ -224,8 +224,6 @@ model PlaceReview {
   place               Place           @relation(fields: [placeId], references: [id])
   helpfulReviews      HelpfulReview[]
   images              ReviewImage[]
-
-  @@unique([placeId, userId])
 }
 
 model ReviewImage {
