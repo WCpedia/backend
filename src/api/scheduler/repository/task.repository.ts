@@ -47,7 +47,7 @@ export class TaskRepository {
     return this.prismaService.placeReview.findMany({
       take: 7,
       where: {
-        images: { some: { id: { not: undefined } } },
+        images: { some: { id: { not: undefined }, deletedAt: { not: null } } },
         deletedAt: null,
       },
       orderBy: { createdAt: 'desc' },
