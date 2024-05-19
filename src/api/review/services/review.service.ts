@@ -161,8 +161,6 @@ export class ReviewService {
   }
 
   private async getUserReview(userId: number, reviewId: number) {
-    console.log(reviewId);
-
     const review = await this.reviewRepository.getReviewWithPlace(reviewId);
     if (review.userId !== userId) {
       throw new CustomException(

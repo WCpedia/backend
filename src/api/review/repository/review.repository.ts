@@ -8,31 +8,31 @@ import { HelpfulReview, Prisma } from '@prisma/client';
 export class ReviewRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getLatestReviews() {
-    return this.prismaService.placeReview.findMany({
-      take: 7,
-      where: { images: { some: { id: { not: undefined } } }, deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        images: true,
-        user: true,
-        place: {
-          include: {
-            region: true,
-            placeCategory: {
-              include: {
-                depth1: true,
-                depth2: true,
-                depth3: true,
-                depth4: true,
-                depth5: true,
-              },
-            },
-          },
-        },
-      },
-    });
-  }
+  // async getLatestReviews() {
+  //   return this.prismaService.placeReview.findMany({
+  //     take: 7,
+  //     where: { images: { some: { deletedAt: null } }, deletedAt: null },
+  //     orderBy: { createdAt: 'desc' },
+  //     include: {
+  //       images: { where: { deletedAt: null } },
+  //       user: true,
+  //       place: {
+  //         include: {
+  //           region: true,
+  //           placeCategory: {
+  //             include: {
+  //               depth1: true,
+  //               depth2: true,
+  //               depth3: true,
+  //               depth4: true,
+  //               depth5: true,
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //   });
+  // }
 
   async getReview(reviewId: number) {
     return this.prismaService.placeReview.findFirst({
