@@ -25,7 +25,7 @@ export class MyRepository {
     return this.prismaService.placeReview.findMany({
       where: { userId, deletedAt: null },
       include: {
-        images: true,
+        images: { where: { deletedAt: null } },
         user: true,
         place: {
           include: {
