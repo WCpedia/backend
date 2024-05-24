@@ -12,7 +12,6 @@ import { MyService } from '../services/my.service';
 import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
 import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.decorator';
 import { IAuthorizedUser } from '@api/auth/interface/interface';
-import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiMy } from './swagger/my.swagger';
 import { PaginationDto } from '@api/common/dto/pagination.dto';
@@ -26,6 +25,7 @@ import {
 } from '@src/constants/consts/upload-file.const';
 import { UpdateMyProfileDto } from '../dtos/request/update-my-profile.dto';
 import { DetailUserProfileDto } from '../dtos/response/DetailUserProfile.dts';
+import { UserWithProviderDto } from '@api/common/dto/user-with-provider.dto';
 
 @ApiTags('My')
 @Controller(DOMAIN_NAME.MY)
@@ -37,7 +37,7 @@ export class MyController {
   @Get('/basic-profile')
   async getMyBasicProfile(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
-  ): Promise<BasicUserDto> {
+  ): Promise<UserWithProviderDto> {
     return this.myService.getMyBasicProfile(authorizedUser.userId);
   }
 

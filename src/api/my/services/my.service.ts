@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { MyRepository } from '../repository/my.repository';
-import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { plainToInstance } from 'class-transformer';
 import { DetailUserProfileDto } from '../dtos/response/DetailUserProfile.dts';
 import { PaginationDto } from '@api/common/dto/pagination.dto';
@@ -11,15 +10,16 @@ import { DetailReviewWithPlaceDto } from '../../common/dto/helpful-review.dto';
 import { UpdateMyProfileDto } from '../dtos/request/update-my-profile.dto';
 import { IUserProfileUpdateInput } from '../interface/interface';
 import { transformS3Url } from '@src/utils/s3-url-transformer';
+import { UserWithProviderDto } from '@api/common/dto/user-with-provider.dto';
 
 @Injectable()
 export class MyService {
   constructor(private readonly myRepository: MyRepository) {}
 
-  async getMyBasicProfile(userId: number): Promise<BasicUserDto> {
+  async getMyBasicProfile(userId: number): Promise<UserWithProviderDto> {
     const user = await this.myRepository.getUserByUserId(userId);
 
-    return plainToInstance(BasicUserDto, user);
+    return plainToInstance(UserWithProviderDto, user);
   }
 
   async getMyProfile(userId: number): Promise<DetailUserProfileDto> {

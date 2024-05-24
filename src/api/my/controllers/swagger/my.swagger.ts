@@ -4,15 +4,13 @@ import { HttpStatus, applyDecorators } from '@nestjs/common';
 import { OperationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { ApiOperator } from '@src/types/type';
 import { MyController } from '../my.controller';
-import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 import { DetailUserProfileDto } from '@api/my/dtos/response/DetailUserProfile.dts';
 import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
-import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
 import { DetailReviewWithPlaceDto } from '@api/common/dto/helpful-review.dto';
 import { MultipartFormDataRequestDto } from '@src/swagger-builder/multipart-form-data-request.dto';
-import { UpdateMyProfileDto } from '@api/my/dtos/request/update-my-profile.dto';
+import { UserWithProviderDto } from '@api/common/dto/user-with-provider.dto';
 
 export const ApiMy: ApiOperator<keyof MyController> = {
   GetMyBasicProfile: (
@@ -25,7 +23,7 @@ export const ApiMy: ApiOperator<keyof MyController> = {
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'GetMyBasicProfile',
-        BasicUserDto,
+        UserWithProviderDto,
       ),
     );
   },
