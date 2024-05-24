@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '@prisma/client';
+import { Authentication, Provider, User } from '@prisma/client';
 import { transformS3Url } from '@src/utils/s3-url-transformer';
 import { Exclude, Expose, Transform } from 'class-transformer';
 

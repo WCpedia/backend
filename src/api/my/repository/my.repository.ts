@@ -12,6 +12,9 @@ export class MyRepository {
   async getUserByUserId(id: number) {
     return this.prismaService.user.findUnique({
       where: { id },
+      include: {
+        authentication: true,
+      },
     });
   }
 
