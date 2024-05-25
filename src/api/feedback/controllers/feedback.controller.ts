@@ -6,9 +6,10 @@ import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.de
 import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { ApiFeedback } from './swagger/feedback.swagger';
 import { ApiTags } from '@nestjs/swagger';
+import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 
-@ApiTags('유저 피드백')
-@Controller('feedback')
+@ApiTags(DOMAIN_NAME.FEEDBACK)
+@Controller(DOMAIN_NAME.FEEDBACK)
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
 

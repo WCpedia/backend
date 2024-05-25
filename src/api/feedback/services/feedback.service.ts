@@ -17,12 +17,13 @@ export class FeedbackService {
   }
 
   private async validateUserFeedbackCount(userId: number): Promise<void> {
-    const { startOfDay, endOfDay } = DateUtils.getUTCStartAndEndOfDay();
+    const { convertedStartDate, convertedEndDate } =
+      DateUtils.getUTCStartAndEndOfRange();
 
     const count = await this.feedbackRepository.countUserFeedback(
       userId,
-      startOfDay,
-      endOfDay,
+      convertedStartDate,
+      convertedEndDate,
     );
 
     if (count >= FeedbackLimit.DAILY_FEEDBACK_LIMIT) {

@@ -1,4 +1,3 @@
-import { DOMAIN_NAME } from '@enums/domain-name.enum';
 import {
   Controller,
   Get,
@@ -19,6 +18,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from '@api/common/dto/pagination.dto';
 import { ReviewDetailWithPlaceDto } from '@api/common/dto/detail-review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
+import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 @ApiTags(DOMAIN_NAME.USER)
 @Controller(DOMAIN_NAME.USER)
 export class UserController {

@@ -9,6 +9,7 @@ import { MyModule } from './my/my.module';
 import { ReviewModule } from './review/review.module';
 import { TaskModule } from './scheduler/task.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   providers: [NicknameNotExistValidator],
@@ -22,6 +23,7 @@ import { FeedbackModule } from './feedback/feedback.module';
     ReviewModule,
     TaskModule,
     FeedbackModule,
+    AdminModule,
   ],
 })
 export class ApiModule {}

@@ -55,6 +55,7 @@ export const REDIS_KEY = {
 export const ENVIRONMENT_KEY = {
   NODE_ENV: 'NODE_ENV',
   PORT: 'PORT',
+  ADMIN_PATH: 'ADMIN_PATH',
   ...JWT_KEY,
   ...AWS_S3_KEY,
   ...OAUTH_KEY,

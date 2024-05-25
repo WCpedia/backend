@@ -27,9 +27,10 @@ import {
   UploadFileLimit,
 } from '@src/constants/consts/upload-file.const';
 import { UpdatePlaceReviewDto } from '../dtos/request/update-place-review.dto';
+import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 
-@ApiTags('Reviews')
-@Controller('reviews')
+@ApiTags(DOMAIN_NAME.REVIEW)
+@Controller(DOMAIN_NAME.REVIEW)
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
