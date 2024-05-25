@@ -1,4 +1,3 @@
-import { DOMAIN_NAME } from '@enums/domain-name.enum';
 import {
   Body,
   Controller,
@@ -26,8 +25,9 @@ import {
 import { UpdateMyProfileDto } from '../dtos/request/update-my-profile.dto';
 import { DetailUserProfileDto } from '../dtos/response/DetailUserProfile.dts';
 import { UserWithProviderDto } from '@api/common/dto/user-with-provider.dto';
+import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 
-@ApiTags('My')
+@ApiTags(DOMAIN_NAME.MY)
 @Controller(DOMAIN_NAME.MY)
 @UseGuards(AccessTokenGuard)
 export class MyController {

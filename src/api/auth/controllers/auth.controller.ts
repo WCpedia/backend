@@ -26,9 +26,10 @@ import {
   UploadFileLimit,
   FilePath,
 } from '@src/constants/consts/upload-file.const';
+import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 
-@ApiTags('Auth')
-@Controller('auth')
+@ApiTags(DOMAIN_NAME.AUTH)
+@Controller(DOMAIN_NAME.AUTH)
 export class AuthController {
   constructor(
     private readonly authService: AuthService,

@@ -1,26 +1,16 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Res,
-  UseGuards,
-  Post,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Param, Res, UseGuards, Delete } from '@nestjs/common';
 import { Response } from 'express';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthTokenService } from '../services/auth-token.service';
 import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.decorator';
 import { IAuthorizedUser, IToken, ITokenPayload } from '../interface/interface';
 import { Role } from '@prisma/client';
-import { AccessTokenStrategy } from '../strategies/access-token.startegy';
-import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
 import { ApiAuthToken } from './swaggers/auth-token.swagger';
 import { RefreshTokenGuard } from '@api/common/guards/refresh-token.guard';
+import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 
-@ApiTags('토큰')
-@Controller('auth/token')
+@ApiTags(DOMAIN_NAME.AUTH_TOKEN)
+@Controller(DOMAIN_NAME.AUTH_TOKEN)
 export class AuthTokenController {
   constructor(private readonly authTokenService: AuthTokenService) {}
 

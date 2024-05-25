@@ -15,7 +15,6 @@ import { PlaceService } from '@api/place/services/place.service';
 import { PlaceDetailDto } from '@api/place/dtos/response/place-detail.dto';
 import { UploadImages } from '@src/utils/image-upload-interceptor';
 import { ApiTags } from '@nestjs/swagger';
-import { DOMAIN_NAME } from '@src/constants/enums/domain-name.enum';
 import {
   FilePath,
   UploadFileLimit,
@@ -30,8 +29,9 @@ import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
 import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
+import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 
-@ApiTags('place')
+@ApiTags(DOMAIN_NAME.PLACE)
 @Controller(DOMAIN_NAME.PLACE)
 export class PlaceController {
   constructor(private readonly placeService: PlaceService) {}

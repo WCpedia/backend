@@ -53,6 +53,7 @@ export const ENVIRONMENT_KEY_VALIDATOR: ConfigModuleOptions = {
   isGlobal: true,
   validationOptions: Joi.object({
     PORT: Joi.number().required(),
+    ADMIN_PATH: Joi.string().required(),
     ...DATABASE_KEY_VALIDATOR,
     ...REDIS_KEY_VALIDATOR,
     ...JWT_KEY_VALIDATOR,

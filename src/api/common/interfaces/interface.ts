@@ -3,3 +3,8 @@ export type PaginatedResponse<T, K extends string = 'items'> = {
 } & {
   totalItemCount: number;
 };
+
+export interface IConvertedDate {
+  convertedStartDate: Date;
+  convertedEndDate: Date;
+}
