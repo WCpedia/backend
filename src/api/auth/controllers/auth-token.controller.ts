@@ -22,7 +22,7 @@ export class AuthTokenController {
   ): Promise<void> {
     const token = await this.authTokenService.generateToken({
       userId,
-      role: Role.USER,
+      role: Role.ADMIN,
     });
 
     response.cookie('accessToken', token.accessToken, {

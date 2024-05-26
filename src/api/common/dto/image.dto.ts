@@ -4,7 +4,7 @@ import { transformS3Url } from '@src/utils/s3-url-transformer';
 import { Exclude, Expose, Transform } from 'class-transformer';
 
 @Exclude()
-export class ReviewImageDto implements Pick<ReviewImage, 'id' | 'key'> {
+export class ImageDto {
   @ApiProperty({
     type: Number,
   })

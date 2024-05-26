@@ -7,6 +7,8 @@ import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 import { AdminFacilityController } from '../admin-facility.controller';
 import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
 import { DailyItemCountDto } from '../dtos/response/daily-item-count.dto';
+import { FacilityReportDto } from '../dtos/response/facility-report.dto';
+import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
 
 export const ApiAdminFacility: ApiOperator<keyof AdminFacilityController> = {
   GetDailyCount: (
@@ -18,8 +20,23 @@ export const ApiAdminFacility: ApiOperator<keyof AdminFacilityController> = {
       TokenConfigDto.swaggerBuilder('accessToken'),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
-        'GetTotalCount',
+        'GetDailyCount',
         DailyItemCountDto,
+      ),
+    );
+  },
+
+  GetReportList: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      PaginationResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'GetFacilityReportList',
+        FacilityReportDto,
       ),
     );
   },
