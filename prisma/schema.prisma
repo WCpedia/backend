@@ -39,21 +39,23 @@ datasource db {
 }
 
 model User {
-  id                      Int                       @id @default(autoincrement())
-  role                    Role                      @default(USER)
-  nickname                String                    @unique
-  description             String?
-  profileImageKey         String?
-  createdAt               DateTime                  @default(now()) @db.Timestamp(6)
-  updatedAt               DateTime                  @default(now()) @updatedAt @db.Timestamp(6)
-  deletedAt               DateTime?                 @db.Timestamp(6)
-  totalReviewCount        Int                       @default(0)
-  ratingAverage           Float                     @default(0)
+  id               Int       @id @default(autoincrement())
+  role             Role      @default(USER)
+  nickname         String    @unique
+  description      String?
+  profileImageKey  String?
+  createdAt        DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  deletedAt        DateTime? @db.Timestamp(6)
+  totalReviewCount Int       @default(0)
+  ratingAverage    Float     @default(0)
+
   authentication          Authentication?
   reviews                 PlaceReview[]
   helpfulReviews          HelpfulReview[]
-  userSubmittedToiletInfo UserSubmittedToiletInfo[]
   userFeedbacks           UserFeedback[]
+  userSubmittedToiletInfo UserSubmittedToiletInfo[] @relation("User")
+  checkedToiletInfos      UserSubmittedToiletInfo[] @relation("Checker")
 }
 
 model UserFeedback {
@@ -177,7 +179,7 @@ model PublicToiletInfo {
 
 // 유저가 제보한 화장실 정보 
 model UserSubmittedToiletInfo {
-  id                      Int                        @id @default(autoincrement())
+  id                      Int       @id @default(autoincrement())
   placeId                 Int
   userId                  Int
   isUnisex                Boolean? // 남여공용 여부
@@ -192,11 +194,16 @@ model UserSubmittedToiletInfo {
   accessible              Boolean? // 장애인 접근성 여부
   hasFeminineProductsBin  Boolean? // 여성 위생용품 수거함 유무
   hasChildUrinal          Boolean? // 어린이 소변기 유무
-  createdAt               DateTime                   @default(now())
-  updatedAt               DateTime                   @updatedAt
-  place                   Place                      @relation(fields: [placeId], references: [id])
-  user                    User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  images                  UserSubmittedToiletImage[]
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  isChecked               Boolean   @default(false)
+  checkedBy               Int?
+  checkedAt               DateTime?
+
+  place   Place                      @relation(fields: [placeId], references: [id])
+  user    User                       @relation("User", fields: [userId], references: [id], onDelete: Cascade)
+  checker User?                      @relation("Checker", fields: [checkedBy], references: [id], onDelete: SetNull)
+  images  UserSubmittedToiletImage[]
 }
 
 model UserSubmittedToiletImage {
