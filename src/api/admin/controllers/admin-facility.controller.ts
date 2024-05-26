@@ -10,6 +10,7 @@ import { ApiAdminFacility } from './swagger/admin-facility.swagger';
 import { GetFacilityReportListDto } from './dtos/request/ge-report-list.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { FacilityReportDto } from './dtos/response/facility-report.dto';
+import { FacilityReportCountDto } from './dtos/response/facility-report-count.dto';
 
 @ApiTags(DOMAIN_NAME.ADMIN_FACILITY)
 @Controller(DOMAIN_NAME.ADMIN_FACILITY)
@@ -20,7 +21,7 @@ export class AdminFacilityController {
 
   @ApiAdminFacility.GetDailyCount({ summary: '제보된 시설 정보 개수 조회' })
   @Get('/daily-count')
-  async getDailyCount() {
+  async getDailyCount(): Promise<FacilityReportCountDto> {
     return this.adminFacilityService.getFacilityReportCount();
   }
 
