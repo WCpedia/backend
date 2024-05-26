@@ -1,4 +1,3 @@
-import { IConvertedDate } from '@api/common/interfaces/interface';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { IPaginationParams } from '@src/interface/common.interface';
@@ -7,24 +6,25 @@ import { IPaginationParams } from '@src/interface/common.interface';
 export class AdminRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async countUserFacilityReport({
+  async countFacilityReports({
+    isChecked,
     convertedStartDate,
     convertedEndDate,
-  }: IConvertedDate) {
+  }: {
+    isChecked?: boolean;
+    convertedStartDate?: Date;
+    convertedEndDate?: Date;
+  }): Promise<number> {
     return await this.prismaService.userSubmittedToiletInfo.count({
       where: {
-        createdAt: {
-          gte: convertedStartDate,
-          lt: convertedEndDate,
-        },
-      },
-    });
-  }
-
-  async getFacilityReportListCount(isChecked: boolean) {
-    return await this.prismaService.userSubmittedToiletInfo.count({
-      where: {
-        isChecked,
+        ...(isChecked !== undefined && { isChecked }),
+        ...(convertedStartDate &&
+          convertedEndDate && {
+            createdAt: {
+              gte: convertedStartDate,
+              lt: convertedEndDate,
+            },
+          }),
       },
     });
   }
@@ -34,7 +34,6 @@ export class AdminRepository {
     isChecked: boolean,
   ) {
     return await this.prismaService.userSubmittedToiletInfo.findMany({
-      take: 10,
       where: {
         isChecked,
       },
