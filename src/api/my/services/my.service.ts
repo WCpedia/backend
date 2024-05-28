@@ -36,15 +36,27 @@ export class MyService {
   async getMyReviews(
     userId: number,
     dto: PaginationDto,
-  ): Promise<DetailReviewWithoutHelpfulDto[]> {
+  ): Promise<PaginatedResponse<DetailReviewWithoutHelpfulDto, 'myReviews'>> {
     const paginationParams = generatePaginationParams(dto);
+
+    const totalItemCount = await this.myRepository.countMyReviews(userId);
+
+    if (totalItemCount === 0) {
+      return { totalItemCount, myReviews: [] };
+    }
 
     const selectedReviews = await this.myRepository.getMyReviews(
       userId,
       paginationParams,
     );
 
-    return plainToInstance(DetailReviewWithoutHelpfulDto, selectedReviews);
+    return {
+      totalItemCount,
+      myReviews: plainToInstance(
+        DetailReviewWithoutHelpfulDto,
+        selectedReviews,
+      ),
+    };
   }
 
   async getMyHelpfulReviews(

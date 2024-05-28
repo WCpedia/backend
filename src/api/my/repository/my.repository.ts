@@ -87,4 +87,10 @@ export class MyRepository {
       data,
     });
   }
+
+  async countMyReviews(userId: number) {
+    return this.prismaService.placeReview.count({
+      where: { userId, deletedAt: null },
+    });
+  }
 }

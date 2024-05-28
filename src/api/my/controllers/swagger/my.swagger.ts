@@ -50,9 +50,9 @@ export const ApiMy: ApiOperator<keyof MyController> = {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
       TokenConfigDto.swaggerBuilder('accessToken'),
-      CommonResponseDto.swaggerBuilder(
+      PaginationResponseDto.swaggerBuilder(
         HttpStatus.OK,
-        'GetMyReviews',
+        'myReviews',
         DetailReviewWithoutHelpfulDto,
       ),
     );

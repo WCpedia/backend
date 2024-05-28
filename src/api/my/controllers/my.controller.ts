@@ -54,7 +54,7 @@ export class MyController {
   async getMyReviews(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Query() paginationDto: PaginationDto,
-  ): Promise<DetailReviewWithoutHelpfulDto[]> {
+  ): Promise<PaginatedResponse<DetailReviewWithoutHelpfulDto, 'myReviews'>> {
     return this.myService.getMyReviews(authorizedUser.userId, paginationDto);
   }
 
