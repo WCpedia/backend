@@ -47,9 +47,11 @@ export class AuthTokenController {
 
     response.cookie('accessToken', token.accessToken, {
       httpOnly: true,
+      sameSite: 'none',
     });
     response.cookie('refreshToken', token.refreshToken, {
       httpOnly: true,
+      sameSite: 'none',
     });
   }
 
