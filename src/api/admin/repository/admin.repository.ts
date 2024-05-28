@@ -42,7 +42,11 @@ export class AdminRepository {
       },
       include: {
         user: true,
-        place: true,
+        place: {
+          include: {
+            publicToiletInfo: true,
+          },
+        },
         images: true,
         checker: true,
       },

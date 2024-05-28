@@ -1,6 +1,6 @@
-import { BasicPlaceDto } from '@api/common/dto/basic-place.dto';
 import { BasicUserDto } from '@api/common/dto/basic-user.dto';
 import { ImageDto } from '@api/common/dto/image.dto';
+import { PlaceWithToiletDto } from '@api/common/dto/place-with-toilet.dto';
 import { UserSubmittedToiletInfoDto } from '@api/common/dto/user-submitted-toilet-info.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
@@ -30,12 +30,12 @@ export class FacilityReportDto extends UserSubmittedToiletInfoDto {
   images: ImageDto[];
 
   @ApiProperty({
-    type: BasicPlaceDto,
+    type: PlaceWithToiletDto,
     description: '가게 정보',
   })
   @Expose()
-  @Type(() => BasicPlaceDto)
-  place: BasicPlaceDto;
+  @Type(() => PlaceWithToiletDto)
+  place: PlaceWithToiletDto;
 
   @ApiProperty({
     type: BasicUserDto,
