@@ -8,12 +8,15 @@ import { generatePaginationParams } from '@src/utils/pagination-params-generator
 import { GetFacilityReportListDto } from '../controllers/dtos/request/ge-report-list.dto';
 import { FacilityReportStatus } from '../constants/const';
 import { FacilityReportCountDto } from '../controllers/dtos/response/facility-report-count.dto';
+import { CustomException } from '@exceptions/http/custom.exception';
+import { AdminExceptionEnum } from '@exceptions/http/enums/admin.exception.enum';
+import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 
 @Injectable()
 export class AdminFacilityService {
   constructor(private readonly adminRepository: AdminRepository) {}
 
-  async getFacilityReportCount(): Promise<FacilityReportCountDto> {
+  async getReportCount(): Promise<FacilityReportCountDto> {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const convertedToday = DateUtils.getUTCStartAndEndOfRange();
@@ -60,5 +63,26 @@ export class AdminFacilityService {
       totalItemCount,
       reports: plainToInstance(FacilityReportDto, reports),
     };
+  }
+
+  async updateReportStatus(
+    userId: number,
+    reportId: number,
+    status: boolean,
+  ): Promise<void> {
+    const selectedReport =
+      await this.adminRepository.getFacilityReportById(reportId);
+    if (!selectedReport) {
+      throw new CustomException(
+        HttpExceptionStatusCode.NOT_FOUND,
+        AdminExceptionEnum.NOT_FOUND_REPORT,
+      );
+    }
+
+    await this.adminRepository.updateFacilityReportStatus(
+      reportId,
+      status,
+      userId,
+    );
   }
 }

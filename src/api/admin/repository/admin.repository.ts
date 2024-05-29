@@ -53,4 +53,29 @@ export class AdminRepository {
       ...paginationParams,
     });
   }
+
+  async getFacilityReportById(reportId: number) {
+    return await this.prismaService.userSubmittedToiletInfo.findUnique({
+      where: {
+        id: reportId,
+      },
+    });
+  }
+
+  async updateFacilityReportStatus(
+    reportId: number,
+    status: boolean,
+    userId: number,
+  ) {
+    return await this.prismaService.userSubmittedToiletInfo.update({
+      where: {
+        id: reportId,
+      },
+      data: {
+        isChecked: status,
+        checkedBy: userId,
+        checkedAt: new Date(),
+      },
+    });
+  }
 }
