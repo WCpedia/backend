@@ -9,4 +9,5 @@ export const DOMAIN_NAME = {
   REVIEW: 'reviews',
   ADMIN: process.env.ADMIN_PATH,
   ADMIN_FACILITY: `${process.env.ADMIN_PATH}/facility`,
+  ADMIN_PLACE: `${process.env.ADMIN_PATH}/places`,
 };
