@@ -1,6 +1,7 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { IPaginationParams } from '@src/interface/common.interface';
+import { UpdateToiletInfoDto } from '../controllers/dtos/request/update-toilet-info.dto';
 
 @Injectable()
 export class AdminRepository {
@@ -76,6 +77,22 @@ export class AdminRepository {
         checkedBy: userId,
         checkedAt: new Date(),
       },
+    });
+  }
+
+  async getPlaceById(placeId: number) {
+    return await this.prismaService.place.findUnique({
+      where: { id: placeId },
+    });
+  }
+
+  async updatePlaceToiletInfo(placeId: number, dto: UpdateToiletInfoDto) {
+    return await this.prismaService.publicToiletInfo.upsert({
+      where: {
+        placeId,
+      },
+      update: dto,
+      create: { placeId, ...dto },
     });
   }
 }
