@@ -195,7 +195,6 @@ model UserSubmittedToiletInfo {
   hasFeminineProductsBin  Boolean? // 여성 위생용품 수거함 유무
   hasChildUrinal          Boolean? // 어린이 소변기 유무
   createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
   isChecked               Boolean   @default(false)
   checkedBy               Int?
   checkedAt               DateTime?
