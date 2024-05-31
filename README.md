@@ -14,6 +14,9 @@
 맛집이나, 술집, 숙박업소 등 화장실이 있는 모든 곳을 유저들이 리뷰하는 플렛폼입니다. </br>
 토리로 인하여 모든 가게의 화장실 위생 인식이 한층 더 높아지길 바랍니다. </br>
 
+[![download](https://github.com/WCpedia/backoffice/assets/96464209/f51efb49-835c-4d8c-a53e-ec5a9bdb98fb)](https://play.google.com/store/apps/details?id=com.wcpediam)
+
+
 <br/>
 
 ## 🛠Member
