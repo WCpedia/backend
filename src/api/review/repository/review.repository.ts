@@ -100,12 +100,12 @@ export class ReviewRepository {
 
   async updateUserReview(
     reviewId: number,
-    updatedRatings: Prisma.PlaceReviewUpdateInput,
+    updatedReview: Prisma.PlaceReviewUpdateInput,
     transaction?: Prisma.TransactionClient,
   ) {
     await (transaction ?? this.prismaService).placeReview.update({
       where: { id: reviewId },
-      data: updatedRatings,
+      data: updatedReview,
     });
   }
 
@@ -165,5 +165,16 @@ export class ReviewRepository {
       where: { id: reviewId },
       data: { deletedAt: new Date() },
     });
+  }
+
+  async createReviewSnapshot(
+    reviewId: number,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    // await (transaction ?? this.prismaService).placeReviewSnapshot.create({
+    //   data: {
+    //     placeReviewId: reviewId,
+    //   },
+    // });
   }
 }
