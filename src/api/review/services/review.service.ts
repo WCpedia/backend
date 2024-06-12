@@ -11,15 +11,16 @@ import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
-import { HelpfulReview, Prisma, ReviewImage } from '@prisma/client';
+import { HelpfulReview, Prisma } from '@prisma/client';
 import { HelpfulReviewDto } from '@api/common/dto/reveiw-reaction.dto';
 import { UpdatePlaceReviewDto } from '../dtos/request/update-place-review.dto';
 import { extractS3Key } from '@src/utils/s3-url-transformer';
 import { AwsS3Service } from '@core/aws/s3/services/aws-s3.service';
-import { UploadFileLimit } from '@src/constants/consts/upload-file.const';
 import { IComparedReviewImages } from '../interface/interface';
 import { RatingCalculator } from '@src/utils/rating-calculator';
 import { CalculateOperation } from '@enums/calculate-operation.enum';
+import { Review } from '../review';
+import { IPlaceUpdateRatingInput } from '@api/place/interface/interface';
 
 @Injectable()
 export class ReviewService {
@@ -65,19 +66,14 @@ export class ReviewService {
     reviewId: number,
     userId: number,
   ): Promise<HelpfulReview> {
-    const selectedReview = await this.reviewRepository.getReview(reviewId);
+    const selectedReview = await this.validateReviewExists(reviewId);
     if (!selectedReview) {
       throw new CustomException(
         HttpExceptionStatusCode.NOT_FOUND,
         ReviewExceptionEnum.REVIEW_NOT_EXIST,
       );
     }
-    if (selectedReview.userId === userId) {
-      throw new CustomException(
-        HttpExceptionStatusCode.BAD_REQUEST,
-        ReviewExceptionEnum.SELF_HELPFUL_REVIEW_FORBIDDEN,
-      );
-    }
+    selectedReview.validateNotAuthor(userId);
 
     const isExist = await this.reviewRepository.countHelpfulReview(
       reviewId,
@@ -106,40 +102,81 @@ export class ReviewService {
     return plainToInstance(HelpfulReviewDto, result[0]);
   }
 
+  private async validateReviewExists(reviewId: number): Promise<Review> {
+    const review = await this.reviewRepository.getReview(reviewId);
+    if (!review) {
+      throw new CustomException(
+        HttpExceptionStatusCode.NOT_FOUND,
+        ReviewExceptionEnum.REVIEW_NOT_EXIST,
+      );
+    }
+
+    return review;
+  }
+
   async updateReview(
     userId: number,
     reviewId: number,
-    updatePlaceReviewDto: UpdatePlaceReviewDto,
+    { imageUrls, ...newReview }: UpdatePlaceReviewDto,
     newImages: Express.MulterS3.File[],
   ) {
-    const { imageUrls, ...newReview } = updatePlaceReviewDto;
+    try {
+      const oldReview = await this.validateReviewExists(reviewId);
+      oldReview.validateAuthor(userId);
+      const selectedPlace = await this.reviewRepository.getPlace(
+        oldReview.placeId,
+      );
+      const selectedUser = await this.reviewRepository.getUserById(userId);
 
-    const { place, ...oldReview } = await this.getUserReview(userId, reviewId);
-    const selectedUser = await this.reviewRepository.getUser(userId);
+      const updatedReviewImages = Review.updateImages(
+        imageUrls,
+        newImages,
+        oldReview.images,
+      );
 
-    const { imagesToAdd, imagesToDelete } = await this.compareReviewImages(
-      updatePlaceReviewDto.imageUrls,
-      newImages,
-      oldReview.images,
-    );
+      const { userRatingAverage, ...calculatedPlaceRatings } = RatingCalculator(
+        selectedPlace,
+        selectedUser,
+        CalculateOperation.UPDATE,
+        newReview,
+        oldReview.rating,
+      );
+      const updatedReview = Review.update(oldReview, newReview);
 
-    const { userRatingAverage, ...calculatedPlaceRatings } = RatingCalculator(
-      place,
-      selectedUser,
-      CalculateOperation.UPDATE,
-      newReview,
-      oldReview,
-    );
+      await this.trxUpdateReview(
+        updatedReview,
+        calculatedPlaceRatings,
+        userId,
+        userRatingAverage,
+        updatedReviewImages,
+      );
+    } catch (error) {
+      if (
+        error instanceof CustomException &&
+        error.errorCode === ReviewExceptionEnum.REVIEW_IMAGE_LIMIT_EXCEEDED
+      ) {
+        await this.handleInvalidImages(newImages);
+      }
 
+      throw error;
+    }
+  }
+
+  private async trxUpdateReview(
+    updatedReview: Review,
+    calculatedPlaceRatings: IPlaceUpdateRatingInput,
+    userId: number,
+    userRatingAverage: number,
+    updatedReviewImages: IComparedReviewImages,
+  ): Promise<void> {
     await this.prismaService.$transaction(
       async (transaction: Prisma.TransactionClient) => {
         await this.reviewRepository.updateUserReview(
-          reviewId,
-          newReview,
+          updatedReview,
           transaction,
         );
         await this.reviewRepository.updatePlaceRating(
-          place.id,
+          updatedReview.placeId,
           calculatedPlaceRatings,
           transaction,
         );
@@ -150,13 +187,30 @@ export class ReviewService {
           transaction,
         );
         await this.reviewRepository.updateReviewImages(
-          reviewId,
-          imagesToAdd,
-          imagesToDelete,
+          updatedReview.id,
+          updatedReviewImages,
+          transaction,
+        );
+        await this.reviewRepository.createReviewSnapshot(
+          updatedReview,
           transaction,
         );
       },
       { isolationLevel: 'Serializable' },
+    );
+  }
+
+  private async handleInvalidImages(
+    invalidImages: Express.MulterS3.File[],
+  ): Promise<void> {
+    const invalidImageKeys = invalidImages.map((image) =>
+      extractS3Key(image.key),
+    );
+
+    await this.awsS3Service.deleteMany(invalidImageKeys);
+    throw new CustomException(
+      HttpExceptionStatusCode.BAD_REQUEST,
+      ReviewExceptionEnum.REVIEW_IMAGE_LIMIT_EXCEEDED,
     );
   }
 
@@ -172,61 +226,9 @@ export class ReviewService {
     return review;
   }
 
-  private async compareReviewImages(
-    newImageUrl: string[],
-    newImageFiles: Express.MulterS3.File[],
-    reviewImages: ReviewImage[],
-  ): Promise<IComparedReviewImages> {
-    const newImageKeys = await this.extractImageKeys(
-      newImageUrl,
-      newImageFiles,
-    );
-    const currentImageKeys = reviewImages.map((image) => image.key);
-
-    // 새로운 이미지 키 중에서 현재 이미지 키에 없는 것을 찾아 추가할 이미지 목록을 생성
-    const imagesToAdd = newImageKeys.filter(
-      (key) => !currentImageKeys.includes(key),
-    );
-
-    // 현재 이미지 키 중에서 새로운 이미지 키에 없는 것을 찾아 삭제할 이미지 목록을 생성
-    const imagesToDelete = reviewImages
-      .filter((image) => !newImageKeys.includes(image.key))
-      .map((image) => image.id);
-
-    return { imagesToAdd, imagesToDelete };
-  }
-
-  private async extractImageKeys(
-    images: string[],
-    newImages: Express.MulterS3.File[],
-  ): Promise<string[]> {
-    let extractedImageKeys: string[] = [];
-    images.map((image) => extractedImageKeys.push(extractS3Key(image)));
-    newImages.map((image) => extractedImageKeys.push(image.key));
-
-    if (extractedImageKeys.length > UploadFileLimit.REVIEW_IMAGES) {
-      await this.deleteS3Object(extractedImageKeys);
-
-      throw new CustomException(
-        HttpExceptionStatusCode.BAD_REQUEST,
-        ReviewExceptionEnum.REVIEW_IMAGE_LIMIT_EXCEEDED,
-      );
-    }
-
-    return extractedImageKeys;
-  }
-
-  private async deleteS3Object(imageKeys: string[]): Promise<void> {
-    if (imageKeys.length === 0) {
-      return;
-    }
-
-    await this.awsS3Service.deleteMany(imageKeys);
-  }
-
   async deleteReview(userId: number, reviewId: number) {
     const { place, ...oldReview } = await this.getUserReview(userId, reviewId);
-    const selectedUser = await this.reviewRepository.getUser(userId);
+    const selectedUser = await this.reviewRepository.getUserById(userId);
     const { userRatingAverage, ...calculatedPlaceRatings } = RatingCalculator(
       place,
       selectedUser,

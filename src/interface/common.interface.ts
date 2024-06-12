@@ -39,7 +39,7 @@ export interface IUploadFileParams {
   path: string;
 }
 
-export interface IRatingTypes {
+export interface IRatings {
   accessibilityRating: number;
   facilityRating: number;
   cleanlinessRating: number;
@@ -50,6 +50,6 @@ export interface IUserRatingInfo {
   ratingAverage?: number;
 }
 
-export interface IPlaceRatingInfo extends IRatingTypes {
+export interface IPlaceRatingInfo extends IRatings {
   reviewCount: number;
 }

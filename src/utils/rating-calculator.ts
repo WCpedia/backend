@@ -3,7 +3,7 @@ import { ICalculatedRating } from '@api/place/interface/interface';
 import { CalculateOperation } from '@enums/calculate-operation.enum';
 import {
   IPlaceRatingInfo,
-  IRatingTypes,
+  IRatings,
   IUserRatingInfo,
 } from '@src/interface/common.interface';
 
@@ -11,7 +11,7 @@ export function RatingCalculator(
   place: IPlaceRatingInfo,
   userRating: IUserRatingInfo,
   operation: CalculateOperation.CREATE,
-  userNewReviewRatings: IRatingTypes,
+  userNewReviewRatings: IRatings,
 ): ICalculatedRating;
 
 export function RatingCalculator(
@@ -19,23 +19,23 @@ export function RatingCalculator(
   userRating: IUserRatingInfo,
   operation: CalculateOperation.DELETE,
   userNewReviewRatings: undefined,
-  userOldReviewRatings: IRatingTypes,
+  userOldReviewRatings: IRatings,
 ): ICalculatedRating;
 
 export function RatingCalculator(
   place: IPlaceRatingInfo,
   userRating: IUserRatingInfo,
   operation: CalculateOperation.UPDATE,
-  userNewReviewRatings: IRatingTypes,
-  userOldReviewRatings: IRatingTypes,
+  userNewReviewRatings: IRatings,
+  userOldReviewRatings: IRatings,
 ): ICalculatedRating;
 
 export function RatingCalculator(
   place: IPlaceRatingInfo,
   userRating: IUserRatingInfo,
   operation: CalculateOperation,
-  userNewReviewRatings?: IRatingTypes, // 새 리뷰 평점, 생성 또는 업데이트 시 사용
-  userOldReviewRatings?: IRatingTypes, // 이전 리뷰 평점, 삭제 또는 업데이트 시 사용
+  userNewReviewRatings?: IRatings, // 새 리뷰 평점, 생성 또는 업데이트 시 사용
+  userOldReviewRatings?: IRatings, // 이전 리뷰 평점, 삭제 또는 업데이트 시 사용
 ): ICalculatedRating {
   let placeReviewCount = place.reviewCount;
   let userReviewCount = userRating.totalReviewCount;
