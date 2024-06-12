@@ -122,10 +122,11 @@ export class ReviewService {
   ) {
     try {
       const oldReview = await this.validateReviewExists(reviewId);
+      oldReview.validateAuthor(userId);
       const selectedPlace = await this.reviewRepository.getPlace(
         oldReview.placeId,
       );
-      const selectedUser = await this.reviewRepository.getUser(userId);
+      const selectedUser = await this.reviewRepository.getUserById(userId);
 
       const updatedReviewImages = Review.updateImages(
         imageUrls,
@@ -142,18 +143,12 @@ export class ReviewService {
       );
       const updatedReview = Review.update(oldReview, newReview);
 
-      await this.prismaService.$transaction(
-        async (transaction: Prisma.TransactionClient) => {
-          await this.trxUpdateReview(
-            updatedReview,
-            calculatedPlaceRatings,
-            userId,
-            userRatingAverage,
-            updatedReviewImages,
-            transaction,
-          );
-        },
-        { isolationLevel: 'Serializable' },
+      await this.trxUpdateReview(
+        updatedReview,
+        calculatedPlaceRatings,
+        userId,
+        userRatingAverage,
+        updatedReviewImages,
       );
     } catch (error) {
       if (
@@ -173,28 +168,35 @@ export class ReviewService {
     userId: number,
     userRatingAverage: number,
     updatedReviewImages: IComparedReviewImages,
-    transaction: Prisma.TransactionClient,
   ): Promise<void> {
-    await this.reviewRepository.updateUserReview(updatedReview, transaction);
-    await this.reviewRepository.updatePlaceRating(
-      updatedReview.placeId,
-      calculatedPlaceRatings,
-      transaction,
-    );
-    await this.reviewRepository.updateUserRating(
-      CalculateOperation.UPDATE,
-      userId,
-      userRatingAverage,
-      transaction,
-    );
-    await this.reviewRepository.updateReviewImages(
-      updatedReview.id,
-      updatedReviewImages,
-      transaction,
-    );
-    await this.reviewRepository.createReviewSnapshot(
-      updatedReview,
-      transaction,
+    await this.prismaService.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await this.reviewRepository.updateUserReview(
+          updatedReview,
+          transaction,
+        );
+        await this.reviewRepository.updatePlaceRating(
+          updatedReview.placeId,
+          calculatedPlaceRatings,
+          transaction,
+        );
+        await this.reviewRepository.updateUserRating(
+          CalculateOperation.UPDATE,
+          userId,
+          userRatingAverage,
+          transaction,
+        );
+        await this.reviewRepository.updateReviewImages(
+          updatedReview.id,
+          updatedReviewImages,
+          transaction,
+        );
+        await this.reviewRepository.createReviewSnapshot(
+          updatedReview,
+          transaction,
+        );
+      },
+      { isolationLevel: 'Serializable' },
     );
   }
 
@@ -226,7 +228,7 @@ export class ReviewService {
 
   async deleteReview(userId: number, reviewId: number) {
     const { place, ...oldReview } = await this.getUserReview(userId, reviewId);
-    const selectedUser = await this.reviewRepository.getUser(userId);
+    const selectedUser = await this.reviewRepository.getUserById(userId);
     const { userRatingAverage, ...calculatedPlaceRatings } = RatingCalculator(
       place,
       selectedUser,
