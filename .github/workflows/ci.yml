@@ -33,4 +33,14 @@ jobs:
         run: aws s3 cp ${{ secrets.S3_TEST_ENV }} .env
 
       - name: Unit Test
+        if: ${{ always() && steps.check-env.outputs.env-exists == 'true' }}
         run: npm run test:unit
+
+      - name: Check .env file exists
+        id: check-env
+        run: |
+          if [ -f .env ]; then
+            echo "::set-output name=env-exists::true"
+          else
+            echo "::set-output name=env-exists::false"
+          fi
