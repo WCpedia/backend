@@ -4,7 +4,7 @@ on:
   push:
     branches: [develop]
 jobs:
-  Build and Test:
+  Build_and_Test:
     name: Build and Test
     runs-on: ubuntu-latest
     steps:
