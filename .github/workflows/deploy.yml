@@ -1,55 +1,55 @@
-name: Deploy
+# name: Deploy
 
-on:
-  push:
-    branches: [develop]
+# on:
+#   push:
+#     branches: [develop]
 
-jobs:
-  Deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dynamically set MY_DATE environment variable
-        run: echo "MY_DATE=$(date +%Y%m%d-%H%M)" >> $GITHUB_ENV
+# jobs:
+#   Deploy:
+#     name: Deploy
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Dynamically set MY_DATE environment variable
+#         run: echo "MY_DATE=$(date +%Y%m%d-%H%M)" >> $GITHUB_ENV
 
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Setup node.js
-        uses: actions/setup-node@v3.8.1
-        with:
-          node-version: 18.18.2
+#       - name: Setup node.js
+#         uses: actions/setup-node@v3.8.1
+#         with:
+#           node-version: 18.18.2
 
-      - name: Install Backend-Server
-        run: npm ci
+#       - name: Install Backend-Server
+#         run: npm ci
 
-      - name: Test Backend-Server
-        run: npm run test
+#       - name: Test Backend-Server
+#         run: npm run test
 
-      - name: Compile Backend-Server
-        run: npm run build
+#       - name: Compile Backend-Server
+#         run: npm run build
 
-      #  "node_modules/*" "coverage/*" "src/*" "test/*" "README.md" "*.git*" "/common" "tsconfig.json" "tsconfig.build.json" "nest-cli.json" ".env" 파일 제외 후 레퍼지토리 압축
-      - name: Make a zip file
-        run: zip -r ./$GITHUB_SHA.zip . -x "node_modules/*" "coverage/*" "src/*" "test/*" "README.md" "*.git*" "common/*" "tsconfig.json" "tsconfig.build.json" "nest-cli.json" "*.env"
-        shell: bash
+#       #  "node_modules/*" "coverage/*" "src/*" "test/*" "README.md" "*.git*" "/common" "tsconfig.json" "tsconfig.build.json" "nest-cli.json" ".env" 파일 제외 후 레퍼지토리 압축
+#       - name: Make a zip file
+#         run: zip -r ./$GITHUB_SHA.zip . -x "node_modules/*" "coverage/*" "src/*" "test/*" "README.md" "*.git*" "common/*" "tsconfig.json" "tsconfig.build.json" "nest-cli.json" "*.env"
+#         shell: bash
 
-      # AWS 자격 증명 수행
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.S3_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.S3_REGION }}
+#       # AWS 자격 증명 수행
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           aws-access-key-id: ${{ secrets.S3_ACCESS_KEY }}
+#           aws-secret-access-key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.S3_REGION }}
 
-      # zip 파일 S3 업로드
-      - name: Upload to S3
-        run: aws s3 cp --region ${{ secrets.S3_REGION }} ./$GITHUB_SHA.zip s3://${{secrets.S3_BUCKET_NAME}}/${{secrets.S3_FOLDER_NAME}}/${{ env.MY_DATE }}.zip
+#       # zip 파일 S3 업로드
+#       - name: Upload to S3
+#         run: aws s3 cp --region ${{ secrets.S3_REGION }} ./$GITHUB_SHA.zip s3://${{secrets.S3_BUCKET_NAME}}/${{secrets.S3_FOLDER_NAME}}/${{ env.MY_DATE }}.zip
 
-      # 코드 배포
-      - name: Code Deploy
-        run: aws deploy create-deployment
-          --application-name ${{secrets.S3_CODEDEPLOY_APPLICATION_NAME}}
-          --deployment-config-name CodeDeployDefault.AllAtOnce
-          --deployment-group-name ${{secrets.S3_CODEDEPLOY_DEPLOYMENT_GROUP_NAME}}
-          --s3-location bucket=${{secrets.S3_BUCKET_NAME}},bundleType=zip,key=${{secrets.S3_FOLDER_NAME}}/${{ env.MY_DATE }}.zip
+#       # 코드 배포
+#       - name: Code Deploy
+#         run: aws deploy create-deployment
+#           --application-name ${{secrets.S3_CODEDEPLOY_APPLICATION_NAME}}
+#           --deployment-config-name CodeDeployDefault.AllAtOnce
+#           --deployment-group-name ${{secrets.S3_CODEDEPLOY_DEPLOYMENT_GROUP_NAME}}
+#           --s3-location bucket=${{secrets.S3_BUCKET_NAME}},bundleType=zip,key=${{secrets.S3_FOLDER_NAME}}/${{ env.MY_DATE }}.zip
