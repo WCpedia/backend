@@ -1,4 +1,4 @@
-import { RatingCalculator } from '../rating-calculator';
+import { RatingCalculator } from '@src/utils/rating-calculator';
 import { CalculateOperation } from '@enums/calculate-operation.enum';
 import {
   IPlaceRatingInfo,
