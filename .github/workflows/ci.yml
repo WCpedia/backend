@@ -16,12 +16,6 @@ jobs:
         with:
           node-version: 18.18.2
 
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Compile Backend-Server
-        run: npm run build
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -30,14 +24,13 @@ jobs:
           aws-region: ${{ secrets.S3_REGION }}
 
       - name: Download Test Environment file from S3 and Check
-        run: |
-          aws s3 cp ${{ secrets.S3_TEST_ENV }} .env
-          if [ -f .env ]; then
-            echo "env-exists=true" >> $GITHUB_ENV
-          else
-            echo "env-exists=false" >> $GITHUB_ENV
-          fi
+        run: aws s3 cp ${{ secrets.S3_TEST_ENV }} .env
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Compile Backend-Server
+        run: npm run build
 
       - name: Unit Test
-        if: env.env-exists == 'true'
         run: npm run test:unit
