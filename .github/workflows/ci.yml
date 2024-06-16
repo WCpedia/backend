@@ -29,12 +29,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.S3_REGION }}
 
-      - name: Download Test Environment file from S3
-        run: aws s3 cp ${{ secrets.S3_TEST_ENV }} .env
-
-      - name: Check .env file exists
-        id: check-env
+      - name: Download Test Environment file from S3 and Check
         run: |
+          aws s3 cp ${{ secrets.S3_TEST_ENV }} .env
           if [ -f .env ]; then
             echo "env-exists=true" >> $GITHUB_ENV
           else
