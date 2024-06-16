@@ -26,9 +26,6 @@ jobs:
       - name: Download Test Environment file from S3
         run: aws s3 cp ${{ secrets.S3_TEST_ENV }} .env
 
-      - name: Load Environment Variables
-        run: npm install dotenv && node -e "require('dotenv').config()"
-
       - name: Install Dependencies
         run: npm ci
 
