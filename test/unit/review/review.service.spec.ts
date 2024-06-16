@@ -14,7 +14,7 @@ import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-e
 import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
 
 describe('ReviewService', () => {
-  let service: ReviewService;
+  let reviewService: ReviewService;
   let reviewRepository: ReviewRepositoryStub;
   let prismaService: PrismaService;
   let cacheManager: Cache;
@@ -22,12 +22,13 @@ describe('ReviewService', () => {
   let awsS3Service: AwsS3Service;
   let updateDto: UpdatePlaceReviewDto;
   let newImages: Express.MulterS3.File[];
+  const now = new Date();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ReviewService,
-        { provide: ReviewRepository, useClass: ReviewRepositoryStub },
+        { provide: ReviewRepository, useValue: new ReviewRepositoryStub(now) },
         { provide: PrismaService, useValue: mockDeep<PrismaService>() },
         { provide: CACHE_MANAGER, useValue: mockDeep<Cache>() },
         {
@@ -38,12 +39,17 @@ describe('ReviewService', () => {
       ],
     }).compile();
 
-    service = module.get<ReviewService>(ReviewService);
+    reviewService = module.get<ReviewService>(ReviewService);
     reviewRepository = module.get<ReviewRepositoryStub>(ReviewRepository);
     prismaService = module.get<PrismaService>(PrismaService);
     cacheManager = module.get<Cache>(CACHE_MANAGER);
     configService = module.get<ProductConfigService>(ProductConfigService);
     awsS3Service = module.get<AwsS3Service>(AwsS3Service);
+    prismaService.$transaction = jest
+      .fn()
+      .mockImplementation(async (transactionalLogic) => {
+        await transactionalLogic(reviewRepository);
+      });
 
     updateDto = {
       description: '리뷰를 수정합니다.',
@@ -61,9 +67,12 @@ describe('ReviewService', () => {
       const userId = 1;
       const reviewId = 1;
 
-      await service.updateReview(userId, reviewId, updateDto, newImages);
+      await reviewService.updateReview(userId, reviewId, updateDto, newImages);
 
-      expect(prismaService.$transaction).toHaveBeenCalled();
+      const review = await reviewRepository.getReview(reviewId);
+      const { imageUrls, ...updateData } = updateDto;
+
+      expect(review.updateData).toEqual(updateData);
     });
 
     it('존재하지 않는 리뷰를 수정하려고 하면 오류가 발생한다.', async () => {
@@ -115,7 +124,7 @@ describe('ReviewService', () => {
       newImages: Express.MulterS3.File[] = [],
     ) {
       await expect(
-        service.updateReview(userId, reviewId, updateDto, newImages),
+        reviewService.updateReview(userId, reviewId, updateDto, newImages),
       ).rejects.toThrow(error);
     }
   });

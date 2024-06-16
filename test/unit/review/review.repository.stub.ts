@@ -20,7 +20,7 @@ import {
 
 export default class ReviewRepositoryStub {
   private _review: Review;
-  constructor() {
+  constructor(date: Date) {
     this._review = new Review({
       id: 1,
       placeId: 1,
@@ -31,10 +31,18 @@ export default class ReviewRepositoryStub {
       visitTime: VisitTime.EVENING,
       description: '좋았습니다',
       helpfulCount: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: date,
+      updatedAt: date,
       deletedAt: null,
-      images: [],
+      images: [
+        {
+          id: 1,
+          reviewId: 1,
+          key: 'review/test1.jpg',
+          createdAt: new Date(),
+          deletedAt: null,
+        },
+      ],
     });
   }
 
@@ -125,6 +133,7 @@ export default class ReviewRepositoryStub {
     review: Review,
     transaction?: Prisma.TransactionClient,
   ): Promise<void> {
+    this._review = review;
     return;
   }
 
