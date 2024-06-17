@@ -186,9 +186,13 @@ export class ReviewService {
           userRatingAverage,
           transaction,
         );
-        await this.reviewRepository.updateReviewImages(
+        await this.reviewRepository.createReviewImages(
           updatedReview.id,
-          updatedReviewImages,
+          updatedReviewImages.imagesToAdd,
+          transaction,
+        );
+        await this.reviewRepository.softDeleteReviewImages(
+          updatedReviewImages.imagesToDelete,
           transaction,
         );
         await this.reviewRepository.createReviewSnapshot(
