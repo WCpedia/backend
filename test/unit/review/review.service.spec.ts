@@ -6,45 +6,42 @@ import { ProductConfigService } from '@core/config/services/config.service';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { TestingModule, Test } from '@nestjs/testing';
-import { VisitTime } from '@prisma/client';
+import { ReviewImage, VisitTime } from '@prisma/client';
 import { mockDeep } from 'jest-mock-extended';
 import ReviewRepositoryStub from './review.repository.stub';
 import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
+import AwsS3ServiceStub from '../aws/aws-s3-service.stub';
 
 describe('ReviewService', () => {
   let reviewService: ReviewService;
   let reviewRepository: ReviewRepositoryStub;
   let prismaService: PrismaService;
-  let cacheManager: Cache;
-  let configService: ProductConfigService;
-  let awsS3Service: AwsS3Service;
   let updateDto: UpdatePlaceReviewDto;
   let newImages: Express.MulterS3.File[];
   const now = new Date();
+  let currentImages: ReviewImage[];
 
   beforeEach(async () => {
+    const providers = [
+      { provide: ReviewRepository, useValue: new ReviewRepositoryStub() },
+      { provide: AwsS3Service, useValue: new AwsS3ServiceStub() },
+      { provide: PrismaService, useValue: mockDeep<PrismaService>() },
+      { provide: CACHE_MANAGER, useValue: mockDeep<Cache>() },
+      {
+        provide: ProductConfigService,
+        useValue: mockDeep<ProductConfigService>(),
+      },
+    ];
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ReviewService,
-        { provide: ReviewRepository, useValue: new ReviewRepositoryStub(now) },
-        { provide: PrismaService, useValue: mockDeep<PrismaService>() },
-        { provide: CACHE_MANAGER, useValue: mockDeep<Cache>() },
-        {
-          provide: ProductConfigService,
-          useValue: mockDeep<ProductConfigService>(),
-        },
-        { provide: AwsS3Service, useValue: mockDeep<AwsS3Service>() },
-      ],
+      providers: [ReviewService, ...providers],
     }).compile();
 
     reviewService = module.get<ReviewService>(ReviewService);
     reviewRepository = module.get<ReviewRepositoryStub>(ReviewRepository);
     prismaService = module.get<PrismaService>(PrismaService);
-    cacheManager = module.get<Cache>(CACHE_MANAGER);
-    configService = module.get<ProductConfigService>(ProductConfigService);
-    awsS3Service = module.get<AwsS3Service>(AwsS3Service);
     prismaService.$transaction = jest
       .fn()
       .mockImplementation(async (transactionalLogic) => {
@@ -59,7 +56,23 @@ describe('ReviewService', () => {
       visitTime: VisitTime.AFTERNOON,
       imageUrls: [],
     };
-    newImages = [];
+    newImages = [{ key: 'test/newImage1' } as Express.MulterS3.File];
+    currentImages = [
+      {
+        id: 1,
+        reviewId: 1,
+        key: 'test/fileKey1',
+        createdAt: now,
+        deletedAt: null,
+      },
+      {
+        id: 2,
+        reviewId: 1,
+        key: 'test/fileKey2',
+        createdAt: now,
+        deletedAt: null,
+      },
+    ];
   });
 
   describe('updateReview', () => {
@@ -67,12 +80,12 @@ describe('ReviewService', () => {
       const userId = 1;
       const reviewId = 1;
 
-      await reviewService.updateReview(userId, reviewId, updateDto, newImages);
-
-      const review = await reviewRepository.getReview(reviewId);
       const { imageUrls, ...updateData } = updateDto;
 
-      expect(review.updateData).toEqual(updateData);
+      await reviewService.updateReview(userId, reviewId, updateDto, newImages);
+
+      const selectedReview = await reviewRepository.getReview(reviewId);
+      expect(selectedReview.updateData).toEqual(updateData);
     });
 
     it('존재하지 않는 리뷰를 수정하려고 하면 오류가 발생한다.', async () => {

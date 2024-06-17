@@ -159,26 +159,28 @@ export class ReviewRepository {
     });
   }
 
-  async updateReviewImages(
+  async softDeleteReviewImages(
+    imagesToDelete: number[],
+    transaction?: Prisma.TransactionClient,
+    now: Date = new Date(),
+  ) {
+    await (transaction ?? this.prismaService).reviewImage.updateMany({
+      where: { id: { in: imagesToDelete } },
+      data: { deletedAt: now },
+    });
+  }
+
+  async createReviewImages(
     reviewId: number,
-    updatedReviewImages: IComparedReviewImages,
+    imagesToAdd: string[],
     transaction?: Prisma.TransactionClient,
   ) {
-    if (updatedReviewImages.imagesToDelete.length) {
-      const date = new Date();
-      await (transaction ?? this.prismaService).reviewImage.updateMany({
-        where: { id: { in: updatedReviewImages.imagesToDelete } },
-        data: { deletedAt: date },
-      });
-    }
-    if (updatedReviewImages.imagesToAdd.length) {
-      await (transaction ?? this.prismaService).reviewImage.createMany({
-        data: updatedReviewImages.imagesToAdd.map((url) => ({
-          key: url,
-          reviewId,
-        })),
-      });
-    }
+    await (transaction ?? this.prismaService).reviewImage.createMany({
+      data: imagesToAdd.map((url) => ({
+        key: url,
+        reviewId,
+      })),
+    });
   }
 
   async softDeleteReview(

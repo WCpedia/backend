@@ -18,9 +18,11 @@ import {
   VisitTime,
 } from '@prisma/client';
 
-export default class ReviewRepositoryStub {
+type PartialReviewRepository = Partial<ReviewRepository>;
+
+export default class ReviewRepositoryStub implements PartialReviewRepository {
   private _review: Review;
-  constructor(date: Date) {
+  constructor(images?: ReviewImage[], date: Date = new Date()) {
     this._review = new Review({
       id: 1,
       placeId: 1,
@@ -34,11 +36,11 @@ export default class ReviewRepositoryStub {
       createdAt: date,
       updatedAt: date,
       deletedAt: null,
-      images: [
+      images: images ?? [
         {
           id: 1,
           reviewId: 1,
-          key: 'review/test1.jpg',
+          key: 'test/fileKey1',
           createdAt: new Date(),
           deletedAt: null,
         },
@@ -46,18 +48,36 @@ export default class ReviewRepositoryStub {
     });
   }
 
-  getReview(reviewId: number): Promise<Review> {
+  setImages(images: ReviewImage[], date: Date = new Date()) {
+    this._review = new Review({
+      id: 1,
+      placeId: 1,
+      userId: 1,
+      accessibilityRating: 4,
+      facilityRating: 4,
+      cleanlinessRating: 4,
+      visitTime: VisitTime.EVENING,
+      description: '좋았습니다',
+      helpfulCount: 1,
+      createdAt: date,
+      updatedAt: date,
+      deletedAt: null,
+      images,
+    });
+  }
+
+  async getReview(reviewId: number): Promise<Review> {
     return reviewId === this._review.id
       ? Promise.resolve(this._review)
       : Promise.resolve(null);
   }
-  getReviewWithImages(reviewId: number): Promise<Review> {
+  async getReviewWithImages(reviewId: number): Promise<Review> {
     return reviewId === this._review.id
       ? Promise.resolve(this._review)
       : Promise.resolve(null);
   }
 
-  getPlace(placeId: number): Promise<Place> {
+  async getPlace(placeId: number): Promise<Place> {
     return Promise.resolve({
       id: placeId,
       kakaoId: '123',
@@ -77,7 +97,7 @@ export default class ReviewRepositoryStub {
     });
   }
 
-  getUserById(userId: number): Promise<User> {
+  async getUserById(userId: number): Promise<User> {
     return Promise.resolve({
       id: userId,
       role: Role.USER,
@@ -92,17 +112,17 @@ export default class ReviewRepositoryStub {
     });
   }
 
-  getReviewWithPlace(
+  async getReviewWithPlace(
     reviewId: number,
   ): Promise<PlaceReview & { place: Place; images: ReviewImage[] }> {
     return;
   }
 
-  countHelpfulReview(reviewId: number, userId: number): Promise<number> {
+  async countHelpfulReview(reviewId: number, userId: number): Promise<number> {
     return;
   }
 
-  createHelpfulReview(
+  async createHelpfulReview(
     reviewId: number,
     userId: number,
     transaction?: Prisma.TransactionClient,
@@ -110,7 +130,7 @@ export default class ReviewRepositoryStub {
     return;
   }
 
-  updateHelpfulCount(
+  async updateHelpfulCount(
     reviewId: number,
     isIncrement: boolean,
     transaction?: Prisma.TransactionClient,
@@ -118,18 +138,18 @@ export default class ReviewRepositoryStub {
     return;
   }
 
-  getHelpfulReview(id: number): Promise<HelpfulReview> {
+  async getHelpfulReview(id: number): Promise<HelpfulReview> {
     return;
   }
 
-  deleteHelpfulReview(
+  async deleteHelpfulReview(
     id: number,
     transaction?: Prisma.TransactionClient,
   ): Promise<void> {
     return;
   }
 
-  updateUserReview(
+  async updateUserReview(
     review: Review,
     transaction?: Prisma.TransactionClient,
   ): Promise<void> {
@@ -137,7 +157,7 @@ export default class ReviewRepositoryStub {
     return;
   }
 
-  updatePlaceRating(
+  async updatePlaceRating(
     placeId: number,
     updatedRatings: IPlaceUpdateRatingInput,
     transaction?: Prisma.TransactionClient,
@@ -145,7 +165,7 @@ export default class ReviewRepositoryStub {
     return;
   }
 
-  updateUserRating(
+  async updateUserRating(
     operation: CalculateOperation,
     userId: number,
     updatedRatings: number,
@@ -154,22 +174,29 @@ export default class ReviewRepositoryStub {
     return;
   }
 
-  updateReviewImages(
+  async createReviewImages(
     reviewId: number,
-    updatedReviewImages: IComparedReviewImages,
+    imagesToAdd: string[],
     transaction?: Prisma.TransactionClient,
   ): Promise<void> {
     return;
   }
 
-  softDeleteReview(
+  async softDeleteReviewImages(
+    imagesToDelete: number[],
+    transaction?: Prisma.TransactionClient,
+  ): Promise<void> {
+    return;
+  }
+
+  async softDeleteReview(
     reviewId: number,
     transaction?: Prisma.TransactionClient,
   ): Promise<void> {
     return;
   }
 
-  createReviewSnapshot(
+  async createReviewSnapshot(
     review: Review,
     transaction?: Prisma.TransactionClient,
   ): Promise<void> {
