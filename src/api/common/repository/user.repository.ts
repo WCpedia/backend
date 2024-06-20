@@ -1,5 +1,7 @@
+import User from '@api/user/user';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { IPaginationParams } from '@src/interface/common.interface';
 
 @Injectable()
@@ -63,6 +65,22 @@ export class UserRepository {
   async getReadableReviewCount(userId: number, lastItemId: number) {
     return this.prismaService.placeReview.count({
       where: { userId, id: { lt: lastItemId }, deletedAt: null },
+    });
+  }
+
+  async updateProfile(user: User, transaction?: Prisma.TransactionClient) {
+    await (transaction ?? this.prismaService).user.update({
+      where: { id: user.id },
+      data: user.profileUpdateData,
+    });
+  }
+
+  async createProfileSnapshot(
+    user: User,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction ?? this.prismaService).userProfileSnapshot.create({
+      data: user.profileSnapshot,
     });
   }
 }

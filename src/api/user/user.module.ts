@@ -2,11 +2,11 @@ import { CustomConfigModule } from '@core/config/config.module';
 import { Module } from '@nestjs/common';
 import { UserController } from './controllers/user.controller';
 import { UserService } from './services/user.service';
-import { UserRepository } from './repository/user.repository';
+import { CommonRepositoryModule } from '@api/common/repository/common-repository.module';
 
 @Module({
-  imports: [CustomConfigModule],
+  imports: [CustomConfigModule, CommonRepositoryModule],
   controllers: [UserController],
-  providers: [UserService, UserRepository],
+  providers: [UserService],
 })
 export class UserModule {}
