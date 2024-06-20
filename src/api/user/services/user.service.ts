@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../repository/user.repository';
+import { UserRepository } from '../../common/repository/user.repository';
 import { UserWithReviewsDto } from '../dtos/response/user-with-reviews.dto';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { PaginationDto } from '@api/common/dto/pagination.dto';

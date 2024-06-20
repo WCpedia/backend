@@ -8,11 +8,11 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { TestingModule, Test } from '@nestjs/testing';
 import { ReviewImage, VisitTime } from '@prisma/client';
 import { mockDeep } from 'jest-mock-extended';
-import ReviewRepositoryStub from './review.repository.stub';
 import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
 import AwsS3ServiceStub from '../aws/aws-s3-service.stub';
+import ReviewRepositoryStub from '../stub/review.repository.stub';
 
 describe('ReviewService', () => {
   let reviewService: ReviewService;

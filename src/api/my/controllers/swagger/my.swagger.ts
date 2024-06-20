@@ -11,6 +11,7 @@ import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.
 import { DetailReviewWithPlaceDto } from '@api/common/dto/helpful-review.dto';
 import { MultipartFormDataRequestDto } from '@src/swagger-builder/multipart-form-data-request.dto';
 import { UserWithProviderDto } from '@api/common/dto/user-with-provider.dto';
+import { UpdateMyProfileDto } from '@api/my/dtos/request/update-my-profile.dto';
 
 export const ApiMy: ApiOperator<keyof MyController> = {
   GetMyBasicProfile: (
@@ -83,7 +84,7 @@ export const ApiMy: ApiOperator<keyof MyController> = {
       MultipartFormDataRequestDto.swaggerBuilder(
         'UpdateMyProfile',
         'image',
-        DetailUserProfileDto,
+        UpdateMyProfileDto,
         { required: false },
       ),
       CommonResponseDto.swaggerBuilder(

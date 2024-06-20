@@ -26,6 +26,7 @@ import { UpdateMyProfileDto } from '../dtos/request/update-my-profile.dto';
 import { DetailUserProfileDto } from '../dtos/response/DetailUserProfile.dts';
 import { UserWithProviderDto } from '@api/common/dto/user-with-provider.dto';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
+import { plainToInstance } from 'class-transformer';
 
 @ApiTags(DOMAIN_NAME.MY)
 @Controller(DOMAIN_NAME.MY)
@@ -38,7 +39,7 @@ export class MyController {
   async getMyBasicProfile(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
   ): Promise<UserWithProviderDto> {
-    return this.myService.getMyBasicProfile(authorizedUser.userId);
+    return await this.myService.getMyBasicProfile(authorizedUser.userId);
   }
 
   @ApiMy.GetMyProfile({ summary: '내 프로필 상세 조회' })
@@ -80,7 +81,7 @@ export class MyController {
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @UploadedFile() profileImage: Express.MulterS3.File,
     @Body() updateMyProfileDto: UpdateMyProfileDto,
-  ): Promise<string | null> {
+  ): Promise<string> {
     return this.myService.updateMyProfile(
       authorizedUser.userId,
       updateMyProfileDto,

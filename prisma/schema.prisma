@@ -57,6 +57,18 @@ model User {
   userSubmittedToiletInfo UserSubmittedToiletInfo[] @relation("User")
   checkedToiletInfos      UserSubmittedToiletInfo[] @relation("Checker")
   placeReviewSnapshots    PlaceReviewSnapshot[]
+  userProfileSnapshots    UserProfileSnapshot[]
+}
+
+model UserProfileSnapshot {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  nickname        String
+  description     String?
+  profileImageKey String?
+  createdAt       DateTime  @default(now())
+  deletedAt       DateTime?
+  user            User      @relation(fields: [userId], references: [id])
 }
 
 model UserFeedback {
