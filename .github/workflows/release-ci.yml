@@ -1,8 +1,8 @@
-name: CI
+name: RELEASE-CI
 
 on:
   pull_request:
-    branches: [develop]
+    branches: [release]
 jobs:
   Build_and_Test:
     name: Build and Test
