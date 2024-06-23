@@ -8,13 +8,20 @@ import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { DetailReviewWithPlaceDto } from '../../common/dto/helpful-review.dto';
 import { UpdateMyProfileDto } from '../dtos/request/update-my-profile.dto';
-import { IUserProfileUpdateInput } from '../interface/interface';
 import { transformS3Url } from '@src/utils/s3-url-transformer';
 import { UserWithProviderDto } from '@api/common/dto/user-with-provider.dto';
+import User from '@api/user/user';
+import { PrismaService } from '@core/database/prisma/services/prisma.service';
+import { Prisma } from '@prisma/client';
+import { UserRepository } from '@api/common/repository/user.repository';
 
 @Injectable()
 export class MyService {
-  constructor(private readonly myRepository: MyRepository) {}
+  constructor(
+    private readonly myRepository: MyRepository,
+    private readonly userRepository: UserRepository,
+    private readonly prismaService: PrismaService,
+  ) {}
 
   async getMyBasicProfile(userId: number): Promise<UserWithProviderDto> {
     const user = await this.myRepository.getUserByUserId(userId);
@@ -89,17 +96,26 @@ export class MyService {
     userId: number,
     dto: UpdateMyProfileDto,
     newProfileImage?: Express.MulterS3.File,
-  ): Promise<string | null> {
+  ): Promise<string> {
     const { profileImage, nickname, description } = dto;
-    const profileImageKey = newProfileImage?.key ?? profileImage;
-    const data: IUserProfileUpdateInput = {
-      profileImageKey,
-      nickname: nickname ?? undefined,
-      description: description ?? undefined,
-    };
+    const user = User.of({
+      id: userId,
+      nickname,
+      description,
+      profileImageKey: newProfileImage?.key ?? profileImage,
+    });
 
-    await this.myRepository.updateMyProfile(userId, data);
+    await this.trxUpdateMyProfile(user);
 
-    return profileImageKey ? transformS3Url({ value: profileImageKey }) : null;
+    return transformS3Url({ value: user.profileImageKey });
+  }
+
+  private async trxUpdateMyProfile(user: User): Promise<void> {
+    await this.prismaService.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await this.userRepository.updateProfile(user, transaction);
+        await this.userRepository.createProfileSnapshot(user, transaction);
+      },
+    );
   }
 }

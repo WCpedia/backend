@@ -1,8 +1,13 @@
 import { IPlaceUpdateRatingInput } from '@api/place/interface/interface';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { CalculateOperation } from '@enums/calculate-operation.enum';
+import { CustomException } from '@exceptions/http/custom.exception';
+import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
+import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
 import { Injectable } from '@nestjs/common';
 import { HelpfulReview, Prisma } from '@prisma/client';
+import { Review } from '../review';
+import { IComparedReviewImages } from '../interface/interface';
 
 @Injectable()
 export class ReviewRepository {
@@ -34,9 +39,27 @@ export class ReviewRepository {
   //   });
   // }
 
-  async getReview(reviewId: number) {
-    return this.prismaService.placeReview.findFirst({
+  async getReview(reviewId: number): Promise<Review | null> {
+    const reviewData = await this.prismaService.placeReview.findFirst({
       where: { id: reviewId, deletedAt: null },
+    });
+
+    return reviewData ? new Review(reviewData) : null;
+  }
+
+  async getReviewWithImages(reviewId: number): Promise<Review> {
+    const reviewData = await this.prismaService.placeReview.findFirst({
+      where: { id: reviewId, deletedAt: null },
+      include: {
+        images: { where: { deletedAt: null } },
+      },
+    });
+    return new Review(reviewData);
+  }
+
+  async getPlace(placeId: number) {
+    return this.prismaService.place.findUnique({
+      where: { id: placeId },
     });
   }
 
@@ -92,20 +115,19 @@ export class ReviewRepository {
     });
   }
 
-  async getUser(userId: number) {
+  async getUserById(userId: number) {
     return this.prismaService.user.findUnique({
       where: { id: userId },
     });
   }
 
   async updateUserReview(
-    reviewId: number,
-    updatedRatings: Prisma.PlaceReviewUpdateInput,
+    review: Review,
     transaction?: Prisma.TransactionClient,
   ) {
     await (transaction ?? this.prismaService).placeReview.update({
-      where: { id: reviewId },
-      data: updatedRatings,
+      where: { id: review.id },
+      data: review.updateData,
     });
   }
 
@@ -137,24 +159,28 @@ export class ReviewRepository {
     });
   }
 
-  async updateReviewImages(
-    reviewId: number,
-    imagesToAdd: string[],
+  async softDeleteReviewImages(
     imagesToDelete: number[],
     transaction?: Prisma.TransactionClient,
+    now: Date = new Date(),
   ) {
-    if (imagesToDelete.length) {
-      const date = new Date();
-      await (transaction ?? this.prismaService).reviewImage.updateMany({
-        where: { id: { in: imagesToDelete } },
-        data: { deletedAt: date },
-      });
-    }
-    if (imagesToAdd.length) {
-      await (transaction ?? this.prismaService).reviewImage.createMany({
-        data: imagesToAdd.map((url) => ({ key: url, reviewId })),
-      });
-    }
+    await (transaction ?? this.prismaService).reviewImage.updateMany({
+      where: { id: { in: imagesToDelete } },
+      data: { deletedAt: now },
+    });
+  }
+
+  async createReviewImages(
+    reviewId: number,
+    imagesToAdd: string[],
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction ?? this.prismaService).reviewImage.createMany({
+      data: imagesToAdd.map((url) => ({
+        key: url,
+        reviewId,
+      })),
+    });
   }
 
   async softDeleteReview(
@@ -164,6 +190,15 @@ export class ReviewRepository {
     await (transaction ?? this.prismaService).placeReview.update({
       where: { id: reviewId },
       data: { deletedAt: new Date() },
+    });
+  }
+
+  async createReviewSnapshot(
+    review: Review,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction ?? this.prismaService).placeReviewSnapshot.create({
+      data: review.snapshotData,
     });
   }
 }

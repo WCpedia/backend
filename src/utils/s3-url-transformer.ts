@@ -3,7 +3,11 @@ import { ProductConfigService } from '@core/config/services/config.service';
 import { ConfigService } from '@nestjs/config';
 
 const configService = new ProductConfigService(new ConfigService());
-const S3_BASE_URL: string = configService.get(AWS_S3_KEY.S3_BUCKET_URL);
+let S3_BASE_URL: string = configService.get(AWS_S3_KEY.S3_BUCKET_URL);
+
+export function setS3BaseUrl(url: string) {
+  S3_BASE_URL = url;
+}
 
 export function transformS3Url({ value }) {
   return value ? `${S3_BASE_URL}/${value}` : null;

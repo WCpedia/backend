@@ -42,7 +42,7 @@ model User {
   id               Int       @id @default(autoincrement())
   role             Role      @default(USER)
   nickname         String    @unique
-  description      String?
+  description      String?   @default("")
   profileImageKey  String?
   createdAt        DateTime  @default(now()) @db.Timestamp(6)
   updatedAt        DateTime  @default(now()) @updatedAt @db.Timestamp(6)
@@ -56,6 +56,19 @@ model User {
   userFeedbacks           UserFeedback[]
   userSubmittedToiletInfo UserSubmittedToiletInfo[] @relation("User")
   checkedToiletInfos      UserSubmittedToiletInfo[] @relation("Checker")
+  placeReviewSnapshots    PlaceReviewSnapshot[]
+  userProfileSnapshots    UserProfileSnapshot[]
+}
+
+model UserProfileSnapshot {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  nickname        String
+  description     String?
+  profileImageKey String?
+  createdAt       DateTime  @default(now())
+  deletedAt       DateTime?
+  user            User      @relation(fields: [userId], references: [id])
 }
 
 model UserFeedback {
@@ -103,6 +116,7 @@ model Place {
   publicToiletInfo         PublicToiletInfo?
   userSubmittedToiletInfos UserSubmittedToiletInfo[]
   menuInfo                 MenuInfo[]
+  PlaceReviewSnapshot      PlaceReviewSnapshot[]
 }
 
 model PlaceImage {
@@ -214,22 +228,40 @@ model UserSubmittedToiletImage {
 }
 
 model PlaceReview {
-  id                  Int             @id @default(autoincrement())
+  id                  Int                   @id @default(autoincrement())
   placeId             Int
   userId              Int
   accessibilityRating Int // 접근성 
   facilityRating      Int // 시설 
   cleanlinessRating   Int // 청결도 
   visitTime           VisitTime? // 방문 시간대
-  description         String? // 설명
-  helpfulCount        Int             @default(0)
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  description         String?               @default("") //임시
+  helpfulCount        Int                   @default(0)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
   deletedAt           DateTime?
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  place               Place           @relation(fields: [placeId], references: [id])
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place               Place                 @relation(fields: [placeId], references: [id])
   helpfulReviews      HelpfulReview[]
   images              ReviewImage[]
+  PlaceReviewSnapshot PlaceReviewSnapshot[]
+}
+
+model PlaceReviewSnapshot {
+  id                  Int         @id @default(autoincrement())
+  placeId             Int
+  placeReviewId       Int
+  userId              Int
+  accessibilityRating Int? // 접근성 
+  facilityRating      Int? // 시설 
+  cleanlinessRating   Int? // 청결도 
+  visitTime           VisitTime? // 방문 시간대
+  description         String? // 설명
+  createdAt           DateTime    @default(now())
+  deletedAt           DateTime?
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place               Place       @relation(fields: [placeId], references: [id])
+  placeReview         PlaceReview @relation(fields: [placeReviewId], references: [id])
 }
 
 model ReviewImage {

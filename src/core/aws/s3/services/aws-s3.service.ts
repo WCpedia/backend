@@ -8,8 +8,13 @@ import {
   PutObjectCommand,
   DeleteObjectCommand,
   DeleteObjectsCommand,
+  ListObjectsV2Command,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
+import * as archiver from 'archiver';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class AwsS3Service extends MulterBuilder {
@@ -75,6 +80,53 @@ export class AwsS3Service extends MulterBuilder {
         },
       });
       await this.s3.send(command);
+    } catch (e) {
+      throw new CustomException(
+        HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
+        MulterExceptionEnum.AWS_S3_CLIENT_REQUEST_ERROR,
+      );
+    }
+  }
+
+  //S3 파일 압축 및 저장
+  async compressAndSaveFolder(
+    folderPath: string,
+    key: string,
+  ): Promise<string> {
+    try {
+      const listCommand = new ListObjectsV2Command({
+        Bucket: this.bucketName,
+        Prefix: folderPath,
+      });
+      const listResponse = await this.s3.send(listCommand);
+
+      if (!listResponse.Contents || listResponse.Contents.length === 0) {
+        throw new CustomException(
+          HttpExceptionStatusCode.NOT_FOUND,
+          MulterExceptionEnum.AWS_S3_CLIENT_REQUEST_ERROR,
+        );
+      }
+
+      const archive = archiver('zip', { zlib: { level: 9 } });
+      const localFilePath = path.join(key);
+
+      const output = fs.createWriteStream(localFilePath);
+      archive.pipe(output);
+
+      for (const item of listResponse.Contents) {
+        const getObjectCommand = new GetObjectCommand({
+          Bucket: this.bucketName,
+          Key: item.Key,
+        });
+        const objectResponse = await this.s3.send(getObjectCommand);
+        archive.append(objectResponse.Body as any, {
+          name: item.Key.replace(folderPath, ''),
+        });
+      }
+
+      await archive.finalize();
+
+      return localFilePath;
     } catch (e) {
       throw new CustomException(
         HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,

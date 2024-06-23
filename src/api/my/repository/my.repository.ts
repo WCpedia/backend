@@ -3,7 +3,11 @@ import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { IPaginationParams } from '@src/interface/common.interface';
-import { IUserProfileUpdateInput } from '../interface/interface';
+import {
+  IUserProfileSnapshotInput,
+  IUserProfileUpdateInput,
+} from '../interface/interface';
+import User from '@api/user/user';
 
 @Injectable()
 export class MyRepository {
@@ -78,13 +82,6 @@ export class MyRepository {
         },
       },
       ...paginationParams,
-    });
-  }
-
-  async updateMyProfile(userId: number, data: IUserProfileUpdateInput) {
-    return this.prismaService.user.update({
-      where: { id: userId },
-      data,
     });
   }
 
