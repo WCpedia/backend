@@ -30,7 +30,7 @@ enum VisitTime {
 
 enum ReportMainType {
   USER
-  TOILET_REVIEW
+  REVIEW
 }
 
 enum UserReportSubType {
