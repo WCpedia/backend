@@ -55,4 +55,5 @@ export class DetailUserProfileDto extends BaseReturnDto implements User {
   deletedAt: Date;
   role: Role;
   profileImageKey: string;
+  isBanned: boolean;
 }

@@ -161,4 +161,19 @@ export class Review {
       description: this._description,
     };
   }
+
+  get allProperties() {
+    return {
+      id: this._id,
+      placeId: this._placeId,
+      userId: this._userId,
+      accessibilityRating: this._accessibilityRating,
+      facilityRating: this._facilityRating,
+      cleanlinessRating: this._cleanlinessRating,
+      visitTime: this._visitTime,
+      description: this._description,
+      helpfulCount: this._helpfulCount,
+      images: this._images,
+    };
+  }
 }

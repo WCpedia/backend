@@ -10,11 +10,13 @@ import { ReviewModule } from './review/review.module';
 import { TaskModule } from './scheduler/task.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { AdminModule } from './admin/admin.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   providers: [NicknameNotExistValidator],
   imports: [
     CoreModule,
+    ReportModule,
     AuthModule,
     SearchModule,
     PlaceModule,
