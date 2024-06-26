@@ -2,6 +2,7 @@ import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { ReportExceptionEnum } from '@exceptions/http/enums/report.exception.enum';
 import {
+  Prisma,
   Report as PrismaReport,
   ReportMainType,
   ReviewReportSubType,
@@ -36,6 +37,10 @@ export default class Report {
     this._createdAt = props.createdAt;
     this._deletedAt = props.deletedAt;
     this._isResolved = props.isResolved;
+  }
+
+  isReviewReport() {
+    return this._mainType === ReportMainType.REVIEW;
   }
 
   static create({
@@ -86,32 +91,76 @@ export default class Report {
     description: string,
     targetReviewId: number,
   ): void {
+    this.checkSubTypeValidity(userSubType, reviewSubType);
+
+    if (mainType === ReportMainType.USER) {
+      this.validateUserReport(userSubType, targetReviewId);
+    } else if (mainType === ReportMainType.REVIEW) {
+      this.validateReviewReport(reviewSubType, targetReviewId);
+    }
+
+    this.checkDescriptionForEtc(userSubType, reviewSubType, description);
+  }
+
+  private static checkSubTypeValidity(
+    userSubType: UserReportSubType,
+    reviewSubType: ReviewReportSubType,
+  ): void {
     if (userSubType === null && reviewSubType === null) {
       throw new CustomException(
         HttpExceptionStatusCode.BAD_REQUEST,
         ReportExceptionEnum.SUB_TYPE_REQUIRED,
       );
     }
-    if (mainType === ReportMainType.USER && userSubType === null) {
+    if (userSubType && reviewSubType) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        ReportExceptionEnum.MULTIPLE_SUB_TYPES_NOT_ALLOWED,
+      );
+    }
+  }
+
+  private static validateUserReport(
+    userSubType: UserReportSubType,
+    targetReviewId: number,
+  ): void {
+    if (userSubType === null) {
       throw new CustomException(
         HttpExceptionStatusCode.BAD_REQUEST,
         ReportExceptionEnum.USER_SUB_TYPE_REQUIRED,
       );
     }
-    if (mainType === ReportMainType.REVIEW) {
-      if (reviewSubType === null) {
-        throw new CustomException(
-          HttpExceptionStatusCode.BAD_REQUEST,
-          ReportExceptionEnum.REVIEW_SUB_TYPE_REQUIRED,
-        );
-      }
-      if (targetReviewId === null) {
-        throw new CustomException(
-          HttpExceptionStatusCode.BAD_REQUEST,
-          ReportExceptionEnum.REVIEW_ID_REQUIRED,
-        );
-      }
+    if (targetReviewId) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        ReportExceptionEnum.REVIEW_ID_NOT_ALLOWED,
+      );
     }
+  }
+
+  private static validateReviewReport(
+    reviewSubType: ReviewReportSubType,
+    targetReviewId: number,
+  ): void {
+    if (reviewSubType === null) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        ReportExceptionEnum.REVIEW_SUB_TYPE_REQUIRED,
+      );
+    }
+    if (targetReviewId === null) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        ReportExceptionEnum.REVIEW_ID_REQUIRED,
+      );
+    }
+  }
+
+  private static checkDescriptionForEtc(
+    userSubType: UserReportSubType,
+    reviewSubType: ReviewReportSubType,
+    description: string,
+  ): void {
     if (
       (userSubType === UserReportSubType.ETC ||
         reviewSubType === ReviewReportSubType.ETC) &&
@@ -124,7 +173,11 @@ export default class Report {
     }
   }
 
-  get createData() {
+  isCreatedToday(date: Date = new Date()): boolean {
+    return this._createdAt.toDateString() === date.toDateString();
+  }
+
+  get createData(): Prisma.ReportUncheckedCreateInput {
     return {
       mainType: this._mainType,
       userReportSubType: this._userReportSubType,
@@ -134,5 +187,21 @@ export default class Report {
       targetReviewId: this._targetReviewId,
       description: this._description,
     };
+  }
+
+  get targetUserId() {
+    return this._targetUserId;
+  }
+
+  get reporterId() {
+    return this._reporterId;
+  }
+
+  get mainType() {
+    return this._mainType;
+  }
+
+  get targetReviewId() {
+    return this._targetReviewId;
   }
 }

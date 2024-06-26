@@ -4,13 +4,14 @@ import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { ReportExceptionEnum } from '@exceptions/http/enums/report.exception.enum';
 import {
+  Report as PrismaReport,
   ReportMainType,
   ReviewReportSubType,
   UserReportSubType,
 } from '@prisma/client';
 
 describe('Report', () => {
-  describe('신고 생성', () => {
+  describe('create', () => {
     const createUserReportData = (overrides?: Partial<CreateReportProps>) => ({
       mainType: ReportMainType.USER,
       userReportSubType: UserReportSubType.DESCRIPTION,
@@ -204,6 +205,70 @@ describe('Report', () => {
           ReportExceptionEnum.REVIEW_ID_REQUIRED,
         ),
       );
+    });
+
+    it('유저 신고와 리뷰 신고가 동시에 선택되면 예외가 발생한다.', () => {
+      const reportData = createUserReportData({
+        userReportSubType: UserReportSubType.DESCRIPTION,
+        reviewSubType: ReviewReportSubType.FALSE_INFO,
+      });
+
+      expect(() => {
+        Report.create(reportData);
+      }).toThrow(
+        new CustomException(
+          HttpExceptionStatusCode.BAD_REQUEST,
+          ReportExceptionEnum.MULTIPLE_SUB_TYPES_NOT_ALLOWED,
+        ),
+      );
+    });
+
+    it('유저 신고시 ReviewId가 있으면 예외가 발생한다.', () => {
+      const reportData = createUserReportData({
+        targetReviewId: 1,
+      });
+
+      expect(() => {
+        Report.create(reportData);
+      }).toThrow(
+        new CustomException(
+          HttpExceptionStatusCode.BAD_REQUEST,
+          ReportExceptionEnum.REVIEW_ID_NOT_ALLOWED,
+        ),
+      );
+    });
+  });
+
+  describe('isCreatedToday', () => {
+    const createReport = (createdAt: Date) => {
+      return new Report({
+        id: 1,
+        mainType: ReportMainType.USER,
+        userReportSubType: UserReportSubType.DESCRIPTION,
+        reviewSubType: null,
+        reporterId: 1,
+        targetUserId: 2,
+        targetReviewId: null,
+        description: 'Test description',
+        createdAt: createdAt,
+        deletedAt: null,
+        isResolved: false,
+      });
+    };
+
+    it('생성일과 동일한 날짜인 경우 true를 반환해야 한다.', () => {
+      const today = new Date();
+      const report = createReport(today);
+
+      expect(report.isCreatedToday()).toBe(true);
+    });
+
+    it('생성일과 다른 날짜인 경우 false를 반환해야 한다', () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const report = createReport(yesterday);
+
+      expect(report.isCreatedToday()).toBe(false);
     });
   });
 });

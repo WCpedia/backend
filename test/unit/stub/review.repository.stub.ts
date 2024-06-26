@@ -109,6 +109,7 @@ export default class ReviewRepositoryStub implements PartialReviewRepository {
       deletedAt: null,
       totalReviewCount: 0,
       ratingAverage: 0,
+      isBanned: false,
     });
   }
 
