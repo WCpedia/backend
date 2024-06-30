@@ -11,6 +11,19 @@ import {
 } from '@prisma/client';
 
 describe('Report', () => {
+  const createReport = (overrides?: Partial<PrismaReport>) =>
+    new Report({
+      id: 1,
+      mainType: ReportMainType.USER,
+      userReportSubType: UserReportSubType.DESCRIPTION,
+      reviewSubType: null,
+      reporterId: 1,
+      targetUserId: 2,
+      targetReviewId: null,
+      description: null,
+      ...overrides,
+    });
+
   describe('create', () => {
     const createUserReportData = (overrides?: Partial<CreateReportProps>) => ({
       mainType: ReportMainType.USER,
@@ -256,19 +269,66 @@ describe('Report', () => {
       });
     };
 
-    it('생성일과 동일한 날짜인 경우 true를 반환해야 한다.', () => {
+    it('생성일과 동일한 날짜인 경우 true를 반환한다.', () => {
       const today = new Date();
       const report = createReport(today);
 
       expect(report.isCreatedToday()).toBe(true);
     });
 
-    it('생성일과 다른 날짜인 경우 false를 반환해야 한다', () => {
+    it('생성일과 다른 날짜인 경우 false를 반환한다', () => {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const report = createReport(yesterday);
 
       expect(report.isCreatedToday()).toBe(false);
+    });
+  });
+
+  describe('validateAuthor', () => {
+    it('신고자와 동일하면 통과한다.', () => {
+      const report = createReport({
+        reporterId: 1,
+      });
+      const userId = 1;
+
+      expect(() => {
+        report.validateAuthor(userId);
+      }).not.toThrow();
+    });
+
+    it('신고자와 동일하지 않으면 예외가 발생한다.', () => {
+      const report = createReport({
+        reporterId: 1,
+      });
+      const userId = 2;
+
+      expect(() => {
+        report.validateAuthor(userId);
+      }).toThrow(
+        new CustomException(
+          HttpExceptionStatusCode.FORBIDDEN,
+          ReportExceptionEnum.MISMATCHED_AUTHOR,
+        ),
+      );
+    });
+  });
+
+  describe('isDeleted', () => {
+    it('deletedAt이 null이면 false를 반환한다.', () => {
+      const report = createReport({
+        deletedAt: null,
+      });
+
+      expect(report.isDeleted()).toBe(false);
+    });
+
+    it('deletedAt이 null이 아니면 true를 반환한다.', () => {
+      const report = createReport({
+        deletedAt: new Date(),
+      });
+
+      expect(report.isDeleted()).toBe(true);
     });
   });
 });

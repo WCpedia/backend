@@ -8,4 +8,6 @@ export enum ReportExceptionEnum {
   MULTIPLE_SUB_TYPES_NOT_ALLOWED = 'MultipleSubTypesNotAllowed',
   REVIEW_ID_NOT_ALLOWED = 'ReviewIdNotAllowed',
   DUPLICATE_REPORT_SAME_DAY = 'DuplicateReportSameDay',
+  REPORT_NOT_EXIST = 'ReportNotExist',
+  MISMATCHED_AUTHOR = 'MismatchedAuthor',
 }

@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ReportService } from '../services/report.service';
 import { ApiReport } from './swagger/report.swagger';
 import { CreateReportDto } from '../dtos/request/create-report.dto';
@@ -38,5 +48,15 @@ export class ReportController {
       authorizedUser.userId,
       createReportDto,
     );
+  }
+
+  @ApiReport.DeleteReport({ summary: '신고 삭제' })
+  @UseGuards(AccessTokenGuard)
+  @Delete(':reportId')
+  async deleteReport(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Param('reportId', ParseIntPipe) reportId: number,
+  ): Promise<void> {
+    return this.reportService.deleteReport(authorizedUser.userId, reportId);
   }
 }

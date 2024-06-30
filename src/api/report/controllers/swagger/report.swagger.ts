@@ -31,4 +31,14 @@ export const ApiReport: ApiOperator<keyof ReportController> = {
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'createReport'),
     );
   },
+
+  DeleteReport: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'deleteReport'),
+    );
+  },
 };

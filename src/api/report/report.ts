@@ -177,6 +177,19 @@ export default class Report {
     return this._createdAt.toDateString() === date.toDateString();
   }
 
+  validateAuthor(userId: number) {
+    if (this.reporterId !== userId) {
+      throw new CustomException(
+        HttpExceptionStatusCode.FORBIDDEN,
+        ReportExceptionEnum.MISMATCHED_AUTHOR,
+      );
+    }
+  }
+
+  isDeleted(): boolean {
+    return !!this._deletedAt;
+  }
+
   get createData(): Prisma.ReportUncheckedCreateInput {
     return {
       mainType: this._mainType,

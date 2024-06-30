@@ -8,6 +8,16 @@ import { IPaginationParams } from '@src/interface/common.interface';
 export class ReportRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async getReportById(reportId: number) {
+    const report = await this.prismaService.report.findUnique({
+      where: {
+        id: reportId,
+      },
+    });
+
+    return report ? new Report(report) : null;
+  }
+
   async getReportByUserIdAndTargetUserId(userId: number, targetUserId: number) {
     const report = await this.prismaService.report.findFirst({
       where: {
@@ -32,12 +42,24 @@ export class ReportRepository {
     return await this.prismaService.report.findMany({
       where: {
         reporterId: userId,
+        deletedAt: null,
       },
       include: {
         targetUser: true,
       },
       orderBy: { createdAt: 'desc' },
       ...paginationParams,
+    });
+  }
+
+  async deleteReport(reportId: number) {
+    await this.prismaService.report.update({
+      where: {
+        id: reportId,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
     });
   }
 }
