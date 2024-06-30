@@ -6,8 +6,11 @@ import { CustomException } from '@exceptions/http/custom.exception';
 import { ReportExceptionEnum } from '@exceptions/http/enums/report.exception.enum';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import { ReviewRepository } from '@api/review/repository/review.repository';
-import { Review } from '@api/review/review';
 import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
+import { generatePaginationParams } from '@src/utils/pagination-params-generator';
+import PaginationDto from '@api/common/dto/pagination.dto';
+import { plainToInstance } from 'class-transformer';
+import ReportDto from '../dtos/response/report.dto';
 
 @Injectable()
 export class ReportService {
@@ -64,5 +67,19 @@ export class ReportService {
         ReviewExceptionEnum.MISMATCHED_AUTHOR,
       );
     }
+  }
+
+  async getReportList(
+    userId: number,
+    paginationDto: PaginationDto,
+  ): Promise<ReportDto[]> {
+    const paginationParams = generatePaginationParams(paginationDto);
+
+    const selectedReport = await this.reportRepository.getReportList(
+      userId,
+      paginationParams,
+    );
+
+    return plainToInstance(ReportDto, selectedReport);
   }
 }

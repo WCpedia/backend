@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { MyRepository } from '../repository/my.repository';
 import { plainToInstance } from 'class-transformer';
 import { DetailUserProfileDto } from '../dtos/response/DetailUserProfile.dts';
-import { PaginationDto } from '@api/common/dto/pagination.dto';
+import PaginationDto from '@api/common/dto/pagination.dto';
 import { generatePaginationParams } from '@src/utils/pagination-params-generator';
 import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
