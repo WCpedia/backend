@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsNotEmpty, IsOptional } from 'class-validator';
 
-export class PaginationDto {
+export default class PaginationDto {
   @ApiProperty({
     type: Number,
     description: '요청 개수',
