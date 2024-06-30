@@ -11,6 +11,6 @@ import { AwsS3Module } from '@core/aws/s3/aws-s3.module';
   imports: [CustomConfigModule, AwsS3Module],
   controllers: [ReviewController, HelpfulReviewController],
   providers: [ReviewService, HelpfulReviewService, ReviewRepository],
-  exports: [ReviewService],
+  exports: [ReviewService, ReviewRepository],
 })
 export class ReviewModule {}

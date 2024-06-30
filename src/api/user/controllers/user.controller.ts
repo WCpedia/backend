@@ -15,7 +15,7 @@ import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { UserExistenceValidationPipe } from '../validators/user-existence-validator';
 import { UserWithReviewsDto } from '../dtos/response/user-with-reviews.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { PaginationDto } from '@api/common/dto/pagination.dto';
+import PaginationDto from '@api/common/dto/pagination.dto';
 import { ReviewDetailWithPlaceDto } from '@api/common/dto/detail-review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';

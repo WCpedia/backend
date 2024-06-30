@@ -1,12 +1,7 @@
-import { PaginationDto } from '@api/common/dto/pagination.dto';
+import PaginationDto from '@api/common/dto/pagination.dto';
 import { ToBoolean } from '@api/common/decorators/to-boolean.decorator';
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsBooleanString,
-  IsNumber,
-  IsOptional,
-} from 'class-validator';
+import { IsNumber, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class GetFacilityReportListDto extends PaginationDto {

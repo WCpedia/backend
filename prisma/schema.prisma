@@ -28,6 +28,26 @@ enum VisitTime {
   NIGHT
 }
 
+enum ReportMainType {
+  USER
+  REVIEW
+}
+
+enum UserReportSubType {
+  SPAM
+  NICKNAME
+  DESCRIPTION
+  PROFILE_IMAGE
+  ETC
+}
+
+enum ReviewReportSubType {
+  FALSE_INFO
+  OFFENSIVE_REVIEW
+  IRRELEVANT // 장소와 무관한 리뷰
+  ETC
+}
+
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
@@ -49,6 +69,7 @@ model User {
   deletedAt        DateTime? @db.Timestamp(6)
   totalReviewCount Int       @default(0)
   ratingAverage    Float     @default(0)
+  isBanned         Boolean   @default(false) // 제제 상태 추가
 
   authentication          Authentication?
   reviews                 PlaceReview[]
@@ -58,6 +79,22 @@ model User {
   checkedToiletInfos      UserSubmittedToiletInfo[] @relation("Checker")
   placeReviewSnapshots    PlaceReviewSnapshot[]
   userProfileSnapshots    UserProfileSnapshot[]
+  reportsReceived         Report[]                  @relation("TargetUser")
+  reportsMade             Report[]                  @relation("Reporter")
+  bans                    UserBan[]                 @relation("User")
+  adminBans               UserBan[]                 @relation("Admin")
+}
+
+model UserBan {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  reason    String
+  bannedBy  Int
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+
+  user  User @relation("User", fields: [userId], references: [id], onDelete: Cascade)
+  admin User @relation("Admin", fields: [bannedBy], references: [id], onDelete: Cascade)
 }
 
 model UserProfileSnapshot {
@@ -245,6 +282,7 @@ model PlaceReview {
   helpfulReviews      HelpfulReview[]
   images              ReviewImage[]
   PlaceReviewSnapshot PlaceReviewSnapshot[]
+  Report              Report[]
 }
 
 model PlaceReviewSnapshot {
@@ -285,18 +323,19 @@ model HelpfulReview {
   @@unique([reviewId, userId])
 }
 
-// model Reports {
-//   id                      Int            @id @default(autoincrement())
-//   reportType             ReportType
-//   reporterId             Int
-//   targetUserId          Int?
-//   targetToiletReviewId Int?
-//   reason                  Reason
-//   description             String?
-//   reporter                Users          @relation("ReportedUser", fields: [reporterId], references: [id])
-//   targetUser             Users?         @relation("TargetUser", fields: [targetUserId], references: [id])
-//   targetToiletReview    ToiletReviews? @relation(fields: [targetToiletReviewId], references: [id])
-
-//   @@unique([reporterId, targetUserId])
-//   @@unique([reporterId, targetToiletReviewId])
-// }
+model Report {
+  id                Int                  @id @default(autoincrement())
+  mainType          ReportMainType
+  userReportSubType UserReportSubType? // 사용자 관련 소분류
+  reviewSubType     ReviewReportSubType? // 리뷰 관련 소분류
+  reporterId        Int
+  targetUserId      Int
+  targetReviewId    Int?
+  description       String?
+  createdAt         DateTime             @default(now())
+  deletedAt         DateTime?
+  isResolved        Boolean              @default(false)
+  reporter          User                 @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetUser        User                 @relation("TargetUser", fields: [targetUserId], references: [id], onDelete: Cascade)
+  targetReview      PlaceReview?         @relation(fields: [targetReviewId], references: [id], onDelete: SetNull)
+}

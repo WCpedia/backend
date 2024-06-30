@@ -13,7 +13,7 @@ import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.de
 import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiMy } from './swagger/my.swagger';
-import { PaginationDto } from '@api/common/dto/pagination.dto';
+import PaginationDto from '@api/common/dto/pagination.dto';
 import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { DetailReviewWithPlaceDto } from '../../common/dto/helpful-review.dto';
