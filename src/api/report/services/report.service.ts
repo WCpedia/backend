@@ -82,4 +82,27 @@ export class ReportService {
 
     return plainToInstance(ReportDto, selectedReport);
   }
+
+  async deleteReport(userId: number, reportId: number): Promise<void> {
+    const selectedReport = await this.validateReportExists(reportId);
+    selectedReport.validateAuthor(userId);
+
+    if (selectedReport.isDeleted()) {
+      return;
+    }
+
+    await this.reportRepository.deleteReport(reportId);
+  }
+
+  private async validateReportExists(reportId: number) {
+    const selectedReport = await this.reportRepository.getReportById(reportId);
+    if (!selectedReport) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        ReportExceptionEnum.REPORT_NOT_EXIST,
+      );
+    }
+
+    return selectedReport;
+  }
 }
