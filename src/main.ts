@@ -16,6 +16,7 @@ import * as cookieParser from 'cookie-parser';
 import { useContainer } from 'class-validator';
 import { UnauthorizedExceptionFilter } from '@exceptions/http/filters/unauthorized-exception.filter';
 import { CustomExceptionFilter } from '@exceptions/http/filters/custom-exception.filter';
+import * as expressBasicAuth from 'express-basic-auth';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -24,6 +25,15 @@ async function bootstrap() {
   const configService = app.get<ProductConfigService>(ProductConfigService);
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  app.use(
+    ['/docs', '/docs-json'],
+    expressBasicAuth({
+      challenge: true,
+      users: {
+        [process.env.SWAGGER_USER]: process.env.SWAGGER_PASSWORD,
+      },
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Swagger')
