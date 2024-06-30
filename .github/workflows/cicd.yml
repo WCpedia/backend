@@ -46,33 +46,33 @@ jobs:
           name: build-artifact
           path: ./build.zip
 
-  Deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    needs: Build_and_Test
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: build-artifact
-          path: .
+  # Deploy:
+  #   name: Deploy
+  #   runs-on: ubuntu-latest
+  #   needs: Build_and_Test
+  #   steps:
+  #     - name: Download build artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: build-artifact
+  #         path: .
 
-      - name: Dynamically set MY_DATE environment variable
-        run: echo "MY_DATE=$(date +%Y%m%d-%H%M)" >> $GITHUB_ENV
+  #     - name: Dynamically set MY_DATE environment variable
+  #       run: echo "MY_DATE=$(date +%Y%m%d-%H%M)" >> $GITHUB_ENV
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.S3_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.S3_REGION }}
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         aws-access-key-id: ${{ secrets.S3_ACCESS_KEY }}
+  #         aws-secret-access-key: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ secrets.S3_REGION }}
 
-      - name: Upload to S3
-        run: aws s3 cp --region ${{ secrets.S3_REGION }} ./build.zip s3://${{secrets.S3_BUCKET_NAME}}/${{secrets.S3_FOLDER_NAME}}/${{ env.MY_DATE }}.zip
+  #     - name: Upload to S3
+  #       run: aws s3 cp --region ${{ secrets.S3_REGION }} ./build.zip s3://${{secrets.S3_BUCKET_NAME}}/${{secrets.S3_FOLDER_NAME}}/${{ env.MY_DATE }}.zip
 
-      - name: Code Deploy
-        run: aws deploy create-deployment
-          --application-name ${{secrets.S3_CODEDEPLOY_APPLICATION_NAME}}
-          --deployment-config-name CodeDeployDefault.AllAtOnce
-          --deployment-group-name ${{secrets.S3_CODEDEPLOY_DEPLOYMENT_GROUP_NAME}}
-          --s3-location bucket=${{secrets.S3_BUCKET_NAME}},bundleType=zip,key=${{secrets.S3_FOLDER_NAME}}/${{ env.MY_DATE }}.zip
+  #     - name: Code Deploy
+  #       run: aws deploy create-deployment
+  #         --application-name ${{secrets.S3_CODEDEPLOY_APPLICATION_NAME}}
+  #         --deployment-config-name CodeDeployDefault.AllAtOnce
+  #         --deployment-group-name ${{secrets.S3_CODEDEPLOY_DEPLOYMENT_GROUP_NAME}}
+  #         --s3-location bucket=${{secrets.S3_BUCKET_NAME}},bundleType=zip,key=${{secrets.S3_FOLDER_NAME}}/${{ env.MY_DATE }}.zip
