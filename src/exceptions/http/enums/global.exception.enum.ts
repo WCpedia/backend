@@ -10,4 +10,5 @@ export enum AuthExceptionEnum {
   INVALID_TOKEN = 'InvalidToken',
   JWT_EXPIRED = 'JwtExpired',
   UNAUTHORIZED = 'Unauthorized',
+  INVALID_EMAIL = 'InvalidEmail',
 }
