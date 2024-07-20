@@ -25,6 +25,7 @@ import { CustomException } from '@exceptions/http/custom.exception';
 import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
 import * as jwt from 'jsonwebtoken';
 import { JwksClient } from 'jwks-rsa';
+import { AuthExceptionEnum } from '@exceptions/http/enums/global.exception.enum';
 
 @Injectable()
 export class AuthService {
@@ -75,6 +76,13 @@ export class AuthService {
       case Provider.APPLE:
         email = await this.getAppleUserEmail(accessToken);
         break;
+    }
+
+    if (!email) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        AuthExceptionEnum.INVALID_EMAIL,
+      );
     }
 
     const user = await this.authRepository.getUserWithAuth(email);
