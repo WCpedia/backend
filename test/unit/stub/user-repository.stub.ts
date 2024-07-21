@@ -42,6 +42,10 @@ export default class UserRepositoryStub implements PartialUserRepository {
     this._users.set(user2.id, user2);
   }
 
+  async getUserByUserId(userId: number): Promise<User | null> {
+    return this._users.get(userId) ?? null;
+  }
+
   async createTestUser(user: User) {
     return this._users.set(user.id, user);
   }
