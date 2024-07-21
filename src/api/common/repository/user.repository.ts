@@ -8,6 +8,14 @@ import { IPaginationParams } from '@src/interface/common.interface';
 export class UserRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async getUserByUserId(userId: number) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
+
+    return user ? new User(user) : null;
+  }
+
   async getUserByNickname(nickname: string) {
     return this.prismaService.user.findUnique({
       where: { nickname },

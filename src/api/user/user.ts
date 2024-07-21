@@ -72,13 +72,13 @@ export default class User {
     description,
     profileImageKey,
   }: {
-    nickname: string;
-    description: string;
+    nickname?: string;
+    description?: string;
     profileImageKey?: string;
   }) {
-    this._nickname = nickname;
-    this._description = description;
-    this._profileImageKey = profileImageKey;
+    this._nickname = nickname ?? this._nickname;
+    this._description = description ?? this._description;
+    this._profileImageKey = profileImageKey ?? this._profileImageKey;
   }
 
   get id() {

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MyRepository } from '../repository/my.repository';
 import { plainToInstance } from 'class-transformer';
 import { DetailUserProfileDto } from '../dtos/response/DetailUserProfile.dts';
@@ -14,6 +14,9 @@ import User from '@api/user/user';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Prisma } from '@prisma/client';
 import { UserRepository } from '@api/common/repository/user.repository';
+import { CustomException } from '@exceptions/http/custom.exception';
+import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-enum';
+import { UserExceptionEnum } from '@exceptions/http/enums/user.exception.enum';
 
 @Injectable()
 export class MyService {
@@ -98,16 +101,23 @@ export class MyService {
     newProfileImage?: Express.MulterS3.File,
   ): Promise<string> {
     const { profileImage, nickname, description } = dto;
-    const user = User.of({
-      id: userId,
+    const selectedUser = await this.userRepository.getUserByUserId(userId);
+
+    if (!selectedUser) {
+      throw new CustomException(
+        HttpExceptionStatusCode.NOT_FOUND,
+        UserExceptionEnum.USER_NOT_FOUND,
+      );
+    }
+
+    selectedUser.updateProfile({
       nickname,
       description,
       profileImageKey: newProfileImage?.key ?? profileImage,
     });
+    await this.trxUpdateMyProfile(selectedUser);
 
-    await this.trxUpdateMyProfile(user);
-
-    return transformS3Url({ value: user.profileImageKey });
+    return transformS3Url({ value: selectedUser.profileImageKey });
   }
 
   private async trxUpdateMyProfile(user: User): Promise<void> {
