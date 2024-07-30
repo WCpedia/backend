@@ -114,7 +114,7 @@ export class TaskService {
     );
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_4AM)
   async deleteUserPrivateInfo() {
     const days = 90;
     const rangeOfToday = DateUtils.getUTCStartAndEndOfRange(
