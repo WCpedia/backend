@@ -94,12 +94,6 @@ export class AuthService {
 
       return { email, provider };
     }
-    if (user.deletedAt) {
-      throw new CustomException(
-        HttpExceptionStatusCode.BAD_REQUEST,
-        'DeletedUser',
-      );
-    }
 
     if (user.deletedAt) {
       throw new CustomException(
