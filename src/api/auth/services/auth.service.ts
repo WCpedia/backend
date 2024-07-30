@@ -101,6 +101,13 @@ export class AuthService {
       );
     }
 
+    if (user.deletedAt) {
+      throw new CustomException(
+        HttpExceptionStatusCode.BAD_REQUEST,
+        'DeletedUser',
+      );
+    }
+
     if (user.authentication.provider !== Provider[provider]) {
       throw new CustomException(
         HttpExceptionStatusCode.BAD_REQUEST,
