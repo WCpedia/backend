@@ -13,7 +13,7 @@ export class AuthRepository {
   > {
     return await this.prismaService.user.findFirst({
       where: {
-        authentication: { email, deletedAt: null },
+        authentication: { email },
       },
       include: {
         authentication: true,
