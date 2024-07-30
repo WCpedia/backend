@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -19,10 +20,19 @@ import PaginationDto from '@api/common/dto/pagination.dto';
 import { ReviewDetailWithPlaceDto } from '@api/common/dto/detail-review-with-place.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
+import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
 @ApiTags(DOMAIN_NAME.USER)
 @Controller(DOMAIN_NAME.USER)
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @ApiUser.DeleteUser({ summary: '유저 탈퇴' })
+  @Delete()
+  @UseGuards(AccessTokenGuard)
+  async deleteUser(@GetAuthorizedUser() authorizedUser: IAuthorizedUser) {
+    return this.userService.deleteUser(authorizedUser?.userId);
+  }
+
   @ApiUser.CheckNicknameUsable({ summary: '닉네임 사용 가능여부 확인' })
   @Get('/check-nickname')
   async checkNicknameUsable(

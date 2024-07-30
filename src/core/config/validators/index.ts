@@ -1,5 +1,6 @@
 import { ConfigModuleOptions } from '@nestjs/config';
 import * as Joi from 'joi';
+import * as path from 'path';
 
 const REDIS_KEY_VALIDATOR = {
   REDIS_URL: Joi.string().required(),
@@ -51,6 +52,9 @@ const OAUTH_KEY_VALIDATOR = {
 
 export const ENVIRONMENT_KEY_VALIDATOR: ConfigModuleOptions = {
   isGlobal: true,
+  envFilePath: path.resolve(
+    process.env.NODE_ENV === 'test' ? '.test.env' : '.env',
+  ),
   validationOptions: Joi.object({
     PORT: Joi.number().required(),
     ADMIN_PATH: Joi.string().required(),
