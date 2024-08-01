@@ -11,4 +11,5 @@ export const DOMAIN_NAME = {
   ADMIN_FACILITY: `${process.env.ADMIN_PATH}/facility`,
   ADMIN_PLACE: `${process.env.ADMIN_PATH}/places`,
   REPORT: 'report',
+  BLOCK: 'block',
 };
