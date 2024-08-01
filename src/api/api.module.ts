@@ -11,6 +11,7 @@ import { TaskModule } from './scheduler/task.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { AdminModule } from './admin/admin.module';
 import { ReportModule } from './report/report.module';
+import { BlockModule } from './block/block.module';
 
 @Module({
   providers: [NicknameNotExistValidator],
@@ -26,6 +27,7 @@ import { ReportModule } from './report/report.module';
     TaskModule,
     FeedbackModule,
     AdminModule,
+    BlockModule,
   ],
 })
 export class ApiModule {}
