@@ -83,6 +83,19 @@ model User {
   reportsMade             Report[]                  @relation("Reporter")
   bans                    UserBan[]                 @relation("User")
   adminBans               UserBan[]                 @relation("Admin")
+  blockedUsers            Block[]                   @relation("Blocker")
+  blockedBy               Block[]                   @relation("BlockedUser")
+}
+
+model Block {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  blockedUserId Int
+  createdAt     DateTime @default(now())
+  blocker       User     @relation("Blocker", fields: [userId], references: [id], onDelete: Cascade)
+  blockedUser   User     @relation("BlockedUser", fields: [blockedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blockedUserId])
 }
 
 model UserBan {
