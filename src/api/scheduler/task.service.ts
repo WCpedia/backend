@@ -10,6 +10,7 @@ import { DetailReviewWithoutHelpfulDto } from '@api/review/dtos/response/review-
 import { TopReviewerWithCount } from './type/type';
 import { TopReviewerDto } from './dtos/top-reviewer.dto';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
+import { DateUtils } from '@src/utils/date.utils';
 
 @Injectable()
 export class TaskService {
@@ -110,6 +111,36 @@ export class TaskService {
     Logger.log(
       `${logTitle} cached in ${duration}ms`,
       `Cache${logTitle.replace(/\s/g, '')}`,
+    );
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_4AM)
+  async deleteUserPrivateInfo() {
+    const days = 90;
+    const rangeOfToday = DateUtils.getUTCStartAndEndOfRange(
+      DateUtils.getDateBefore(days),
+    );
+
+    const deletedUsers = await this.taskRepository.getDeletedUsers(
+      rangeOfToday.convertedStartDate,
+      rangeOfToday.convertedEndDate,
+    );
+
+    if (deletedUsers.length === 0) {
+      Logger.log(
+        `Deleted users: ${deletedUsers.length}`,
+        `DeleteUserPrivateInfo`,
+      );
+      return;
+    }
+
+    deletedUsers.forEach(async (user) => {
+      await this.taskRepository.deleteUserProfileImageAndAuth(user.id);
+    });
+
+    Logger.log(
+      `Deleted users: ${deletedUsers.length}`,
+      `DeleteUserPrivateInfo`,
     );
   }
 }

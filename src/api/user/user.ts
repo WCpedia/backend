@@ -125,4 +125,8 @@ export default class User {
   get profileImageKey() {
     return this._profileImageKey;
   }
+
+  get deletedAt() {
+    return this._deletedAt;
+  }
 }

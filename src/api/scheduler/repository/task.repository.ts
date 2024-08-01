@@ -72,6 +72,31 @@ export class TaskRepository {
     });
   }
 
+  async getDeletedUsers(gteDate: Date, lteDate: Date) {
+    return this.prismaService.user.findMany({
+      where: {
+        deletedAt: {
+          gte: gteDate,
+          lte: lteDate,
+        },
+      },
+    });
+  }
+
+  async deleteUserProfileImageAndAuth(userId: number) {
+    return this.prismaService.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        profileImageKey: null,
+        authentication: {
+          delete: true,
+        },
+      },
+    });
+  }
+
   // async findTopReviewers() {
   //   // 현재 날짜
   //   const now = new Date();
