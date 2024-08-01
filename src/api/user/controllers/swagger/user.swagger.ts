@@ -8,6 +8,7 @@ import { UserWithReviewsDto } from '@api/user/dtos/response/user-with-reviews.dt
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
 import { ReviewDetailWithPlaceDto } from '@api/common/dto/detail-review-with-place.dto';
+import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
 
 export const ApiUser: ApiOperator<keyof UserController> = {
   CheckNicknameUsable: (
@@ -51,6 +52,17 @@ export const ApiUser: ApiOperator<keyof UserController> = {
         'reviews',
         ReviewDetailWithPlaceDto,
       ),
+    );
+  },
+
+  DeleteUser: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'DeleteUser'),
     );
   },
 };

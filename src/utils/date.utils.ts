@@ -38,4 +38,17 @@ export class DateUtils {
 
     return { convertedStartDate, convertedEndDate };
   }
+
+  /**
+   * 주어진 일수만큼 이전 날짜로 반환.
+   * @param days 이전으로 갈 일수
+   * @param date 기준 날짜 (기본값: 현재 날짜)
+   * @returns 계산된 이전 날짜
+   */
+  static getDateBefore(days: number, date: Date = new Date()): Date {
+    const result = new Date(date);
+    result.setDate(result.getDate() - days);
+
+    return result;
+  }
 }

@@ -91,4 +91,11 @@ export class UserRepository {
       data: user.profileSnapshot,
     });
   }
+
+  async softDeleteUser(userId: number, deletedAt: Date = new Date()) {
+    await this.prismaService.user.update({
+      where: { id: userId },
+      data: { deletedAt, authentication: { update: { deletedAt } } },
+    });
+  }
 }

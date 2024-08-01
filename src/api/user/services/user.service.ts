@@ -73,4 +73,13 @@ export class UserService {
       reviews: plainToInstance(ReviewDetailWithPlaceDto, reviews),
     };
   }
+
+  async deleteUser(userId: number) {
+    const user = await this.userRepository.getUserByUserId(userId);
+    if (user.deletedAt) {
+      return;
+    }
+
+    await this.userRepository.softDeleteUser(userId);
+  }
 }
