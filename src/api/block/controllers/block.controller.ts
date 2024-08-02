@@ -1,4 +1,12 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 import { BlockService } from '../services/block.service';
 import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
@@ -34,5 +42,14 @@ export class BlockController {
       authorizedUser.userId,
       paginationDto,
     );
+  }
+
+  @ApiBlock.DeleteBlock({ summary: '차단 해제' })
+  @Delete('/:blockedUserId')
+  async deleteBlock(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Param('blockedUserId', ParseIntPipe) blockedUserId: number,
+  ): Promise<void> {
+    await this.blockService.deleteBlock(authorizedUser.userId, blockedUserId);
   }
 }
