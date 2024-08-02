@@ -5,6 +5,8 @@ import { ApiOperator } from '@src/types/type';
 import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
 import { BlockController } from '../controllers/block.controller';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
+import { BasicUserDto } from '@api/common/dto/basic-user.dto';
+import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
 
 export const ApiBlock: ApiOperator<keyof BlockController> = {
   GetBlockUserIds: (
@@ -19,6 +21,21 @@ export const ApiBlock: ApiOperator<keyof BlockController> = {
         'GetBlockUserIds',
         Number,
         { isArray: true },
+      ),
+    );
+  },
+
+  GetBlockUserProfiles: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder('accessToken'),
+      PaginationResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'blockedUserProfiles',
+        BasicUserDto,
       ),
     );
   },

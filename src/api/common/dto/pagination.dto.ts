@@ -12,7 +12,7 @@ export default class PaginationDto {
 
   @ApiProperty({
     type: Number,
-    description: '반환된 리뷰의 마지막 id',
+    description: '반환된 목록의 마지막 id',
     required: false,
   })
   @IsNumber()
