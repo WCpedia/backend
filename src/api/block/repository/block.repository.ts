@@ -1,5 +1,7 @@
+import Report from '@api/report/report';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { IPaginationParams } from '@src/interface/common.interface';
 
 @Injectable()
@@ -44,6 +46,25 @@ export class BlockRepository {
       },
       skip,
       take,
+    });
+  }
+
+  async upsertBlockByReport(
+    report: Report,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction || this.prismaService).block.upsert({
+      where: {
+        userId_blockedUserId: {
+          userId: report.reporterId,
+          blockedUserId: report.targetUserId,
+        },
+      },
+      create: {
+        userId: report.reporterId,
+        blockedUserId: report.targetUserId,
+      },
+      update: {},
     });
   }
 }

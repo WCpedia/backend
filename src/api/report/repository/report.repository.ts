@@ -32,8 +32,11 @@ export class ReportRepository {
     return report ? new Report(report) : null;
   }
 
-  async createReport(createData: Prisma.ReportUncheckedCreateInput) {
-    await this.prismaService.report.create({
+  async createReport(
+    createData: Prisma.ReportUncheckedCreateInput,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    await (transaction ?? this.prismaService).report.create({
       data: createData,
     });
   }
