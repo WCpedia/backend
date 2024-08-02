@@ -1,9 +1,8 @@
 import { IsNumberArray } from '@api/common/decorators/is-number-array.decorator';
-import PaginationDto from '@api/common/dto/pagination.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
-export class GetPlaceReviewDto extends PaginationDto {
+export class GetPlaceDto {
   @ApiProperty({
     description: '차단한 유저의 아이디 배열',
     type: [Number],
@@ -11,5 +10,5 @@ export class GetPlaceReviewDto extends PaginationDto {
   })
   @IsNumberArray()
   @IsOptional()
-  blockedUserId?: number[];
+  blockedUserIds?: number[];
 }
