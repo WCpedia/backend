@@ -30,6 +30,7 @@ import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
+import { GetPlaceDto } from '../dtos/request/get-place.dto';
 
 @ApiTags(DOMAIN_NAME.PLACE)
 @Controller(DOMAIN_NAME.PLACE)
@@ -44,10 +45,12 @@ export class PlaceController {
   async getPlace(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Param('placeId', ParseIntPipe) placeId: number,
+    @Query() getPlaceDto: GetPlaceDto,
   ): Promise<PlaceDetailDto> {
     return await this.placeService.getPlaceByPlaceId(
       placeId,
       authorizedUser?.userId,
+      getPlaceDto.blockedUserIds,
     );
   }
 
