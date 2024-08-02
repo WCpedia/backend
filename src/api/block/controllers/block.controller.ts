@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 import { BlockService } from '../services/block.service';
 import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
@@ -6,6 +6,9 @@ import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.de
 import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { ApiBlock } from '../swaggers/block.swagger';
 import { ApiTags } from '@nestjs/swagger';
+import { BasicUserDto } from '@api/common/dto/basic-user.dto';
+import PaginationDto from '@api/common/dto/pagination.dto';
+import { PaginatedResponse } from '@api/common/interfaces/interface';
 
 @ApiTags(DOMAIN_NAME.BLOCK)
 @Controller(DOMAIN_NAME.BLOCK)
@@ -19,5 +22,17 @@ export class BlockController {
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
   ): Promise<number[]> {
     return this.blockService.getBlockUserIds(authorizedUser.userId);
+  }
+
+  @ApiBlock.GetBlockUserProfiles({ summary: '차단한 유저 프로필 목록 조회' })
+  @Get('/profiles')
+  async getBlockUserProfiles(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<BasicUserDto, 'blockedUserProfiles'>> {
+    return this.blockService.getBlockUserProfiles(
+      authorizedUser.userId,
+      paginationDto,
+    );
   }
 }
