@@ -39,4 +39,18 @@ export class BlockService {
       ),
     };
   }
+
+  async deleteBlock(userId: number, blockedUserId: number): Promise<void> {
+    const existingBlock =
+      await this.blockRepository.findBlockByUserIdAndBlockedUserId(
+        userId,
+        blockedUserId,
+      );
+
+    if (!existingBlock) {
+      return;
+    }
+
+    await this.blockRepository.deleteBlock(userId, blockedUserId);
+  }
 }

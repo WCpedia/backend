@@ -38,12 +38,14 @@ export class BlockRepository {
       include: {
         blockedUser: true,
       },
-      cursor: {
-        userId_blockedUserId: {
-          userId: userId,
-          blockedUserId: cursor.id,
+      ...(cursor && {
+        cursor: {
+          userId_blockedUserId: {
+            userId,
+            blockedUserId: cursor.id,
+          },
         },
-      },
+      }),
       skip,
       take,
     });
@@ -65,6 +67,31 @@ export class BlockRepository {
         blockedUserId: report.targetUserId,
       },
       update: {},
+    });
+  }
+
+  async deleteBlock(userId: number, blockedUserId: number) {
+    await this.prismaService.block.delete({
+      where: {
+        userId_blockedUserId: {
+          userId,
+          blockedUserId,
+        },
+      },
+    });
+  }
+
+  async findBlockByUserIdAndBlockedUserId(
+    userId: number,
+    blockedUserId: number,
+  ) {
+    return this.prismaService.block.findUnique({
+      where: {
+        userId_blockedUserId: {
+          userId,
+          blockedUserId,
+        },
+      },
     });
   }
 }
