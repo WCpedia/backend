@@ -23,6 +23,7 @@ export class ReportRepository {
       where: {
         reporterId: userId,
         targetUserId,
+        deletedAt: null,
       },
       orderBy: {
         createdAt: 'desc',
