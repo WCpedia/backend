@@ -11,12 +11,17 @@ import { generatePaginationParams } from '@src/utils/pagination-params-generator
 import PaginationDto from '@api/common/dto/pagination.dto';
 import { plainToInstance } from 'class-transformer';
 import ReportDto from '../dtos/response/report.dto';
+import { PrismaService } from '@core/database/prisma/services/prisma.service';
+import { Prisma } from '@prisma/client';
+import { BlockRepository } from '@api/block/repository/block.repository';
 
 @Injectable()
 export class ReportService {
   constructor(
     private readonly reportRepository: ReportRepository,
     private readonly reviewRepository: ReviewRepository,
+    private readonly blockRepository: BlockRepository,
+    private readonly prismaService: PrismaService,
   ) {}
 
   async createReport(
@@ -33,7 +38,19 @@ export class ReportService {
       await this.validateTargetReview(newReport);
     }
 
-    await this.reportRepository.createReport(newReport.createData);
+    await this.trxCreateReport(newReport);
+  }
+
+  private async trxCreateReport(newReport: Report) {
+    await this.prismaService.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await this.reportRepository.createReport(
+          newReport.createData,
+          transaction,
+        );
+        await this.blockRepository.upsertBlockByReport(newReport, transaction);
+      },
+    );
   }
 
   private async checkDuplicateReport(reporterId: number, targetUserId: number) {

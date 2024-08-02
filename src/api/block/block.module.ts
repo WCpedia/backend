@@ -8,5 +8,6 @@ import { BlockRepository } from './repository/block.repository';
   imports: [CommonRepositoryModule],
   controllers: [BlockController],
   providers: [BlockService, BlockRepository],
+  exports: [BlockRepository],
 })
 export class BlockModule {}
