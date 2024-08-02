@@ -15,7 +15,11 @@ import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
 export class PlaceRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getPlaceWithDetailsById(id: number, userId: number) {
+  async getPlaceWithDetailsById(
+    id: number,
+    userId?: number,
+    blockedUserIds: number[] = [],
+  ) {
     return await this.prismaService.place.findFirst({
       where: { id },
       include: {
@@ -44,7 +48,12 @@ export class PlaceRepository {
               },
             }),
           },
-          where: { NOT: { userId }, deletedAt: null },
+          where: {
+            NOT: {
+              userId: { in: [userId, ...blockedUserIds].filter(Boolean) },
+            },
+            deletedAt: null,
+          },
           orderBy: { createdAt: 'desc' },
         },
         publicToiletInfo: true,
@@ -129,9 +138,14 @@ export class PlaceRepository {
     placeId: number,
     paginationParams: IPaginationParams,
     userId?: number,
+    blockedUserIds: number[] = [],
   ) {
     return await this.prismaService.placeReview.findMany({
-      where: { placeId, NOT: { userId }, deletedAt: null },
+      where: {
+        placeId,
+        NOT: { userId: { in: [userId, ...blockedUserIds].filter(Boolean) } },
+        deletedAt: null,
+      },
       include: {
         helpfulReviews: {
           where: { userId },
@@ -201,9 +215,16 @@ export class PlaceRepository {
     });
   }
 
-  async countReview(placeId: number): Promise<number> {
+  async countReview(
+    placeId: number,
+    blockedUserIds: number[] = [],
+  ): Promise<number> {
     return await this.prismaService.placeReview.count({
-      where: { placeId, deletedAt: null },
+      where: {
+        placeId,
+        deletedAt: null,
+        NOT: { userId: { in: blockedUserIds } },
+      },
     });
   }
 

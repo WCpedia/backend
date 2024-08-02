@@ -69,11 +69,13 @@ export class PlaceService {
   async getPlaceByPlaceId(
     placeId: number,
     userId?: number,
+    blockedUserIds?: number[],
   ): Promise<PlaceDetailDto> {
     let myReview = null;
     const selectedPlace = await this.placeRepository.getPlaceWithDetailsById(
       placeId,
       userId,
+      blockedUserIds,
     );
     if (!selectedPlace) {
       throw new CustomException(
@@ -81,7 +83,10 @@ export class PlaceService {
         PlaceExceptionEnum.PLACE_NOT_FOUND,
       );
     }
-    const totalReviewCount = await this.placeRepository.countReview(placeId);
+    const totalReviewCount = await this.placeRepository.countReview(
+      placeId,
+      blockedUserIds,
+    );
 
     if (!selectedPlace.isInitial) {
       await this.prismaService.$transaction(
@@ -277,10 +282,13 @@ export class PlaceService {
 
   async getPlaceReviewsByPlaceId(
     placeId: number,
-    { take, lastItemId }: GetPlaceReviewDto,
+    { take, lastItemId, blockedUserId }: GetPlaceReviewDto,
     userId?: number,
   ): Promise<PaginatedResponse<ReviewWithDetailsDto, 'reviews'>> {
-    const totalItemCount = await this.placeRepository.countReview(placeId);
+    const totalItemCount = await this.placeRepository.countReview(
+      placeId,
+      blockedUserId,
+    );
     if (!totalItemCount) {
       return { totalItemCount, reviews: [] };
     }
@@ -291,6 +299,7 @@ export class PlaceService {
         placeId,
         paginationParams,
         userId,
+        blockedUserId,
       );
 
     return {
