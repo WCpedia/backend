@@ -59,14 +59,7 @@ export class AuthController {
         ...signupUser,
       };
     } else {
-      const token: IToken = await this.authTokenService.generateToken(user);
-
-      response.cookie('accessToken', token.accessToken, {
-        httpOnly: true,
-      });
-      response.cookie('refreshToken', token.refreshToken, {
-        httpOnly: true,
-      });
+      await this.authTokenService.generateToken(response, user);
     }
   }
 

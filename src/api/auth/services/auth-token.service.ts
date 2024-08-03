@@ -18,6 +18,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { JWT_KEY } from '@core/config/constants/config.constant';
+import { CookieOptions, Response } from 'express';
 
 @Injectable()
 export class AuthTokenService {
@@ -25,6 +26,7 @@ export class AuthTokenService {
   private jwtRefreshTokenSecretKey: string;
   private jwtAccessTokenExpiresIn: string;
   private jwtRefreshTokenExpiresIn: string;
+  private jwtAccessTokenTtl: number;
   private jwtRefreshTokenTtl: number;
 
   constructor(
@@ -45,12 +47,18 @@ export class AuthTokenService {
     this.jwtRefreshTokenExpiresIn = this.configService.get<string>(
       JWT_KEY.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
     );
+    this.jwtAccessTokenTtl = this.configService.get<number>(
+      JWT_KEY.JWT_ACCESS_TOKEN_TTL,
+    );
     this.jwtRefreshTokenTtl = this.configService.get<number>(
       JWT_KEY.JWT_REFRESH_TOKEN_TTL,
     );
   }
 
-  async generateToken(payload: ITokenPayload | IUserAuth): Promise<IToken> {
+  async generateToken(
+    response: Response,
+    payload: ITokenPayload | IUserAuth,
+  ): Promise<void> {
     const accessToken = this.jwtService.sign(payload, {
       secret: this.jwtAccessTokenSecretKey,
       expiresIn: this.jwtAccessTokenExpiresIn,
@@ -66,7 +74,20 @@ export class AuthTokenService {
       ttl: this.jwtRefreshTokenTtl,
     });
 
-    return { accessToken, refreshToken };
+    this.setTokens(response, { accessToken, refreshToken });
+  }
+
+  public setTokens(response: Response, token: IToken): void {
+    response.cookie(
+      'accessToken',
+      token.accessToken,
+      this.getCookieOptionsByMaxAge(this.jwtAccessTokenTtl),
+    );
+    response.cookie(
+      'refreshToken',
+      token.refreshToken,
+      this.getCookieOptionsByMaxAge(this.jwtRefreshTokenTtl),
+    );
   }
 
   async validateRefreshToken(
@@ -92,9 +113,22 @@ export class AuthTokenService {
     }
   }
 
-  async regenerateToken(authorizedUser: IAuthorizedUser): Promise<IToken> {
+  async regenerateToken(
+    response: Response,
+    authorizedUser: IAuthorizedUser,
+  ): Promise<void> {
     await this.cacheManager.del(`Refresh/${authorizedUser.userId}`);
 
-    return await this.generateToken(authorizedUser);
+    await this.generateToken(response, authorizedUser);
+  }
+
+  private getCookieOptionsByMaxAge(maxAge: number): CookieOptions {
+    return {
+      path: '/',
+      httpOnly: true,
+      maxAge,
+      secure: true,
+      sameSite: 'none',
+    };
   }
 }
