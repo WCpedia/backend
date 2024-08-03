@@ -86,7 +86,7 @@ export class PlaceController {
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Param('placeId', ParseIntPipe) placeId: number,
     @Query() getPlaceReviewDto: GetPlaceReviewDto,
-  ) {
+  ): Promise<PaginatedResponse<ReviewWithDetailsDto, 'reviews'>> {
     return await this.placeService.getPlaceReviewsByPlaceId(
       placeId,
       getPlaceReviewDto,
