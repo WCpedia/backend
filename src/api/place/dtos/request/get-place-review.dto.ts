@@ -11,5 +11,5 @@ export class GetPlaceReviewDto extends PaginationDto {
   })
   @IsNumberArray()
   @IsOptional()
-  blockedUserId?: number[];
+  blockedUserIds?: number[];
 }

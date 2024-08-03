@@ -282,12 +282,12 @@ export class PlaceService {
 
   async getPlaceReviewsByPlaceId(
     placeId: number,
-    { take, lastItemId, blockedUserId }: GetPlaceReviewDto,
+    { take, lastItemId, blockedUserIds }: GetPlaceReviewDto,
     userId?: number,
   ): Promise<PaginatedResponse<ReviewWithDetailsDto, 'reviews'>> {
     const totalItemCount = await this.placeRepository.countReview(
       placeId,
-      blockedUserId,
+      blockedUserIds,
     );
     if (!totalItemCount) {
       return { totalItemCount, reviews: [] };
@@ -299,7 +299,7 @@ export class PlaceService {
         placeId,
         paginationParams,
         userId,
-        blockedUserId,
+        blockedUserIds,
       );
 
     return {
