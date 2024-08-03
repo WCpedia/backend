@@ -20,16 +20,9 @@ export class AuthTokenController {
     @Param('userId') userId: number,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    const token = await this.authTokenService.generateToken({
+    await this.authTokenService.generateToken(response, {
       userId,
       role: Role.ADMIN,
-    });
-
-    response.cookie('accessToken', token.accessToken, {
-      httpOnly: true,
-    });
-    response.cookie('refreshToken', token.refreshToken, {
-      httpOnly: true,
     });
   }
 
@@ -40,15 +33,7 @@ export class AuthTokenController {
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    const token: IToken =
-      await this.authTokenService.regenerateToken(authorizedUser);
-
-    response.cookie('accessToken', token.accessToken, {
-      httpOnly: true,
-    });
-    response.cookie('refreshToken', token.refreshToken, {
-      httpOnly: true,
-    });
+    await this.authTokenService.regenerateToken(response, authorizedUser);
   }
 
   @ApiAuthToken.RevokeTokens({ summary: '모든 토큰 초기화' })

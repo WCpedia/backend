@@ -44,6 +44,8 @@ export class ReportController {
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Body() createReportDto: CreateReportDto,
   ): Promise<void> {
+    console.log(createReportDto);
+
     return this.reportService.createReport(
       authorizedUser.userId,
       createReportDto,
