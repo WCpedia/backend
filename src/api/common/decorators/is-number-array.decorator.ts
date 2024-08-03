@@ -9,7 +9,9 @@ export function IsNumberArray(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: any) {
-          if (!Array.isArray(value)) {
+          if (typeof value === 'string') {
+            value = value.split(',').map((item) => item.trim());
+          } else if (!Array.isArray(value)) {
             value = [value];
           }
           return value.every((item) => !isNaN(Number(item)));
@@ -18,8 +20,11 @@ export function IsNumberArray(validationOptions?: ValidationOptions) {
       },
     });
 
-    Transform(({ value }) =>
-      Array.isArray(value) ? value.map(Number) : [Number(value)],
-    )(object, propertyName);
+    Transform(({ value }) => {
+      if (typeof value === 'string') {
+        return value.split(',').map((item) => Number(item.trim()));
+      }
+      return Array.isArray(value) ? value.map(Number) : [Number(value)];
+    })(object, propertyName);
   };
 }
