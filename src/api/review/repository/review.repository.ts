@@ -47,14 +47,15 @@ export class ReviewRepository {
     return reviewData ? new Review(reviewData) : null;
   }
 
-  async getReviewWithImages(reviewId: number): Promise<Review> {
+  async getReviewWithImages(reviewId: number): Promise<Review | null> {
     const reviewData = await this.prismaService.placeReview.findFirst({
       where: { id: reviewId, deletedAt: null },
       include: {
         images: { where: { deletedAt: null } },
       },
     });
-    return new Review(reviewData);
+
+    return reviewData ? new Review(reviewData) : null;
   }
 
   async getPlace(placeId: number) {
