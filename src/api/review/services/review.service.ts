@@ -67,12 +67,6 @@ export class ReviewService {
     userId: number,
   ): Promise<HelpfulReview> {
     const selectedReview = await this.validateReviewExists(reviewId);
-    if (!selectedReview) {
-      throw new CustomException(
-        HttpExceptionStatusCode.NOT_FOUND,
-        ReviewExceptionEnum.REVIEW_NOT_EXIST,
-      );
-    }
     selectedReview.validateNotAuthor(userId);
 
     const isExist = await this.reviewRepository.countHelpfulReview(
@@ -102,8 +96,14 @@ export class ReviewService {
     return plainToInstance(HelpfulReviewDto, result[0]);
   }
 
-  private async validateReviewExists(reviewId: number): Promise<Review> {
-    const review = await this.reviewRepository.getReview(reviewId);
+  private async validateReviewExists(
+    reviewId: number,
+    includeImages: boolean = false,
+  ): Promise<Review> {
+    const review = includeImages
+      ? await this.reviewRepository.getReviewWithImages(reviewId)
+      : await this.reviewRepository.getReview(reviewId);
+
     if (!review) {
       throw new CustomException(
         HttpExceptionStatusCode.NOT_FOUND,
@@ -121,8 +121,9 @@ export class ReviewService {
     newImages: Express.MulterS3.File[],
   ) {
     try {
-      const oldReview = await this.validateReviewExists(reviewId);
+      const oldReview = await this.validateReviewExists(reviewId, true);
       oldReview.validateAuthor(userId);
+
       const selectedPlace = await this.reviewRepository.getPlace(
         oldReview.placeId,
       );
@@ -133,7 +134,6 @@ export class ReviewService {
         newImages,
         oldReview.images,
       );
-
       const { userRatingAverage, ...calculatedPlaceRatings } = RatingCalculator(
         selectedPlace,
         selectedUser,
