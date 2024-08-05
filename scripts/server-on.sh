@@ -1,4 +1,5 @@
 #!/bin/bash
+source /etc/profile
 
 MESSAGE=$(cat <<EOF
 \`\`\`
