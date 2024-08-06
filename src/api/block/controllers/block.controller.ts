@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -23,6 +24,15 @@ import { PaginatedResponse } from '@api/common/interfaces/interface';
 @UseGuards(AccessTokenGuard)
 export class BlockController {
   constructor(private readonly blockService: BlockService) {}
+
+  @ApiBlock.CreateBlock({ summary: '유저 차단 생성' })
+  @Post('/:targetUserId')
+  async createBlock(
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
+    @Param('targetUserId', ParseIntPipe) targetUserId: number,
+  ): Promise<void> {
+    await this.blockService.createBlock(authorizedUser.userId, targetUserId);
+  }
 
   @ApiBlock.GetBlockUserIds({ summary: '차단한 유저 아이디 목록 조회' })
   @Get('/user-ids')

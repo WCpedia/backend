@@ -51,20 +51,21 @@ export class BlockRepository {
     });
   }
 
-  async upsertBlockByReport(
-    report: Report,
+  async upsertBlock(
+    userId: number,
+    blockedUserId: number,
     transaction?: Prisma.TransactionClient,
   ) {
     await (transaction || this.prismaService).block.upsert({
       where: {
         userId_blockedUserId: {
-          userId: report.reporterId,
-          blockedUserId: report.targetUserId,
+          userId,
+          blockedUserId,
         },
       },
       create: {
-        userId: report.reporterId,
-        blockedUserId: report.targetUserId,
+        userId,
+        blockedUserId,
       },
       update: {},
     });
