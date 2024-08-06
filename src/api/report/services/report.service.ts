@@ -48,7 +48,11 @@ export class ReportService {
           newReport.createData,
           transaction,
         );
-        await this.blockRepository.upsertBlockByReport(newReport, transaction);
+        await this.blockRepository.upsertBlock(
+          newReport.reporterId,
+          newReport.targetUserId,
+          transaction,
+        );
       },
     );
   }

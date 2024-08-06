@@ -53,4 +53,8 @@ export class BlockService {
 
     await this.blockRepository.deleteBlock(userId, blockedUserId);
   }
+
+  async createBlock(userId: number, targetUserId: number): Promise<void> {
+    await this.blockRepository.upsertBlock(userId, targetUserId);
+  }
 }
