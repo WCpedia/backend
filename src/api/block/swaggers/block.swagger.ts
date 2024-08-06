@@ -59,7 +59,7 @@ export const ApiBlock: ApiOperator<keyof BlockController> = {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
       TokenConfigDto.swaggerBuilder('accessToken'),
-      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'CreateBlock'),
+      StatusResponseDto.swaggerBuilder(HttpStatus.CREATED, 'CreateBlock'),
     );
   },
 };
