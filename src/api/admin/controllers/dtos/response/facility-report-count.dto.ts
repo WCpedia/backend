@@ -1,9 +1,11 @@
 import { Exclude, Expose } from 'class-transformer';
-import { DailyItemCountDto } from './daily-item-count.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { ItemCountDto } from './daily-item-count.dto';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 
 @Exclude()
-export class FacilityReportCountDto extends DailyItemCountDto {
+export class FacilityReportCountDto extends OmitType(ItemCountDto, [
+  'totalItemCount',
+]) {
   @ApiProperty({
     type: Number,
     description: '확인 하지 않은 제보 수',

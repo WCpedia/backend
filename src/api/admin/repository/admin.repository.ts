@@ -95,4 +95,55 @@ export class AdminRepository {
       create: { placeId, ...dto },
     });
   }
+
+  async countUsers({
+    convertedStartDate,
+    convertedEndDate,
+  }: {
+    convertedStartDate?: Date;
+    convertedEndDate?: Date;
+  }) {
+    return await this.prismaService.user.count({
+      where: {
+        createdAt: {
+          gte: convertedStartDate,
+          lt: convertedEndDate,
+        },
+      },
+    });
+  }
+
+  async countReports({
+    convertedStartDate,
+    convertedEndDate,
+  }: {
+    convertedStartDate?: Date;
+    convertedEndDate?: Date;
+  }) {
+    return await this.prismaService.report.count({
+      where: {
+        createdAt: {
+          gte: convertedStartDate,
+          lt: convertedEndDate,
+        },
+      },
+    });
+  }
+
+  async countFeedback({
+    convertedStartDate,
+    convertedEndDate,
+  }: {
+    convertedStartDate?: Date;
+    convertedEndDate?: Date;
+  }) {
+    return await this.prismaService.userFeedback.count({
+      where: {
+        createdAt: {
+          gte: convertedStartDate,
+          lt: convertedEndDate,
+        },
+      },
+    });
+  }
 }
