@@ -32,9 +32,9 @@ export class AdminFacilityService {
       ]);
 
     return plainToInstance(FacilityReportCountDto, {
+      uncheckedReportCount,
       todayItemCount,
       yesterdayItemCount,
-      uncheckedReportCount,
     });
   }
 
