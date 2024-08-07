@@ -20,7 +20,7 @@ export const ApiAdminFacility: ApiOperator<keyof AdminFacilityController> = {
       TokenConfigDto.swaggerBuilder('accessToken'),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
-        'GetDailyCount',
+        'Admin-GetDailyCount',
         FacilityReportCountDto,
       ),
     );
@@ -48,7 +48,10 @@ export const ApiAdminFacility: ApiOperator<keyof AdminFacilityController> = {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
       TokenConfigDto.swaggerBuilder('accessToken'),
-      StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'UpdateReportStatus'),
+      StatusResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'Admin-UpdateReportStatus',
+      ),
     );
   },
 };

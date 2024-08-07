@@ -3,20 +3,22 @@ import { HttpStatus, applyDecorators } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiOperator } from '@src/types/type';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
-import { AdminPlaceController } from '../admin-place.controller';
-import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
+import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
+import { ItemCountDto } from '../dtos/response/daily-item-count.dto';
+import { AdminFeedbackController } from '../admin-feedback.controller';
 
-export const ApiAdminPlace: ApiOperator<keyof AdminPlaceController> = {
-  UpdatePlaceToiletInfo: (
+export const ApiAdminFeedback: ApiOperator<keyof AdminFeedbackController> = {
+  GetFeedbackCount: (
     apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
       Partial<OperationObject>,
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
       TokenConfigDto.swaggerBuilder('accessToken'),
-      StatusResponseDto.swaggerBuilder(
+      CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
-        'Admin-UpdatePlaceToiletInfo',
+        'Admin-GetUserCount',
+        ItemCountDto,
       ),
     );
   },
