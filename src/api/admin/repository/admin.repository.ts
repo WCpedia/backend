@@ -2,6 +2,7 @@ import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { IPaginationParams } from '@src/interface/common.interface';
 import { UpdateToiletInfoDto } from '../controllers/dtos/request/update-toilet-info.dto';
+import { OrderByOption } from '@enums/order-by-option.enum';
 
 @Injectable()
 export class AdminRepository {
@@ -39,7 +40,7 @@ export class AdminRepository {
         isChecked,
       },
       orderBy: {
-        createdAt: 'asc',
+        createdAt: OrderByOption.DESC,
       },
       include: {
         user: true,
