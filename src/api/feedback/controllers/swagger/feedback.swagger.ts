@@ -13,7 +13,7 @@ export const ApiFeedback: ApiOperator<keyof FeedbackController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       StatusResponseDto.swaggerBuilder(HttpStatus.CREATED, 'CreateFeedback'),
     );
   },

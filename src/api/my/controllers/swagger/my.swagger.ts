@@ -20,7 +20,7 @@ export const ApiMy: ApiOperator<keyof MyController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'GetMyBasicProfile',
@@ -35,7 +35,7 @@ export const ApiMy: ApiOperator<keyof MyController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'GetMyProfile',
@@ -50,7 +50,7 @@ export const ApiMy: ApiOperator<keyof MyController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       PaginationResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'myReviews',
@@ -65,7 +65,7 @@ export const ApiMy: ApiOperator<keyof MyController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       PaginationResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'helpfulReviews',
@@ -80,7 +80,7 @@ export const ApiMy: ApiOperator<keyof MyController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       MultipartFormDataRequestDto.swaggerBuilder(
         'UpdateMyProfile',
         'image',

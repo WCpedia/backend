@@ -14,7 +14,7 @@ export const ApiAdminReport: ApiOperator<keyof AdminReportController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'Admin-GetReportCount',

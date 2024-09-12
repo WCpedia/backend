@@ -16,7 +16,7 @@ export const ApiBlock: ApiOperator<keyof BlockController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'GetBlockUserIds',
@@ -32,7 +32,7 @@ export const ApiBlock: ApiOperator<keyof BlockController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       PaginationResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'blockedUserProfiles',
@@ -47,7 +47,7 @@ export const ApiBlock: ApiOperator<keyof BlockController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'DeleteBlock'),
     );
   },
@@ -58,7 +58,7 @@ export const ApiBlock: ApiOperator<keyof BlockController> = {
   ): PropertyDecorator {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       StatusResponseDto.swaggerBuilder(HttpStatus.CREATED, 'CreateBlock'),
     );
   },

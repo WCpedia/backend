@@ -50,7 +50,7 @@ export const ApiReview: ApiOperator<keyof ReviewController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.CREATED,
         'CreateHelpfulReview',
@@ -65,7 +65,7 @@ export const ApiReview: ApiOperator<keyof ReviewController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       MultipartFormDataRequestDto.swaggerBuilder(
         'UpdateReview',
         'images',
@@ -82,7 +82,7 @@ export const ApiReview: ApiOperator<keyof ReviewController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'DeleteReview'),
     );
   },
