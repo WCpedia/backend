@@ -6,11 +6,12 @@ import { ProductConfigService } from '@core/config/services/config.service';
 import { JWT_KEY } from '@core/config/constants/config.constant';
 import { Request } from 'express';
 import { ITokenPayload } from '../interface/interface';
+import { TOKEN_TYPE } from '@src/constants/consts/token-type.const';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
   Strategy,
-  'refreshToken',
+  TOKEN_TYPE.REFRESH_TOKEN,
 ) {
   constructor(
     private readonly configService: ProductConfigService,

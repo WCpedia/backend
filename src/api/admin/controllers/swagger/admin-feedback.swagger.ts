@@ -14,7 +14,7 @@ export const ApiAdminFeedback: ApiOperator<keyof AdminFeedbackController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'Admin-GetUserCount',

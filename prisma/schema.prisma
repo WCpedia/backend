@@ -85,6 +85,7 @@ model User {
   adminBans               UserBan[]                 @relation("Admin")
   blockedUsers            Block[]                   @relation("Blocker")
   blockedBy               Block[]                   @relation("BlockedUser")
+  searches                Search[]
 }
 
 model Block {
@@ -351,4 +352,24 @@ model Report {
   reporter          User                 @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
   targetUser        User                 @relation("TargetUser", fields: [targetUserId], references: [id], onDelete: Cascade)
   targetReview      PlaceReview?         @relation(fields: [targetReviewId], references: [id], onDelete: SetNull)
+}
+
+model SearchKeyword {
+  id         Int      @id @default(autoincrement())
+  keyword    String   @unique
+  totalCount Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  searches Search[]
+}
+
+model Search {
+  id        Int      @id @default(autoincrement())
+  keywordId Int
+  userId    Int?
+  createdAt DateTime @default(now())
+
+  keyword SearchKeyword @relation(fields: [keywordId], references: [id])
+  user    User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

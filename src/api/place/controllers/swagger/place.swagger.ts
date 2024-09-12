@@ -36,7 +36,7 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       MultipartFormDataRequestDto.swaggerBuilder(
         'CreatePlaceReview',
         'images',
@@ -53,7 +53,7 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       PaginationResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'reviews',
@@ -68,7 +68,7 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'GetMyPlaceReview',
@@ -83,7 +83,7 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       MultipartFormDataRequestDto.swaggerBuilder(
         'ReportFacility',
         'images',

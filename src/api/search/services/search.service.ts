@@ -51,7 +51,9 @@ export class SearchService {
     );
   }
 
-  async searchPlaces(value: string): Promise<BasicPlaceDto[]> {
+  async searchPlaces(value: string, userId?: number): Promise<BasicPlaceDto[]> {
+    this.saveSearchKeyword(value, userId);
+
     const kakaoData = await this.fetchKakaoSearchResponse(value);
     const places = await this.createPlacesFromKakaoData(kakaoData);
 
@@ -254,7 +256,25 @@ export class SearchService {
 
     return placeCategory;
   }
+
   private generateCacheKey(baseKey: string, suffix: string): string {
     return `${baseKey}/${suffix}`;
+  }
+
+  private async saveSearchKeyword(keyword: string, userId?: number) {
+    await this.prismaService.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        const updatedKeyword = await this.searchRepository.upsertSearchKeyword(
+          keyword,
+          transaction,
+        );
+
+        await this.searchRepository.upsertUserSearch(
+          userId,
+          updatedKeyword.id,
+          transaction,
+        );
+      },
+    );
   }
 }

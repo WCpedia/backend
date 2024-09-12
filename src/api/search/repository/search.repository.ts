@@ -90,4 +90,31 @@ export class SearchRepository {
       },
     });
   }
+
+  async upsertSearchKeyword(
+    keyword: string,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).searchKeyword.upsert({
+      where: { keyword },
+      update: {
+        totalCount: { increment: 1 },
+        updatedAt: new Date(),
+      },
+      create: {
+        keyword,
+        totalCount: 1,
+      },
+    });
+  }
+
+  async upsertUserSearch(
+    userId: number,
+    keywordId: number,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).search.create({
+      data: { userId, keywordId },
+    });
+  }
 }
