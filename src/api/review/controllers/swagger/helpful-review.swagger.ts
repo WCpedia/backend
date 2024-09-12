@@ -13,7 +13,7 @@ export const ApiHelpfulReview: ApiOperator<keyof HelpfulReviewController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'DeleteHelpfulReview'),
     );
   },

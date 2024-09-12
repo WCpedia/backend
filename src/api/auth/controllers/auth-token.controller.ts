@@ -8,6 +8,7 @@ import { Role } from '@prisma/client';
 import { ApiAuthToken } from './swaggers/auth-token.swagger';
 import { RefreshTokenGuard } from '@api/common/guards/refresh-token.guard';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
+import { TOKEN_TYPE } from '@src/constants/consts/token-type.const';
 
 @ApiTags(DOMAIN_NAME.AUTH_TOKEN)
 @Controller(DOMAIN_NAME.AUTH_TOKEN)
@@ -41,7 +42,7 @@ export class AuthTokenController {
   async revokeTokens(
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    response.clearCookie('accessToken');
-    response.clearCookie('refreshToken');
+    response.clearCookie(TOKEN_TYPE.ACCESS_TOKEN);
+    response.clearCookie(TOKEN_TYPE.REFRESH_TOKEN);
   }
 }

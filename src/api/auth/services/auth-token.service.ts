@@ -19,6 +19,7 @@ import { Cache } from 'cache-manager';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { JWT_KEY } from '@core/config/constants/config.constant';
 import { CookieOptions, Response } from 'express';
+import { TOKEN_TYPE } from '@src/constants/consts/token-type.const';
 
 @Injectable()
 export class AuthTokenService {
@@ -79,12 +80,12 @@ export class AuthTokenService {
 
   public setTokens(response: Response, token: IToken): void {
     response.cookie(
-      'accessToken',
+      TOKEN_TYPE.ACCESS_TOKEN,
       token.accessToken,
       this.getCookieOptionsByMaxAge(this.jwtAccessTokenTtl),
     );
     response.cookie(
-      'refreshToken',
+      TOKEN_TYPE.REFRESH_TOKEN,
       token.refreshToken,
       this.getCookieOptionsByMaxAge(this.jwtRefreshTokenTtl),
     );

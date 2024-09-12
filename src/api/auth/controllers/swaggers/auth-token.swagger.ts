@@ -5,6 +5,7 @@ import { ApiCookieAuth, ApiOperation } from '@nestjs/swagger';
 import { ApiOperator } from '@src/types/type';
 import { StatusResponseDto } from '@src/swagger-builder/status-response.dto';
 import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
+import { TOKEN_TYPE } from '@src/constants/consts/token-type.const';
 
 export const ApiAuthToken: ApiOperator<keyof AuthTokenController> = {
   GetAccessToken: (
@@ -23,7 +24,7 @@ export const ApiAuthToken: ApiOperator<keyof AuthTokenController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('refreshToken'),
+      TokenConfigDto.swaggerBuilder(TOKEN_TYPE.REFRESH_TOKEN),
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'RefreshTokens'),
     );
   },

@@ -31,7 +31,7 @@ export const ApiUser: ApiOperator<keyof UserController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'GetUserProfileWithReviews',
@@ -46,7 +46,7 @@ export const ApiUser: ApiOperator<keyof UserController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       PaginationResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'reviews',
@@ -61,7 +61,7 @@ export const ApiUser: ApiOperator<keyof UserController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'DeleteUser'),
     );
   },

@@ -13,7 +13,7 @@ export const ApiAdminPlace: ApiOperator<keyof AdminPlaceController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       StatusResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'Admin-UpdatePlaceToiletInfo',

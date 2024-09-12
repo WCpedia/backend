@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { TOKEN_TYPE } from '@src/constants/consts/token-type.const';
 
 @Injectable()
 export class CookiesTokenExtractor {
@@ -13,7 +14,7 @@ export class CookiesTokenExtractor {
         );
       }
 
-      token = request.cookies['refreshToken'];
+      token = request.cookies[TOKEN_TYPE.REFRESH_TOKEN];
 
       return token;
     };

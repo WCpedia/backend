@@ -6,11 +6,12 @@ import { ProductConfigService } from '@core/config/services/config.service';
 import { JWT_KEY } from '@core/config/constants/config.constant';
 import { ITokenPayload } from '../interface/interface';
 import { Request } from 'express';
+import { TOKEN_TYPE } from '@src/constants/consts/token-type.const';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(
   Strategy,
-  'accessToken',
+  TOKEN_TYPE.ACCESS_TOKEN,
 ) {
   constructor(private readonly configService: ProductConfigService) {
     super({

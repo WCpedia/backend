@@ -14,7 +14,7 @@ export const ApiAdminUser: ApiOperator<keyof AdminUserController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
-      TokenConfigDto.swaggerBuilder('accessToken'),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.OK,
         'Admin-GetUserCount',

@@ -5,6 +5,7 @@ import { HttpStatus, applyDecorators } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
 import { BasicPlaceDto } from '@api/common/dto/basic-place.dto';
+import { TokenConfigDto } from '@src/swagger-builder/auth-config.dto';
 
 export const ApiSearch: ApiOperator<keyof SearchController> = {
   SearchPlaces: (
@@ -13,6 +14,7 @@ export const ApiSearch: ApiOperator<keyof SearchController> = {
   ): PropertyDecorator => {
     return applyDecorators(
       ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder(),
       CommonResponseDto.swaggerBuilder(
         HttpStatus.CREATED,
         'SearchPlaces',
