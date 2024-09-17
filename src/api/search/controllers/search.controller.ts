@@ -18,7 +18,15 @@ export class SearchController {
   async searchPlaces(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Query('value') value: string,
-  ): Promise<BasicPlaceDto[]> {
-    return await this.searchService.searchPlaces(value, authorizedUser?.userId);
+  ): Promise<any> {
+    return await this.searchService.test(value);
+    // return await this.searchService.searchPlaces(value, authorizedUser?.userId);
+  }
+  @ApiSearch.Test({
+    summary: '테스트',
+  })
+  @Get('test')
+  async test() {
+    return await this.searchService.test2();
   }
 }
