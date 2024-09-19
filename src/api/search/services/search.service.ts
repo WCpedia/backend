@@ -9,7 +9,15 @@ import { ProductConfigService } from '@core/config/services/config.service';
 import { OAUTH_KEY, REDIS_KEY } from '@core/config/constants/config.constant';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { extractRegion } from '@src/utils/region-extractor';
-import { Place, PlaceCategory, Prisma, Region } from '@prisma/client';
+import {
+  LocationType,
+  LockType,
+  Place,
+  PlaceCategory,
+  Prisma,
+  Region,
+  ToiletType,
+} from '@prisma/client';
 import { IPlaceCategory } from '@src/interface/common.interface';
 import {
   IKakaoSearchDocuments,
@@ -19,6 +27,25 @@ import { BasicPlaceDto } from '../../common/dto/basic-place.dto';
 import { plainToInstance } from 'class-transformer';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+interface IToiletDetail {
+  value: string;
+  placeId: number;
+  kakaoId: string;
+  placeName: string;
+  type: ToiletType;
+  details: {
+    toiletCount?: number;
+    urinalCount?: number;
+    hasPowderRoom?: boolean;
+    hasSanitizer?: boolean;
+
+    hasHandDryer?: boolean;
+    locationType: LocationType;
+    locationDescription?: string;
+    hasFeminineProducts?: boolean;
+    lockType?: LockType;
+  };
+}
 
 @Injectable()
 export class SearchService {
@@ -49,6 +76,49 @@ export class SearchService {
     this.redisPlaceCategoryTtl = this.configService.get<number>(
       REDIS_KEY.REDIS_PLACE_CATEGORY_TTL,
     );
+  }
+
+  async test2() {
+    const toiletData: IToiletDetail[] = [];
+
+    for (const toilet of toiletData) {
+      await this.prismaService.toiletInfo.create({
+        data: {
+          placeId: toilet.placeId,
+          type: toilet.type,
+          details: {
+            create: {
+              ...toilet.details,
+              hasSanitizer: true,
+            },
+          },
+        },
+      });
+    }
+  }
+  async test(value: string) {
+    let result;
+    const kakaoData = await this.fetchKakaoSearchResponse(value);
+    console.log(value, kakaoData[0]);
+    const places = await this.createPlacesFromKakaoData(kakaoData);
+    console.log(places);
+
+    const place = await this.prismaService.place.findUnique({
+      where: {
+        kakaoId: kakaoData[0].id,
+      },
+    });
+
+    result = {
+      value: value,
+      placeId: place?.id,
+      kakaoId: kakaoData[0].id,
+      placeName: place?.name,
+      type: 'ToiletType.MALE',
+      details: { locationType: 'LocationType.INDOOR' },
+    };
+
+    return result;
   }
 
   async searchPlaces(value: string, userId?: number): Promise<BasicPlaceDto[]> {

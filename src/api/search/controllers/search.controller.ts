@@ -18,7 +18,15 @@ export class SearchController {
   async searchPlaces(
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Query('value') value: string,
-  ): Promise<BasicPlaceDto[]> {
+  ): Promise<any> {
     return await this.searchService.searchPlaces(value, authorizedUser?.userId);
+  }
+
+  @ApiSearch.Test({
+    summary: '시설 추가용 api',
+  })
+  @Get('test')
+  async test() {
+    return await this.searchService.test2();
   }
 }

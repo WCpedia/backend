@@ -39,6 +39,8 @@ import { RatingTypes } from '../constants/const/const';
 import { UserExceptionEnum } from '@exceptions/http/enums/user.exception.enum';
 import { RatingCalculator } from '@src/utils/rating-calculator';
 import { CalculateOperation } from '@enums/calculate-operation.enum';
+import PaginationDto from '@api/common/dto/pagination.dto';
+import { BasicPlaceWithToiletDto } from '../dtos/response/basic-place-with-toilet.dto';
 
 @Injectable()
 export class PlaceService {
@@ -334,5 +336,26 @@ export class PlaceService {
       dto,
       reportImages,
     );
+  }
+
+  async getPlacesWithToilet({
+    take,
+    lastItemId,
+  }: PaginationDto): Promise<
+    PaginatedResponse<BasicPlaceWithToiletDto, 'places'>
+  > {
+    const totalItemCount = await this.placeRepository.countPlaceWithToilet();
+    if (!totalItemCount) {
+      return { totalItemCount: 0, places: [] };
+    }
+
+    const paginationParams = generatePaginationParams({ take, lastItemId });
+    const places =
+      await this.placeRepository.getPlacesWithToilet(paginationParams);
+
+    return {
+      totalItemCount,
+      places: plainToInstance(BasicPlaceWithToiletDto, places),
+    };
   }
 }

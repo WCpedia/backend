@@ -168,6 +168,7 @@ model Place {
   userSubmittedToiletInfos UserSubmittedToiletInfo[]
   menuInfo                 MenuInfo[]
   PlaceReviewSnapshot      PlaceReviewSnapshot[]
+  toiletInfo               ToiletInfo[]
 }
 
 model PlaceImage {
@@ -240,6 +241,65 @@ model PublicToiletInfo {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
   place                   Place    @relation(fields: [placeId], references: [id])
+}
+
+enum ToiletType {
+  NONE
+  MALE
+  FEMALE
+  UNISEX
+  SINGLE
+}
+
+model ToiletInfo {
+  id        Int           @id @default(autoincrement())
+  placeId   Int
+  type      ToiletType // 화장실 유형 (남성용, 여성용, 공용, 1인용 등)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  place     Place         @relation(fields: [placeId], references: [id])
+  details   ToiletDetail?
+}
+
+enum LocationType {
+  INDOOR //가게 내부
+  BUILDING_INSIDE //상가 건물 내부
+  OUTDOOR //야외
+}
+
+enum LockType {
+  NONE // 잠금장치 없음
+  DOOR_LOCK // 도어락
+  KEY // 열쇠
+}
+
+model ToiletDetail {
+  id                      Int           @id @default(autoincrement())
+  toiletInfoId            Int           @unique
+  toiletCount             Int? // 좌변기 개수
+  urinalCount             Int? // 소변기 개수
+  isAccessibleToilet      Boolean? // 장애인 화장실 여부
+  hasHandDryer            Boolean? // 핸드 드라이어 유무
+  hasPowderRoom           Boolean? // 파우더룸 유무
+  hasBabyChangingFacility Boolean? // 기저귀 교환대 유무
+  hasSanitizer            Boolean? // 손 소독제 유무
+  accessible              Boolean? // 장애인 접근성 여부
+  hasFeminineProductsBin  Boolean? // 여성 위생용품 수거함 유무
+  hasFeminineProducts     Boolean? // 여성 위생용품 구비 여부
+  hasChildToilet          Boolean? // 어린이 변기 유무
+  hasBabyChair            Boolean? // 영유아보호의자 유무
+  hasEmergencyBell        Boolean? // 비상벨 유무
+  hasSupportBars          Boolean? // 지지대 유무
+  lockType                LockType? // 잠금장치 유형
+  locationType            LocationType?
+  locationDescription     String? // 위치 설명
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  toiletInfo              ToiletInfo    @relation(fields: [toiletInfoId], references: [id], onDelete: Cascade)
+
+  // maleToiletCount         Int? // 남성용 좌변기 개수
+  // maleUrinalCount         Int? // 남성용 소변기 개수
+  // femaleToiletCount       Int? // 여성용 좌변기 개수
 }
 
 // 유저가 제보한 화장실 정보 
