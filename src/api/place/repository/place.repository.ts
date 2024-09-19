@@ -10,6 +10,7 @@ import { MenuInfo, PlaceReview, Prisma } from '@prisma/client';
 import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
 import { IPaginationParams } from '@src/interface/common.interface';
 import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
+import { OrderByOption } from '@enums/order-by-option.enum';
 
 @Injectable()
 export class PlaceRepository {
@@ -271,6 +272,40 @@ export class PlaceRepository {
         ratingAverage: userRatingAverage,
         totalReviewCount: { increment: 1 },
       },
+    });
+  }
+  async countPlaceWithToilet() {
+    return await this.prismaService.place.count({
+      where: {
+        toiletInfo: {
+          some: {},
+        },
+      },
+    });
+  }
+
+  async getPlacesWithToilet(paginationParams: IPaginationParams) {
+    return await this.prismaService.place.findMany({
+      where: {
+        toiletInfo: {
+          some: {},
+        },
+      },
+      include: {
+        region: true,
+        placeCategory: {
+          include: {
+            depth1: true,
+            depth2: true,
+            depth3: true,
+            depth4: true,
+            depth5: true,
+          },
+        },
+        toiletInfo: { include: { details: true } },
+      },
+      orderBy: { id: OrderByOption.DESC },
+      ...paginationParams,
     });
   }
 }

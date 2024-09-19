@@ -1,7 +1,11 @@
 import { ApiOperator } from '@src/types/type';
 import { OperationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { HttpStatus, applyDecorators } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiCookieAuth,
+  ApiOperation,
+  ApiOperationOptions,
+} from '@nestjs/swagger';
 import { CommonResponseDto } from '@src/swagger-builder/common-response.dto';
 import { PlaceController } from '@api/place/controllers/place.controller';
 import { PlaceDetailDto } from '@api/place/dtos/response/place-detail.dto';
@@ -14,6 +18,7 @@ import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
 import { MyPlaceReviewDto } from '@api/place/dtos/response/my-place-review.dto';
 import { PaginationResponseDto } from '@src/swagger-builder/pagination-response.dto';
 import { ReportFacilityDto } from '@api/place/dtos/request/report-facility.dto';
+import { BasicPlaceWithToiletDto } from '@api/place/dtos/response/basic-place-with-toilet.dto';
 
 export const ApiPlace: ApiOperator<keyof PlaceController> = {
   GetPlace: (
@@ -91,6 +96,20 @@ export const ApiPlace: ApiOperator<keyof PlaceController> = {
         { required: false, isArray: true },
       ),
       StatusResponseDto.swaggerBuilder(HttpStatus.OK, 'ReportFacility'),
+    );
+  },
+
+  GetPlacesWithToilet: function (
+    apiOperationOptions: Required<Pick<ApiOperationOptions, 'summary'>> &
+      ApiOperationOptions,
+  ): PropertyDecorator {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      PaginationResponseDto.swaggerBuilder(
+        HttpStatus.OK,
+        'places',
+        BasicPlaceWithToiletDto,
+      ),
     );
   },
 };
