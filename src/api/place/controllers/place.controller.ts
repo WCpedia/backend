@@ -31,11 +31,23 @@ import { PaginatedResponse } from '@api/common/interfaces/interface';
 import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
 import { GetPlaceDto } from '../dtos/request/get-place.dto';
+import PaginationDto from '@api/common/dto/pagination.dto';
+import { BasicPlaceWithToiletDto } from '../dtos/response/basic-place-with-toilet.dto';
 
 @ApiTags(DOMAIN_NAME.PLACE)
 @Controller(DOMAIN_NAME.PLACE)
 export class PlaceController {
   constructor(private readonly placeService: PlaceService) {}
+
+  @ApiPlace.GetPlacesWithToilet({
+    summary: '화장실 정보가 있는 가게 조회',
+  })
+  @Get('toilet')
+  async getPlacesWithToilet(
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<BasicPlaceWithToiletDto, 'places'>> {
+    return await this.placeService.getPlacesWithToilet(paginationDto);
+  }
 
   @ApiPlace.GetPlace({
     summary: '가게 상세 조회',

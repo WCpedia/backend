@@ -19,11 +19,11 @@ export class SearchController {
     @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Query('value') value: string,
   ): Promise<any> {
-    return await this.searchService.test(value);
-    // return await this.searchService.searchPlaces(value, authorizedUser?.userId);
+    return await this.searchService.searchPlaces(value, authorizedUser?.userId);
   }
+
   @ApiSearch.Test({
-    summary: '테스트',
+    summary: '시설 추가용 api',
   })
   @Get('test')
   async test() {
