@@ -22,11 +22,19 @@ export class SearchController {
     return await this.searchService.searchPlaces(value, authorizedUser?.userId);
   }
 
-  @ApiSearch.Test({
+  @ApiSearch.Test1({
     summary: '시설 추가용 api',
   })
   @Get('test')
-  async test() {
+  async test1(@Query('value') value: string) {
+    return await this.searchService.test(value);
+  }
+
+  @ApiSearch.Test2({
+    summary: '시설 추가용 api',
+  })
+  @Get('test2')
+  async test2() {
     return await this.searchService.test2();
   }
 }
