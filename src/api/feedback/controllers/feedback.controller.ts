@@ -7,7 +7,7 @@ import { IAuthorizedUser } from '@api/auth/interface/interface';
 import { ApiFeedback } from './swagger/feedback.swagger';
 import { ApiTags } from '@nestjs/swagger';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
-
+import { CreateTestFeedbackDto } from '../dtos/request/create-test-feedback.dto';
 @ApiTags(DOMAIN_NAME.FEEDBACK)
 @Controller(DOMAIN_NAME.FEEDBACK)
 export class FeedbackController {
@@ -24,5 +24,13 @@ export class FeedbackController {
       authorizedUser.userId,
       createFeedbackDto,
     );
+  }
+
+  @ApiFeedback.CreateFeedbackTest({ summary: '유저 피드백 생성 테스트' })
+  @Post('/test')
+  async createFeedbackTest(
+    @Body() createTestFeedbackDto: CreateTestFeedbackDto,
+  ): Promise<void> {
+    await this.feedbackService.createTestFeedback(createTestFeedbackDto);
   }
 }

@@ -38,7 +38,6 @@ interface IToiletDetail {
     urinalCount?: number;
     hasPowderRoom?: boolean;
     hasSanitizer?: boolean;
-
     hasHandDryer?: boolean;
     locationType: LocationType;
     locationDescription?: string;
@@ -79,8 +78,40 @@ export class SearchService {
   }
 
   async test2() {
-    const toiletData: IToiletDetail[] = [];
+    const toiletData: IToiletDetail[] = [
+      {
+        value: '두남 건대',
+        placeId: 4152,
+        kakaoId: '1590974724',
+        placeName: '두남',
+        type: ToiletType.FEMALE,
+        details: {
+          locationDescription: '1층',
+          locationType: LocationType.INDOOR,
+        },
+      },
+      {
+        value: '두남 건대',
+        placeId: 4152,
+        kakaoId: '1590974724',
+        placeName: '두남',
+        type: ToiletType.MALE,
+        details: {
+          locationDescription: '1층',
+          locationType: LocationType.INDOOR,
+        },
+      },
+    ];
 
+    const placeId = toiletData[0].placeId;
+    const toiletInfo = await this.prismaService.toiletInfo.findFirst({
+      where: {
+        placeId,
+      },
+    });
+    if (toiletInfo) {
+      return true;
+    }
     for (const toilet of toiletData) {
       await this.prismaService.toiletInfo.create({
         data: {
@@ -107,16 +138,32 @@ export class SearchService {
       where: {
         kakaoId: kakaoData[0].id,
       },
+      include: {
+        toiletInfo: true,
+      },
     });
 
-    result = {
-      value: value,
-      placeId: place?.id,
-      kakaoId: kakaoData[0].id,
-      placeName: place?.name,
-      type: 'ToiletType.MALE',
-      details: { locationType: 'LocationType.INDOOR' },
-    };
+    result =
+      place.toiletInfo.length > 0
+        ? true
+        : [
+            {
+              value: value,
+              placeId: place?.id,
+              kakaoId: kakaoData[0].id,
+              placeName: place?.name,
+              type: 'ToiletType.FEMALE',
+              details: { locationType: 'LocationType.INDOOR' },
+            },
+            {
+              value: value,
+              placeId: place?.id,
+              kakaoId: kakaoData[0].id,
+              placeName: place?.name,
+              type: 'ToiletType.MALE',
+              details: { locationType: 'LocationType.INDOOR' },
+            },
+          ];
 
     return result;
   }

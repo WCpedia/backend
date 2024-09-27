@@ -23,7 +23,13 @@ export const ApiSearch: ApiOperator<keyof SearchController> = {
       ),
     );
   },
-  Test: (
+  Test1: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(ApiOperation(apiOperationOptions));
+  },
+  Test2: (
     apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
       Partial<OperationObject>,
   ): PropertyDecorator => {
