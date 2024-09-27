@@ -433,3 +433,10 @@ model Search {
   keyword SearchKeyword @relation(fields: [keywordId], references: [id])
   user    User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+//테스트용 Json
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  data      Json
+  createdAt DateTime @default(now())
+}

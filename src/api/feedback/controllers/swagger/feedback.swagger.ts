@@ -17,4 +17,18 @@ export const ApiFeedback: ApiOperator<keyof FeedbackController> = {
       StatusResponseDto.swaggerBuilder(HttpStatus.CREATED, 'CreateFeedback'),
     );
   },
+
+  CreateFeedbackTest: (
+    apiOperationOptions: Required<Pick<Partial<OperationObject>, 'summary'>> &
+      Partial<OperationObject>,
+  ): PropertyDecorator => {
+    return applyDecorators(
+      ApiOperation(apiOperationOptions),
+      TokenConfigDto.swaggerBuilder(),
+      StatusResponseDto.swaggerBuilder(
+        HttpStatus.CREATED,
+        'CreateFeedbackTest',
+      ),
+    );
+  },
 };
