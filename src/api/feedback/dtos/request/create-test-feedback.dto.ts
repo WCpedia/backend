@@ -10,6 +10,13 @@ export class CreateTestFeedbackDto {
   gender: string;
 
   @ApiProperty({
+    description: '나이',
+  })
+  @IsString()
+  @IsNotEmpty()
+  age: string;
+
+  @ApiProperty({
     description: '이유',
   })
   @IsString()
