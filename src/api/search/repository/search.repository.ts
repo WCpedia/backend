@@ -61,6 +61,30 @@ export class SearchRepository {
     });
   }
 
+  async upsertPlaceIncludeToiletInfo(
+    data: Prisma.PlaceUncheckedCreateInput,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).place.upsert({
+      where: { kakaoId: data.kakaoId },
+      update: {},
+      create: data,
+      include: {
+        region: true,
+        placeCategory: {
+          include: {
+            depth1: true,
+            depth2: true,
+            depth3: true,
+            depth4: true,
+            depth5: true,
+          },
+        },
+        toiletInfo: true,
+      },
+    });
+  }
+
   async getRegion(
     region: Prisma.RegionAdministrativeDistrictDistrictCompoundUniqueInput,
     transaction?: Prisma.TransactionClient,
