@@ -1,8 +1,12 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { IPaginationParams } from '@src/interface/common.interface';
+import {
+  IPaginationParams,
+  IPlaceCategory,
+} from '@src/interface/common.interface';
 import { UpdateToiletInfoDto } from '../controllers/dtos/request/update-toilet-info.dto';
 import { OrderByOption } from '@enums/order-by-option.enum';
+import { Prisma, Region } from '@prisma/client';
 
 @Injectable()
 export class AdminRepository {
@@ -145,6 +149,61 @@ export class AdminRepository {
           lt: convertedEndDate,
         },
       },
+    });
+  }
+
+  async upsertPlaceIncludeToiletInfo(
+    data: Prisma.PlaceUncheckedCreateInput,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).place.upsert({
+      where: { kakaoId: data.kakaoId },
+      update: {},
+      create: data,
+      include: {
+        region: true,
+        placeCategory: {
+          include: {
+            depth1: true,
+            depth2: true,
+            depth3: true,
+            depth4: true,
+            depth5: true,
+          },
+        },
+        toiletInfo: true,
+      },
+    });
+  }
+
+  async getRegion(
+    region: Prisma.RegionAdministrativeDistrictDistrictCompoundUniqueInput,
+    transaction?: Prisma.TransactionClient,
+  ): Promise<Region> {
+    return await (transaction ?? this.prismaService).region.findUnique({
+      where: { administrativeDistrict_district: region },
+    });
+  }
+
+  async upsertPlaceCategory(
+    placeCategory: IPlaceCategory,
+    transaction?: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).placeCategory.upsert({
+      where: {
+        fullCategoryIds: placeCategory.fullCategoryIds,
+      },
+      update: {},
+      create: placeCategory,
+      select: { id: true },
+    });
+  }
+
+  async upsertCategory(name: string, transaction?: Prisma.TransactionClient) {
+    return await (transaction ?? this.prismaService).category.upsert({
+      where: { name },
+      update: {},
+      create: { name },
     });
   }
 }
