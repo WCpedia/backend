@@ -12,3 +12,11 @@ export enum AuthExceptionEnum {
   UNAUTHORIZED = 'Unauthorized',
   INVALID_EMAIL = 'InvalidEmail',
 }
+
+export const AuthExceptionMessage = {
+  [AuthExceptionEnum.NO_AUTH_TOKEN]: '인증 토큰이 없습니다.',
+  [AuthExceptionEnum.INVALID_TOKEN]: '유효하지 않은 토큰입니다.',
+  [AuthExceptionEnum.JWT_EXPIRED]: 'JWT 토큰이 만료되었습니다.',
+  [AuthExceptionEnum.UNAUTHORIZED]: '인증되지 않았습니다.',
+  [AuthExceptionEnum.INVALID_EMAIL]: '유효하지 않은 이메일 형식입니다.',
+};

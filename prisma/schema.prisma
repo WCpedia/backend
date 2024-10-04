@@ -86,6 +86,7 @@ model User {
   blockedUsers            Block[]                   @relation("Blocker")
   blockedBy               Block[]                   @relation("BlockedUser")
   searches                Search[]
+  adminPlaceToiletRatings AdminPlaceToiletRating[]
 }
 
 model Block {
@@ -169,6 +170,7 @@ model Place {
   menuInfo                 MenuInfo[]
   PlaceReviewSnapshot      PlaceReviewSnapshot[]
   toiletInfo               ToiletInfo[]
+  adminPlaceToiletRating   AdminPlaceToiletRating?
 }
 
 model PlaceImage {
@@ -439,4 +441,22 @@ model Feedback {
   id        Int      @id @default(autoincrement())
   data      Json
   createdAt DateTime @default(now())
+}
+
+model AdminPlaceToiletRating {
+  id                Int      @id @default(autoincrement())
+  adminId           Int
+  placeId           Int      @unique
+  isGoat            Boolean  @default(false)
+  isDateSpot        Boolean  @default(false)
+  isFriendlySpot    Boolean  @default(false)
+  isGroupSpot       Boolean  @default(false)
+  cleanlinessRating Int // 청결도
+  interiorRating    Int // 인테리어
+  odorRating        Int // 냄새
+  averageRating     Float
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  place             Place    @relation(fields: [placeId], references: [id])
+  admin             User     @relation(fields: [adminId], references: [id])
 }
