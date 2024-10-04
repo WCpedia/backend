@@ -20,10 +20,14 @@ import { BasicPlaceDto } from '@api/common/dto/basic-place.dto';
 import { plainToInstance } from 'class-transformer';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { Region } from '@prisma/client';
+import { Prisma, Region } from '@prisma/client';
 import { extractRegion } from '@src/utils/region-extractor';
 import { IPlaceCategory } from '@src/interface/common.interface';
 import { AdminSearchPlacesDto } from '../controllers/dtos/response/admin-search-places.dto';
+import { PrismaService } from '@core/database/prisma/services/prisma.service';
+import { ToiletInfoDto } from '@api/toilet/request/toilet-info.dto';
+import { CustomBadRequest } from '@exceptions/http/custom-bad-request';
+import { CustomNotFound } from '@exceptions/http/custom-not-found';
 
 @Injectable()
 export class AdminPlaceService {
@@ -37,6 +41,7 @@ export class AdminPlaceService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly adminRepository: AdminRepository,
     private readonly configService: ProductConfigService,
+    private readonly prismaService: PrismaService,
   ) {
     this.kakaoSearchUri = this.configService.get<string>(
       OAUTH_KEY.KAKAO_SEARCH_KEYWORD_URI,
@@ -55,20 +60,63 @@ export class AdminPlaceService {
     );
   }
 
-  async updatePlaceToiletInfo(
+  async createPlaceToiletInfo(
     placeId: number,
+    adminId: number,
     dto: UpdateToiletInfoDto,
   ): Promise<void> {
-    const selectedPlace = await this.adminRepository.getPlaceById(placeId);
-    if (!selectedPlace) {
-      throw new CustomException(
-        HttpExceptionStatusCode.NOT_FOUND,
-        AdminExceptionEnum.NOT_FOUND_PLACE,
+    await this.verifyPlaceEligibleForToiletInfo(placeId);
+
+    const averageRating = this.calculateAverageRating(dto);
+    const { toilets, ...placeRating } = dto;
+
+    await this.prismaService.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await this.adminRepository.createAdminPlaceToiletRating(
+          {
+            placeId,
+            adminId,
+            ...placeRating,
+            averageRating,
+          },
+          transaction,
+        );
+        for (const toilet of toilets) {
+          await this.adminRepository.createToiletInfo(
+            placeId,
+            toilet,
+            transaction,
+          );
+        }
+      },
+    );
+  }
+
+  private async verifyPlaceEligibleForToiletInfo(placeId: number) {
+    const selectedPlace =
+      await this.adminRepository.getPlaceWithAdminPlaceToiletRatingById(
+        placeId,
       );
+
+    if (!selectedPlace) {
+      throw new CustomNotFound(AdminExceptionEnum.NOT_FOUND_PLACE);
     }
 
-    await this.adminRepository.updatePlaceToiletInfo(placeId, dto);
+    if (selectedPlace.adminPlaceToiletRating) {
+      throw new CustomBadRequest(AdminExceptionEnum.ALREADY_RATED_PLACE);
+    }
   }
+
+  private calculateAverageRating(placeRating: UpdateToiletInfoDto): number {
+    return (
+      (placeRating.cleanlinessRating +
+        placeRating.interiorRating +
+        placeRating.odorRating) /
+      3
+    );
+  }
+
+  async() {}
 
   async searchPlaces(value: string): Promise<AdminSearchPlacesDto[]> {
     const kakaoData = await this.fetchKakaoSearchResponse(value);

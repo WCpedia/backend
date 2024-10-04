@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -18,6 +19,8 @@ import { AdminPlaceService } from '@api/admin/services/admin-place.service';
 import { UpdateToiletInfoDto } from '@api/admin/controllers/dtos/request/update-toilet-info.dto';
 import { ApiAdminPlace } from '@api/admin/controllers/swagger/admin-place.swagger';
 import { AdminSearchPlacesDto } from '@api/admin/controllers/dtos/response/admin-search-places.dto';
+import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.decorator';
+import { IAuthorizedUser } from '@api/auth/interface/interface';
 
 @ApiTags(DOMAIN_NAME.ADMIN_PLACE)
 @Controller(DOMAIN_NAME.ADMIN_PLACE)
@@ -34,16 +37,19 @@ export class AdminPlaceController {
     return await this.adminPlaceService.searchPlaces(value);
   }
 
-  @ApiAdminPlace.UpdatePlaceToiletInfo({
+  @ApiAdminPlace.CreatePlaceToiletInfo({
     summary: '가게 화장실 정보 생성 OR 수정',
   })
-  @Patch('/:placeId/facility')
-  async updatePlaceToiletInfo(
+  @UseGuards(AccessTokenGuard)
+  @Post('/:placeId/toilet')
+  async createPlaceToiletInfo(
     @Param('placeId', ParseIntPipe) placeId: number,
+    @GetAuthorizedUser() authorizedUser: IAuthorizedUser,
     @Body() updateToiletInfoDto: UpdateToiletInfoDto,
   ): Promise<void> {
-    return this.adminPlaceService.updatePlaceToiletInfo(
+    return this.adminPlaceService.createPlaceToiletInfo(
       placeId,
+      authorizedUser.userId,
       updateToiletInfoDto,
     );
   }

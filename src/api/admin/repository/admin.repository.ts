@@ -7,6 +7,7 @@ import {
 import { UpdateToiletInfoDto } from '../controllers/dtos/request/update-toilet-info.dto';
 import { OrderByOption } from '@enums/order-by-option.enum';
 import { Prisma, Region } from '@prisma/client';
+import { ToiletInfoDto } from '@api/toilet/request/toilet-info.dto';
 
 @Injectable()
 export class AdminRepository {
@@ -85,19 +86,12 @@ export class AdminRepository {
     });
   }
 
-  async getPlaceById(placeId: number) {
+  async getPlaceWithAdminPlaceToiletRatingById(placeId: number) {
     return await this.prismaService.place.findUnique({
       where: { id: placeId },
-    });
-  }
-
-  async updatePlaceToiletInfo(placeId: number, dto: UpdateToiletInfoDto) {
-    return await this.prismaService.publicToiletInfo.upsert({
-      where: {
-        placeId,
+      include: {
+        adminPlaceToiletRating: true,
       },
-      update: dto,
-      create: { placeId, ...dto },
     });
   }
 
@@ -204,6 +198,33 @@ export class AdminRepository {
       where: { name },
       update: {},
       create: { name },
+    });
+  }
+
+  async createAdminPlaceToiletRating(
+    placeRating: Prisma.AdminPlaceToiletRatingUncheckedCreateInput,
+    transaction: Prisma.TransactionClient,
+  ) {
+    return await (
+      transaction ?? this.prismaService
+    ).adminPlaceToiletRating.create({
+      data: placeRating,
+    });
+  }
+
+  async createToiletInfo(
+    placeId: number,
+    { type, details }: ToiletInfoDto,
+    transaction: Prisma.TransactionClient,
+  ) {
+    return await (transaction ?? this.prismaService).toiletInfo.create({
+      data: {
+        placeId,
+        type,
+        details: {
+          create: details,
+        },
+      },
     });
   }
 }
