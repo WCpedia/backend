@@ -57,7 +57,9 @@ export class AuthService {
       OAUTH_KEY.APPLE_GET_USER_URI,
     );
   }
-
+  /**
+   * @todo oauth 로그인 시 이메일이 아닌 유저 식별용 아이디를 반환하는 로직 추가 필요
+   */
   async signinWithOAuth(
     provider: Provider,
     accessToken: string,
@@ -125,7 +127,7 @@ export class AuthService {
         },
       );
 
-      return response.data.kakao_account.email;
+      return response.data.kakao_account.email || response.data.id.toString();
     } catch (error) {
       throw new CustomException(
         HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
