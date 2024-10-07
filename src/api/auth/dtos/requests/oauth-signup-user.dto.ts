@@ -13,10 +13,11 @@ import {
 export class SignUpWithOAuthProviderDto {
   @ApiProperty({
     description: '가입해야 하는 유저Email',
+    required: false,
   })
   @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  @IsOptional()
+  email?: string;
 
   @ApiProperty({
     enum: Provider,
@@ -48,4 +49,11 @@ export class SignUpWithOAuthProviderDto {
   })
   @IsOptional()
   description: string;
+
+  @ApiProperty({
+    description: 'OAuth 유저 식별자',
+    required: false,
+  })
+  @IsOptional()
+  providerUserId?: string;
 }

@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Provider } from '@prisma/client';
+import { Authentication, Provider, User } from '@prisma/client';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { AuthRepository } from '@api/auth/repository/auth.repository';
 import { OAUTH_KEY, REDIS_KEY } from '@core/config/constants/config.constant';
@@ -16,6 +16,7 @@ import {
   IGoogleUserProfile,
   INaverUserProfile,
   AppleJwtTokenPayload,
+  IOauthPayload,
 } from '@api/auth/interface/interface';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -26,6 +27,10 @@ import { HttpExceptionStatusCode } from '@exceptions/http/enums/http-exception-e
 import * as jwt from 'jsonwebtoken';
 import { JwksClient } from 'jwks-rsa';
 import { AuthExceptionEnum } from '@exceptions/http/enums/global.exception.enum';
+import { CustomBadRequest } from '@exceptions/http/custom-bad-request';
+import { UserExceptionEnum } from '@exceptions/http/enums/user.exception.enum';
+import { CustomNotFound } from '@exceptions/http/custom-not-found';
+import { OAuthExceptionEnum } from '@exceptions/http/enums/oauth.exception.enum';
 
 @Injectable()
 export class AuthService {
@@ -57,62 +62,47 @@ export class AuthService {
       OAUTH_KEY.APPLE_GET_USER_URI,
     );
   }
-
+  /**
+   * @todo oauth 로그인 시 이메일이 아닌 유저 식별용 아이디를 반환하는 로직 추가 필요
+   */
   async signinWithOAuth(
     provider: Provider,
     accessToken: string,
-  ): Promise<IUserAuth> {
-    let email: string;
-    switch (provider) {
-      case Provider.KAKAO:
-        email = await this.getKakaoUserEmail(accessToken);
-        break;
-      case Provider.GOOGLE:
-        email = await this.getGoogleUserEmail(accessToken);
-        break;
-      case Provider.NAVER:
-        email = await this.getNaverUserEmail(accessToken);
-        break;
-      case Provider.APPLE:
-        email = await this.getAppleUserEmail(accessToken);
-        break;
-    }
+  ): Promise<IOauthPayload | IUserAuth> {
+    const oAuthPayload = await this.getOAuthUserProfile(provider, accessToken);
 
-    if (!email) {
-      throw new CustomException(
-        HttpExceptionStatusCode.BAD_REQUEST,
-        AuthExceptionEnum.INVALID_EMAIL,
-      );
-    }
-
-    const user = await this.authRepository.getUserWithAuth(email);
+    const user = oAuthPayload.email
+      ? await this.authRepository.getUserWithAuthByEmail(oAuthPayload.email)
+      : await this.authRepository.getUserWithAuthByOAuthId(oAuthPayload);
 
     if (!user) {
-      await this.cacheManager.set(`TempAuth/${email}`, provider, {
-        ttl: this.redisTempAuthTtl,
-      });
-
-      return { email, provider };
-    }
-
-    if (user.deletedAt) {
-      throw new CustomException(
-        HttpExceptionStatusCode.BAD_REQUEST,
-        'DeletedUser',
+      await this.cacheManager.set(
+        `TempAuth/${oAuthPayload.providerUserId}`,
+        provider,
+        {
+          ttl: this.redisTempAuthTtl,
+        },
       );
+
+      return oAuthPayload;
     }
 
-    if (user.authentication.provider !== Provider[provider]) {
-      throw new CustomException(
-        HttpExceptionStatusCode.BAD_REQUEST,
-        'DifferentSignUpProvider',
-      );
-    }
+    this.validateUser(user, provider);
+
+    //삭제 예정
+    await this.prismaService.authentication.update({
+      where: { userId: user.id },
+      data: {
+        providerUserId: oAuthPayload.providerUserId,
+      },
+    });
 
     return { userId: user.id, role: user.role };
   }
 
-  private async getKakaoUserEmail(accessToken: string): Promise<string> {
+  private async getKakaoUserProfile(
+    accessToken: string,
+  ): Promise<IOauthPayload> {
     try {
       const response: AxiosResponse<IKakaoUserProfile> = await axios.post(
         this.kakaoGetUserUri,
@@ -125,7 +115,11 @@ export class AuthService {
         },
       );
 
-      return response.data.kakao_account.email;
+      return {
+        provider: Provider.KAKAO,
+        providerUserId: response.data.id.toString(),
+        email: response.data.kakao_account.email,
+      };
     } catch (error) {
       throw new CustomException(
         HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
@@ -134,13 +128,19 @@ export class AuthService {
     }
   }
 
-  private async getGoogleUserEmail(accessToken: string): Promise<string> {
+  private async getGoogleUserProfile(
+    accessToken: string,
+  ): Promise<IOauthPayload> {
     try {
       const response: AxiosResponse<IGoogleUserProfile> = await axios.get(
         `${this.googleGetUserUri}${accessToken}`,
       );
 
-      return response.data.email;
+      return {
+        provider: Provider.GOOGLE,
+        providerUserId: response.data.id,
+        email: response.data.email,
+      };
     } catch (error) {
       throw new CustomException(
         HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
@@ -149,7 +149,9 @@ export class AuthService {
     }
   }
 
-  private async getNaverUserEmail(accessToken: string): Promise<string> {
+  private async getNaverUserProfile(
+    accessToken: string,
+  ): Promise<IOauthPayload> {
     try {
       const response: AxiosResponse<INaverUserProfile> = await axios.get(
         this.naverGetUserUri,
@@ -158,7 +160,11 @@ export class AuthService {
         },
       );
 
-      return response.data.response.email;
+      return {
+        provider: Provider.NAVER,
+        providerUserId: response.data.response.id,
+        email: response.data.response.email,
+      };
     } catch (error) {
       throw new CustomException(
         HttpExceptionStatusCode.INTERNAL_SERVER_ERROR,
@@ -167,7 +173,9 @@ export class AuthService {
     }
   }
 
-  private async getAppleUserEmail(appleIdToken: string): Promise<string> {
+  private async getAppleUserProfile(
+    appleIdToken: string,
+  ): Promise<IOauthPayload> {
     try {
       // Apple ID 토큰을 디코드하여 헤더와 페이로드를 추출.
       const decodedToken = jwt.decode(appleIdToken, { complete: true }) as {
@@ -175,10 +183,7 @@ export class AuthService {
         payload: { sub: string };
       };
       if (!decodedToken) {
-        throw new CustomException(
-          HttpExceptionStatusCode.BAD_REQUEST,
-          'InvalidToken',
-        );
+        throw new CustomBadRequest(AuthExceptionEnum.INVALID_OAUTH_TOKEN);
       }
 
       // 토큰 헤더에서 키 ID를 추출.
@@ -201,7 +206,11 @@ export class AuthService {
         },
       ) as AppleJwtTokenPayload;
 
-      return verifiedDecodedToken.email;
+      return {
+        provider: Provider.APPLE,
+        providerUserId: verifiedDecodedToken.sub,
+        email: verifiedDecodedToken.email,
+      };
     } catch (error) {
       if (error instanceof jwt.JsonWebTokenError) {
         throw new CustomException(
@@ -213,158 +222,54 @@ export class AuthService {
       }
     }
   }
-  // async createUserAuth({
-  //   userId,
-  //   authEmail,
-  //   signUpType,
-  // }: CreateUserAuthDto): Promise<void> {
-  //   const mappedSignUpType: SignUpType = this.mapSignUpType(signUpType);
-  //   await this.validateUserAuth(userId);
 
-  //   const authData: AuthInputData = {
-  //     userId,
-  //     email: authEmail,
-  //     signUpTypeId: mappedSignUpType,
-  //   };
+  private async getOAuthUserProfile(
+    provider: Provider,
+    accessToken: string,
+  ): Promise<IOauthPayload> {
+    const profileMethods = {
+      [Provider.KAKAO]: this.getKakaoUserProfile,
+      [Provider.GOOGLE]: this.getGoogleUserProfile,
+      [Provider.NAVER]: this.getNaverUserProfile,
+      [Provider.APPLE]: this.getAppleUserProfile,
+    };
 
-  //   await this.prismaService.auth.create({ data: authData });
-  // }
+    const getProfile = profileMethods[provider];
+    if (!getProfile) {
+      throw new CustomBadRequest(OAuthExceptionEnum.UNSUPPORTED_PROVIDER);
+    }
 
-  // async trxCreateUserAuth(
-  //   tx: PrismaTransaction,
-  //   { userId, authEmail, signUpType }: CreateUserAuthDto,
-  // ): Promise<any> {
-  //   const mappedSignUpType: SignUpType = this.mapSignUpType(signUpType);
-  //   await this.trxValidateUserAuth(tx, userId, authEmail);
+    return getProfile.call(this, accessToken);
+  }
 
-  //   const authData: AuthInputData = {
-  //     userId,
-  //     email: authEmail,
-  //     signUpTypeId: mappedSignUpType,
-  //   };
+  private validateUser(
+    user: User & { authentication: Authentication },
+    provider: Provider,
+  ): void {
+    if (user.deletedAt) {
+      throw new CustomBadRequest(UserExceptionEnum.USER_DELETED);
+    }
 
-  //   return await tx.auth.create({ data: authData });
-  // }
+    if (user.authentication.provider !== provider) {
+      throw new CustomBadRequest(AuthExceptionEnum.DIFFERENT_SIGNUP_PROVIDER);
+    }
+  }
 
-  // private async validateUserAuth(userId: number): Promise<void> {
-  //   try {
-  //     const selectedUser: Users = await this.prismaService.users.findUnique({
-  //       where: { id: userId },
-  //     });
-
-  //     if (!selectedUser) {
-  //       throw new NotFoundException(
-  //         '존재하지 않는 유저 데이터입니다.',
-  //         'notFoundUserData',
-  //       );
-  //     }
-  //     if (selectedUser.deletedAt) {
-  //       throw new BadRequestException(
-  //         '유효하지 않은 유저 정보 요청입니다.',
-  //         'invalidUserInformation',
-  //       );
-  //     }
-
-  //     const selectedUserAuth: Auth | null =
-  //       await this.prismaService.auth.findUnique({
-  //         where: { userId: selectedUser.id },
-  //       });
-  //     if (selectedUserAuth) {
-  //       throw new BadRequestException(
-  //         '이미 가입되어있는 유저입니다.',
-  //         'alreadyExistUser',
-  //       );
-  //     }
-  //   } catch (error) {
-  //     this.logger.error(error);
-  //     throw error;
-  //   }
-  // }
-
-  // private async trxValidateUserAuth(
-  //   tx: PrismaTransaction,
-  //   userId: number,
-  //   authEmail: string,
-  // ): Promise<void> {
-  //   try {
-  //     const selectedUser: Users = await tx.users.findUnique({
-  //       where: { id: userId },
-  //     });
-
-  //     if (!selectedUser) {
-  //       throw new NotFoundException(
-  //         '존재하지 않는 유저 데이터입니다.',
-  //         'notFoundUserData',
-  //       );
-  //     }
-  //     if (selectedUser.deletedAt) {
-  //       throw new BadRequestException(
-  //         '유효하지 않은 유저 정보 요청입니다.',
-  //         'invalidUserInformation',
-  //       );
-  //     }
-
-  //     const selectedUserAuth: Auth | null = await tx.auth.findUnique({
-  //       where: { userId: selectedUser.id },
-  //     });
-  //     if (selectedUserAuth) {
-  //       throw new BadRequestException(
-  //         '이미 가입되어있는 유저입니다.',
-  //         'alreadyExistUser',
-  //       );
-  //     }
-
-  //     const selectedEmailAuth: Auth | null = await tx.auth.findUnique({
-  //       where: { email: authEmail },
-  //     });
-  //     if (selectedEmailAuth) {
-  //       throw new BadRequestException('이미 가입된 이메일입니다.');
-  //     }
-  //   } catch (error) {
-  //     this.logger.error(error);
-  //     throw error;
-  //   }
-  // }
-
-  // private mapSignUpType(signUpTypeString): SignUpType {
-  //   let mappedSignUpType: SignUpType;
-
-  //   switch (signUpTypeString) {
-  //     case 'KAKAO':
-  //       mappedSignUpType = SignUpType.KAKAO;
-  //       break;
-  //     case 'GOOGLE':
-  //       mappedSignUpType = SignUpType.GOOGLE;
-  //       break;
-  //     case 'NAVER':
-  //       mappedSignUpType = SignUpType.NAVER;
-  //       break;
-  //     default:
-  //       throw new BadRequestException(
-  //         '잘못된 SignUpType 입니다.',
-  //         'invalidSignUpType',
-  //       );
-  //   }
-
-  //   return mappedSignUpType;
-  // }
-
+  /**
+   * @todo 클라이언트 변경내용 반영 완료시 tempAuth 조회 로직 수정 필요
+   */
   async signUpWithOAuth(
     dto: SignUpWithOAuthProviderDto,
     profileImage: Express.MulterS3.File,
   ) {
-    const tempAuth = await this.cacheManager.get(`TempAuth/${dto.email}`);
+    const tempAuth = await this.cacheManager.get(
+      `TempAuth/${dto.email ? dto.email : dto.providerUserId}`,
+    );
     if (!tempAuth) {
-      throw new CustomException(
-        HttpExceptionStatusCode.NOT_FOUND,
-        'TempAuthNotFound',
-      );
+      throw new CustomNotFound(AuthExceptionEnum.TEMP_AUTH_NOT_FOUND);
     }
     if (tempAuth !== Provider[dto.provider]) {
-      throw new CustomException(
-        HttpExceptionStatusCode.BAD_REQUEST,
-        'InvalidSignUpInformation',
-      );
+      throw new CustomBadRequest(AuthExceptionEnum.INVALID_SIGNUP_INFORMATION);
     }
 
     await this.createUserAuth(dto, profileImage);
@@ -374,7 +279,7 @@ export class AuthService {
     dto: SignUpWithOAuthProviderDto,
     profileImage: Express.MulterS3.File,
   ) {
-    const { nickname, description, ...authInputDate } = dto;
+    const { nickname, description, ...authInputData } = dto;
     await this.prismaService.$transaction(async (transaction) => {
       const createdUser = await this.authRepository.createUser(
         {
@@ -386,7 +291,7 @@ export class AuthService {
       );
 
       await this.authRepository.createAuthentication(
-        { userId: createdUser.id, ...authInputDate },
+        { userId: createdUser.id, ...authInputData },
         transaction,
       );
     });

@@ -11,7 +11,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { IUserAuth, IToken } from '../interface/interface';
+import { IUserAuth, IToken, IOauthPayload } from '../interface/interface';
 import { AuthService } from '../services/auth.service';
 import { AuthTokenService } from '../services/auth-token.service';
 import { Response } from 'express';
@@ -37,7 +37,7 @@ export class AuthController {
   ) {}
 
   @ApiAuth.SignInWithOauthProvider({
-    summary: 'OAuth 로그인 kakao, google, naver',
+    summary: 'OAuth 로그인',
   })
   @Get('signin/oauth/:provider')
   async signInWithOauthProvider(
@@ -46,12 +46,10 @@ export class AuthController {
     accessToken: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const user: IUserAuth = await this.authService.signinWithOAuth(
-      provider,
-      accessToken,
-    );
+    const user: IOauthPayload | IUserAuth =
+      await this.authService.signinWithOAuth(provider, accessToken);
 
-    if (user.email) {
+    if ('providerUserId' in user) {
       const signupUser = plainToInstance(NewUserOauthDto, user);
 
       return {
