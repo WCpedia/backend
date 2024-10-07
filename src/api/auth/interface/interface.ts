@@ -1,5 +1,7 @@
+import { Provider } from '@prisma/client';
+
 export interface IKakaoUserProfile {
-  id: number;
+  id: number; //유저 식별자
   connected_at: string;
   for_partner: {
     uuid: string;
@@ -33,7 +35,7 @@ export interface INaverUserProfile {
   resultcode?: string;
   message?: string;
   response?: {
-    id?: string;
+    id?: string; //유저 식별자
     email?: string;
     name?: string;
   };
@@ -75,7 +77,7 @@ export interface AppleJwtTokenPayload {
   aud: string;
   exp: number;
   iat: number;
-  sub: string;
+  sub: string; //유저 식별자
   nonce: string;
   c_hash: string;
   email?: string;
@@ -83,4 +85,10 @@ export interface AppleJwtTokenPayload {
   is_private_email?: string;
   auth_time: number;
   nonce_supported: boolean;
+}
+
+export interface IOauthPayload {
+  providerUserId: string;
+  email: string;
+  provider: Provider;
 }
