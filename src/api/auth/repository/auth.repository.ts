@@ -1,12 +1,37 @@
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { Authentication, Prisma, User } from '@prisma/client';
+import { Authentication, Prisma, Provider, User } from '@prisma/client';
+import { IOauthPayload } from '../interface/interface';
 
 @Injectable()
 export class AuthRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getUserWithAuth(email: string): Promise<
+  async getUserWithAuthByOAuthId({
+    providerUserId,
+    provider,
+  }: {
+    providerUserId: string;
+    provider: Provider;
+  }): Promise<
+    User & {
+      authentication: Authentication;
+    }
+  > {
+    return await this.prismaService.user.findFirst({
+      where: {
+        authentication: {
+          providerUserId,
+          provider,
+        },
+      },
+      include: {
+        authentication: true,
+      },
+    });
+  }
+
+  async getUserWithAuthByEmail(email: string): Promise<
     User & {
       authentication: Authentication;
     }

@@ -132,17 +132,18 @@ model UserFeedback {
 }
 
 model Authentication {
-  id        Int       @id @default(autoincrement())
-  userId    Int?      @unique
-  email     String
-  provider  Provider
-  password  String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt @db.Timestamp(6)
-  deletedAt DateTime? @db.Timestamp(6)
-  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             Int       @id @default(autoincrement())
+  userId         Int?      @unique
+  email          String?   @unique
+  provider       Provider
+  providerUserId String?
+  password       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  deletedAt      DateTime? @db.Timestamp(6)
+  user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([email, provider])
+  @@unique([providerUserId, provider])
 }
 
 model Place {
