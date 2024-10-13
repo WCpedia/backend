@@ -274,22 +274,27 @@ export class PlaceRepository {
       },
     });
   }
-  async countPlaceWithToilet() {
+  async countPlaceWithToilet(locationQuery?: Prisma.PlaceWhereInput) {
     return await this.prismaService.place.count({
       where: {
         toiletInfo: {
           some: {},
         },
+        ...locationQuery,
       },
     });
   }
 
-  async getPlacesWithToilet(paginationParams: IPaginationParams) {
+  async getPlacesWithToilet(
+    paginationParams: IPaginationParams,
+    locationQuery?: Prisma.PlaceWhereInput,
+  ) {
     return await this.prismaService.place.findMany({
       where: {
         toiletInfo: {
           some: {},
         },
+        ...locationQuery,
       },
       include: {
         region: true,

@@ -77,7 +77,10 @@ export default class ReviewRepositoryStub implements PartialReviewRepository {
       : Promise.resolve(null);
   }
 
-  async getPlace(placeId: number): Promise<Place> {
+  async getPlace(
+    placeId: number,
+    createdAt: Date = new Date(),
+  ): Promise<Place> {
     return Promise.resolve({
       id: placeId,
       kakaoId: '123',
@@ -94,6 +97,7 @@ export default class ReviewRepositoryStub implements PartialReviewRepository {
       x: 1,
       y: 1,
       isInitial: true,
+      createdAt,
     });
   }
 

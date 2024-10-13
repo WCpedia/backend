@@ -326,4 +326,59 @@ export class AdminPlaceService {
       [],
     );
   }
+
+  // async createArea() {
+  //   const name = '홍대';
+
+  //   const polygonString = `POLYGON((${HongdaeCoords.map(
+  //     ({ lat, lng }) => `${lng} ${lat}`,
+  //   ).join(',')}))`;
+
+  //   try {
+  //     const { minX, minY, maxX, maxY } = HongdaeBoundingBox;
+
+  //     const now = new Date();
+  //     const result = await this.prismaService.$queryRaw`
+  //     INSERT INTO "Area" (name, polygon, "minX", "minY", "maxX", "maxY", "createdAt", "updatedAt")
+  //     VALUES (
+  //       ${name},
+  //       ST_GeomFromText(${polygonString}, 4326),
+  //       ${minX}, ${minY}, ${maxX}, ${maxY},
+  //       ${now}, ${now}
+  //     )
+  //     ON CONFLICT (name) DO UPDATE
+  //     SET
+  //       polygon = ST_GeomFromText(${polygonString}, 4326),
+  //       "minX" = ${minX},
+  //       "minY" = ${minY},
+  //       "maxX" = ${maxX},
+  //       "maxY" = ${maxY},
+  //       "updatedAt" = ${now}
+  //     RETURNING id, name, "minX", "minY", "maxX", "maxY", "createdAt", "updatedAt";
+  //   `;
+
+  //     return result[0];
+  //   } catch (error) {
+  //     console.error('Error creating area:', error);
+  //     throw new Error('Failed to create area');
+  //   }
+  // }
+
+  // async assignPlacesToAreasWithBoundingBox() {
+  //   try {
+  //     await this.prismaService.$executeRaw`
+  //       INSERT INTO "PlaceToArea" ("placeId", "areaId")
+  //       SELECT p.id, a.id
+  //       FROM "Place" p, "Area" a
+  //       WHERE
+  //         p.x BETWEEN a."minX" AND a."maxX"
+  //         AND p.y BETWEEN a."minY" AND a."maxY"
+  //         AND ST_Contains(a.polygon, ST_SetSRID(ST_Point(p.x, p.y), 4326))
+  //       ON CONFLICT ("placeId", "areaId") DO NOTHING;
+  //     `;
+  //   } catch (error) {
+  //     console.error('Error assigning places to areas:', error);
+  //     throw new Error('Failed to assign places to areas');
+  //   }
+  // }
 }

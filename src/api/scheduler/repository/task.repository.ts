@@ -1,3 +1,4 @@
+import { IConvertedDate } from '@api/common/interfaces/interface';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 
@@ -97,44 +98,21 @@ export class TaskRepository {
     });
   }
 
-  // async findTopReviewers() {
-  //   // 현재 날짜
-  //   const now = new Date();
-  //   // 현재 요일 (0: 일요일, 1: 월요일, ..., 6: 토요일)
-  //   const dayOfWeek = now.getDay();
-
-  //   // 이번 주 월요일 날짜 계산
-  //   const mondayThisWeek = new Date(now);
-  //   mondayThisWeek.setDate(
-  //     now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1),
-  //   );
-
-  //   // 이번 주 일요일 날짜 계산
-  //   const sundayThisWeek = new Date(mondayThisWeek);
-  //   sundayThisWeek.setDate(mondayThisWeek.getDate() + 6);
-
-  //   // 월요일 0시 0분 0초
-  //   mondayThisWeek.setHours(0, 0, 0, 0);
-  //   // 일요일 23시 59분 59초
-  //   sundayThisWeek.setHours(23, 59, 59, 999);
-
-  //   return this.prismaService.placeReview.groupBy({
-  //     by: ['userId'],
-  //     _count: {
-  //       userId: true,
-  //     },
-  //     where: {
-  //       createdAt: {
-  //         gte: mondayThisWeek,
-  //         lte: sundayThisWeek,
-  //       },
-  //     },
-  //     orderBy: {
-  //       _count: {
-  //         userId: 'desc',
-  //       },
-  //     },
-  //     take: 5,
-  //   });
-  // }
+  async assignPlacesToAreas({
+    convertedStartDate,
+    convertedEndDate,
+  }: IConvertedDate): Promise<void> {
+    await this.prismaService.$executeRaw<number[]>`
+    INSERT INTO "PlaceToArea" ("placeId", "areaId")
+    SELECT p.id, a.id
+    FROM "Place" p, "Area" a
+    WHERE
+      p."createdAt" > ${convertedStartDate}
+      AND p."createdAt" < ${convertedEndDate}
+      AND p.x BETWEEN a."minX" AND a."maxX"
+      AND p.y BETWEEN a."minY" AND a."maxY"
+      AND ST_Contains(a.polygon, ST_SetSRID(ST_Point(p.x, p.y), 4326))
+    ON CONFLICT ("placeId", "areaId") DO NOTHING
+    `;
+  }
 }

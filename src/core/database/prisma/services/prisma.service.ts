@@ -7,8 +7,9 @@ import {
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { Category, Prisma, PrismaClient } from '@prisma/client';
-import { ProductConfigService } from '@core/config/services/config.service';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { CustomInternalServerError } from '@exceptions/http/custom-internal-server-error';
+import { PrismaExceptionEnum } from '@exceptions/http/enums/global.exception.enum';
 
 @Injectable()
 export class PrismaService
@@ -50,6 +51,7 @@ export class PrismaService
 
     await this.cacheAllCategories();
     await this.cacheAllPlaceCategories();
+    await this.cacheAllRegions();
   }
 
   async enableShutdownHook(app: INestApplication) {
@@ -129,5 +131,30 @@ export class PrismaService
     this.logger.log(
       `${newPlaceCategoryCounts} placeCategories have been cached.`,
     );
+  }
+
+  async cacheAllRegions() {
+    this.logger.log(`Regions cache start`);
+    const cacheKey = process.env.REDIS_REGION_KEY;
+
+    const regions = await this.region.findMany();
+    const newRegionCounts = regions.length;
+    if (!newRegionCounts) {
+      throw new CustomInternalServerError(PrismaExceptionEnum.NO_DATA);
+    }
+
+    const operations = regions.map((region) =>
+      this.cacheManager.set(
+        `${cacheKey}/${region.administrativeDistrict}${region.district}`,
+        region.id,
+        {
+          ttl: 0,
+        },
+      ),
+    );
+
+    await Promise.all(operations);
+
+    this.logger.log(`${newRegionCounts} regions have been cached.`);
   }
 }

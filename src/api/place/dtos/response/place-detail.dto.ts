@@ -153,4 +153,5 @@ export class PlaceDetailDto implements Place {
   isInitial: boolean;
   placeCategoryId: number;
   regionId: number;
+  createdAt: Date;
 }
