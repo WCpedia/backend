@@ -81,4 +81,5 @@ export class BasicPlaceDto implements Place {
   placeCategoryId: number;
   regionId: number;
   isInitial: boolean;
+  createdAt: Date;
 }
