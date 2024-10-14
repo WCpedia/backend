@@ -49,13 +49,15 @@ enum ReviewReportSubType {
 }
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis(version: "3.4.0")]
 }
 
 model User {
@@ -162,6 +164,7 @@ model Place {
   x                        Float
   y                        Float
   isInitial                Boolean                   @default(false)
+  createdAt                DateTime                  @default(now())
   region                   Region?                   @relation(fields: [regionId], references: [id])
   placeCategory            PlaceCategory             @relation(fields: [placeCategoryId], references: [id])
   images                   PlaceImage[]
@@ -172,6 +175,7 @@ model Place {
   PlaceReviewSnapshot      PlaceReviewSnapshot[]
   toiletInfo               ToiletInfo[]
   adminPlaceToiletRating   AdminPlaceToiletRating?
+  areas                    PlaceToArea[]
 }
 
 model PlaceImage {
@@ -460,4 +464,27 @@ model AdminPlaceToiletRating {
   updatedAt         DateTime @updatedAt
   place             Place    @relation(fields: [placeId], references: [id])
   admin             User     @relation(fields: [adminId], references: [id])
+}
+
+model Area {
+  id        Int                                    @id @default(autoincrement())
+  name      String                                 @unique
+  polygon   Unsupported("geometry(Polygon, 4326)")
+  minX      Float
+  minY      Float
+  maxX      Float
+  maxY      Float
+  createdAt DateTime                               @default(now())
+  updatedAt DateTime                               @updatedAt
+  places    PlaceToArea[]
+}
+
+model PlaceToArea {
+  id      Int   @id @default(autoincrement())
+  placeId Int
+  areaId  Int
+  place   Place @relation(fields: [placeId], references: [id])
+  area    Area  @relation(fields: [areaId], references: [id])
+
+  @@unique([placeId, areaId])
 }

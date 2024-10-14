@@ -6,7 +6,6 @@ import {
   ParseIntPipe,
   Post,
   Query,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
 } from '@nestjs/common';
@@ -22,17 +21,17 @@ import {
 import { GetAuthorizedUser } from '@api/common/decorators/get-authorized-user.decorator';
 import { AccessTokenGuard } from '@api/common/guards/access-token.guard';
 import { IAuthorizedUser } from '@api/auth/interface/interface';
-import { CreatePlaceReviewDto } from '../dtos/request/create-place-review.dto';
+import { CreatePlaceReviewDto } from '@api/place/dtos/request/create-place-review.dto';
 import { AllowGuestGuard } from '@api/common/guards/allow-guest.guard';
-import { ReviewWithDetailsDto } from '../../common/dto/review-with-details.dto';
-import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
-import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
+import { ReviewWithDetailsDto } from '@api/common/dto/review-with-details.dto';
+import { MyPlaceReviewDto } from '@api/place/dtos/response/my-place-review.dto';
+import { GetPlaceReviewDto } from '@api/place/dtos/request/get-place-review.dto';
 import { PaginatedResponse } from '@api/common/interfaces/interface';
-import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
+import { ReportFacilityDto } from '@api/place/dtos/request/report-facility.dto';
 import { DOMAIN_NAME } from '@src/constants/consts/domain-name.const ';
-import { GetPlaceDto } from '../dtos/request/get-place.dto';
-import PaginationDto from '@api/common/dto/pagination.dto';
-import { BasicPlaceWithToiletDto } from '../dtos/response/basic-place-with-toilet.dto';
+import { GetPlaceDto } from '@api/place/dtos/request/get-place.dto';
+import { BasicPlaceWithToiletDto } from '@api/place/dtos/response/basic-place-with-toilet.dto';
+import GetPlacesWithToiletDto from '@api/place/dtos/request/get-places-with-toilet.dto';
 
 @ApiTags(DOMAIN_NAME.PLACE)
 @Controller(DOMAIN_NAME.PLACE)
@@ -44,9 +43,9 @@ export class PlaceController {
   })
   @Get('toilet')
   async getPlacesWithToilet(
-    @Query() paginationDto: PaginationDto,
+    @Query() getPlacesWithToiletDto: GetPlacesWithToiletDto,
   ): Promise<PaginatedResponse<BasicPlaceWithToiletDto, 'places'>> {
-    return await this.placeService.getPlacesWithToilet(paginationDto);
+    return await this.placeService.getPlacesWithToilet(getPlacesWithToiletDto);
   }
 
   @ApiPlace.GetPlace({

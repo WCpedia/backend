@@ -1,10 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PlaceRepository } from '@api/place/repository/place.repository';
 import { PrismaService } from '@core/database/prisma/services/prisma.service';
 import { ProductConfigService } from '@core/config/services/config.service';
 import { plainToInstance } from 'class-transformer';
 import { PlaceDetailDto } from '@api/place/dtos/response/place-detail.dto';
-import { OAUTH_KEY } from '@core/config/constants/config.constant';
+import { OAUTH_KEY, REDIS_KEY } from '@core/config/constants/config.constant';
 import axios, { AxiosResponse } from 'axios';
 import {
   Category,
@@ -31,7 +35,11 @@ import { PlaceExceptionEnum } from '@exceptions/http/enums/place.exception.enum'
 import { ReviewWithDetailsDto } from '../../common/dto/review-with-details.dto';
 import { MyPlaceReviewDto } from '../dtos/response/my-place-review.dto';
 import { GetPlaceReviewDto } from '../dtos/request/get-place-review.dto';
-import { PaginatedResponse } from '@api/common/interfaces/interface';
+import {
+  ILocationOptions,
+  IRegionType,
+  PaginatedResponse,
+} from '@api/common/interfaces/interface';
 import { generatePaginationParams } from '@src/utils/pagination-params-generator';
 import { ReportFacilityDto } from '../dtos/request/report-facility.dto';
 import { ReviewExceptionEnum } from '@exceptions/http/enums/review.exception.enum';
@@ -41,6 +49,15 @@ import { RatingCalculator } from '@src/utils/rating-calculator';
 import { CalculateOperation } from '@enums/calculate-operation.enum';
 import PaginationDto from '@api/common/dto/pagination.dto';
 import { BasicPlaceWithToiletDto } from '../dtos/response/basic-place-with-toilet.dto';
+import GetPlacesWithToiletDto from '../dtos/request/get-places-with-toilet.dto';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import {
+  LocationType,
+  RecommendationType,
+} from '@api/common/constants/enum/enum';
+import { AreaId } from '@api/common/constants/const/area.const';
+import { CustomInternalServerError } from '@exceptions/http/custom-internal-server-error';
 
 @Injectable()
 export class PlaceService {
@@ -48,8 +65,10 @@ export class PlaceService {
   private kakaoAuthKey: string;
   private kakaoSearchImageMaxSize: number;
   private kakaoMenuUri: string;
+  private redisRegionKey: string;
 
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly placeRepository: PlaceRepository,
     private readonly configService: ProductConfigService,
     private readonly prismaService: PrismaService,
@@ -65,6 +84,9 @@ export class PlaceService {
     );
     this.kakaoMenuUri = this.configService.get<string>(
       OAUTH_KEY.KAKAO_MENU_URI,
+    );
+    this.redisRegionKey = this.configService.get<string>(
+      REDIS_KEY.REDIS_REGION_KEY,
     );
   }
 
@@ -341,21 +363,105 @@ export class PlaceService {
   async getPlacesWithToilet({
     take,
     lastItemId,
-  }: PaginationDto): Promise<
+    locationType,
+    ...locationOptions
+  }: GetPlacesWithToiletDto): Promise<
     PaginatedResponse<BasicPlaceWithToiletDto, 'places'>
   > {
-    const totalItemCount = await this.placeRepository.countPlaceWithToilet();
+    const locationQuery = await this.getLocationQueryByLocationType(
+      locationType,
+      locationOptions,
+    );
+
+    const totalItemCount =
+      await this.placeRepository.countPlaceWithToilet(locationQuery);
     if (!totalItemCount) {
       return { totalItemCount: 0, places: [] };
     }
-
     const paginationParams = generatePaginationParams({ take, lastItemId });
-    const places =
-      await this.placeRepository.getPlacesWithToilet(paginationParams);
 
+    const places = await this.placeRepository.getPlacesWithToilet(
+      paginationParams,
+      locationQuery,
+    );
     return {
       totalItemCount,
       places: plainToInstance(BasicPlaceWithToiletDto, places),
     };
+  }
+
+  private async getLocationQueryByLocationType(
+    locationType: LocationType,
+    locationOptions: ILocationOptions,
+  ): Promise<Prisma.PlaceWhereInput> {
+    const { administrativeDistrict, district, area, recommendationType } =
+      locationOptions;
+    let locationQuery: Prisma.PlaceWhereInput = {};
+
+    if (locationType === LocationType.REGION) {
+      locationQuery.regionId = await this.getRegionId(
+        administrativeDistrict,
+        district,
+      );
+    } else if (locationType === LocationType.AREA) {
+      locationQuery = this.buildAreaAndRecommendationQuery(
+        area,
+        recommendationType,
+      );
+    }
+
+    return locationQuery;
+  }
+
+  private async getRegionId(
+    administrativeDistrict: string,
+    district: string,
+  ): Promise<number> {
+    const regionId = await this.cacheManager.get(
+      `${this.redisRegionKey}/${administrativeDistrict}${district}`,
+    );
+    if (!regionId) {
+      throw new CustomInternalServerError(PlaceExceptionEnum.REGION_NOT_EXISTS);
+    }
+
+    return Number(regionId);
+  }
+
+  private buildAreaAndRecommendationQuery(
+    area: string,
+    recommendationType?: RecommendationType,
+  ): Prisma.PlaceWhereInput {
+    const areaId = AreaId[area];
+    const locationQuery: Prisma.PlaceWhereInput = {
+      areas: {
+        some: {
+          areaId,
+        },
+      },
+    };
+
+    if (recommendationType) {
+      locationQuery.adminPlaceToiletRating =
+        this.getRecommendationFilter(recommendationType);
+    }
+
+    return locationQuery;
+  }
+
+  private getRecommendationFilter(
+    recommendationType: RecommendationType,
+  ): Prisma.AdminPlaceToiletRatingWhereInput | undefined {
+    switch (recommendationType) {
+      case RecommendationType.DATE:
+        return { isDateSpot: true };
+      case RecommendationType.FRIENDLY:
+        return { isFriendlySpot: true };
+      case RecommendationType.GROUP:
+        return { isGroupSpot: true };
+      case RecommendationType.GOAT:
+        return { isGoat: true };
+      default:
+        return undefined;
+    }
   }
 }

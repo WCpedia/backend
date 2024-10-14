@@ -30,3 +30,7 @@ export const AuthExceptionMessage = {
   [AuthExceptionEnum.INVALID_SIGNUP_INFORMATION]:
     '유효하지 않은 가입 정보입니다.',
 };
+
+export const PrismaExceptionEnum = {
+  NO_DATA: 'NO_DATA',
+};

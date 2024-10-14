@@ -143,4 +143,15 @@ export class TaskService {
       `DeleteUserPrivateInfo`,
     );
   }
+
+  @Cron(CronExpression.EVERY_DAY_AT_6AM)
+  async assignPlacesToAreas() {
+    const oneDay = 1;
+    const lastProcessedDate = DateUtils.getDateBefore(oneDay);
+    const rangeOfLastProcessedDate =
+      DateUtils.getUTCStartAndEndOfRange(lastProcessedDate);
+
+    await this.taskRepository.assignPlacesToAreas(rangeOfLastProcessedDate);
+    Logger.log(`Assigned places to areas`);
+  }
 }
